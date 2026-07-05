@@ -22,7 +22,6 @@ class User{
   String get username => _username;
   String get name => _name;
   String get surname => _surname;
-  int get id => _id;
 
   /* *** SETTER METHODS *** */
   set name (String name) => _name = name;
@@ -65,6 +64,7 @@ class User{
   /// to be used for the database
   Map<String, dynamic> toMap(){
     return {
+      if(_id != -1) 'id': _id,
       'username': _username,
       'password': _password,
       'name': _name, 
