@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # library for hashing password
+  bcrypt: ^1.2.0
 
 dev_dependencies:
   flutter_test:
