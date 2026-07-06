@@ -1,5 +1,5 @@
-import 'package:mira_finance_tracker/backend/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/backend/subjects/CounterParty.dart';
+import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
+import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
 /// Enumeration to define the different categories of
 /// income used by the application to identify the different types

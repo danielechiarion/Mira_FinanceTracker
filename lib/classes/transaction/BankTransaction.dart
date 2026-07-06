@@ -1,4 +1,4 @@
-import 'package:mira_finance_tracker/backend/subjects/CounterParty.dart';
+import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
 /// Abstract class to define a simple bank
 /// transaction inside whatever bank account created

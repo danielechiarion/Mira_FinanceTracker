@@ -1,5 +1,5 @@
-import 'package:mira_finance_tracker/backend/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/backend/subjects/CounterParty.dart';
+import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
+import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
 /// Enumerator used to classify
 /// different categories of an outcome for the application
