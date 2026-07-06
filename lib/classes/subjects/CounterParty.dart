@@ -29,6 +29,10 @@ class CounterParty{
     return other is CounterParty && _id != -1 && other._id == _id;
   }
 
+  /// Method to generate the hashcode of the instance
+  @override
+  int get hashCode => _id.hashCode;
+
   /// Method to convert the counterparty object to 
   /// a map used by the database to store the data
   Map<String, dynamic> toMap() {

@@ -33,6 +33,10 @@ class FinancialInstitute{
     return other is FinancialInstitute && other._name == _name;
   }
 
+  /// Method to generate the hashcode of the instance
+  @override
+  int get hashCode => _name.hashCode;
+
   /// Method to convert the financial institute object to
   /// a map to be converted to JSON and sent to the database
   Map<String, dynamic> toMap() {

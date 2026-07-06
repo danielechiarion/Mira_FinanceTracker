@@ -60,6 +60,10 @@ class User{
     return other is User && other._username == _username;
   }
 
+  /// Method to generate the hashcode of the instance
+  @override
+  int get hashCode => _username.hashCode;
+
   /// Method to covert the user object to a map,
   /// to be used for the database
   Map<String, dynamic> toMap(){

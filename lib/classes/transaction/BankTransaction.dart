@@ -65,6 +65,10 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
     return other is BankTransaction && _id != -1 && other._id == _id;
   }
 
+  /// Method to generate the hashcode of the instance
+  @override
+  int get hashCode => _id.hashCode;
+
   /// Method to compare the bank transaction objects to
   /// put them in order, 
   /// first by the execution date and then by the accounting date, 
