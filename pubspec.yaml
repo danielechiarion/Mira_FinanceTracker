@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   # library for hashing password
   bcrypt: ^1.2.0
+  # library for protected methods
+  meta: ^1.18.3
 
 dev_dependencies:
   flutter_test:
