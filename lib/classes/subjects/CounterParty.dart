@@ -15,6 +15,7 @@ class CounterParty{
   /* *** GETTER METHODS *** */
   String get name => _name;
   String get IBAN => _IBAN;
+  int get identifier => _id;
 
   /* *** SETTER METHODS *** */
   set IBAN (String IBAN) => _IBAN = IBAN;

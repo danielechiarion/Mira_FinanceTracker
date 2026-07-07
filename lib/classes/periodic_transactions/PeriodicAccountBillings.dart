@@ -70,5 +70,5 @@ abstract class PeriodiAccountBillings{
 
   /// Function to check and execute billings and return
   /// a list of bank transactions for the account selected
-  List<BankTransaction>? checkAndExecuteBilling();
+  List<BankTransaction>? checkAndExecute();
 }

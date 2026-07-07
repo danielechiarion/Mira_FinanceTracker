@@ -19,7 +19,7 @@ class Cashback extends PeriodiAccountBillings{
   /// Function to check and execute billings and return
   /// a list of bank transactions for the account selected
   @override
-  List<BankTransaction> checkAndExecuteBilling(){
+  List<BankTransaction> checkAndExecute(){
     List<Income> transactionList = []; // create the list
 
     /* first check if it's time for the billing,
