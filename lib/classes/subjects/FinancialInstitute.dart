@@ -20,6 +20,7 @@ class FinancialInstitute{
   String get name => _name;
   String get address => _address;
   String get phoneNumber => _phoneNumber;
+  int get id => _id;
 
   /* *** SETTER METHODS *** */
   set address (String address) => _address = address;
