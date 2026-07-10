@@ -1,12 +1,13 @@
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
+import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 
 /// Class to manage an account duration like the 
 /// PeriodicAccountDuration class,
 /// with the different of an expiration date to handle
 class LimitedAccountDuration extends PeriodicAccountDuration{
   /* attributes definition */
-  DateTime _endingDate;
+  late DateTime _endingDate;
   bool _includeEnd;
 
   /// Constructor of the Limited account duration 
@@ -18,9 +19,28 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
   /// * [includeStart] flag to indicate if the start has to be signaled
   /// * [_endingDate] ending date of the total duration
   /// * [_includeEnd] flag if include end has to be signaled
-  LimitedAccountDuration(DateTime startingDate, DurationType frequency, int dayOfMonth, this._endingDate,
-    {int? monthOfYear, bool includeStart = false, DateTime? lastDateActivity, this._includeEnd = false}) : 
-    super(startingDate, frequency, dayOfMonth, monthOfYear: monthOfYear, includeStart: includeStart){
+  LimitedAccountDuration(DateTime startingDate, DurationType frequency, int dayOfMonth,
+    {int? monthOfYear, bool includeStart = false, DateTime? lastDateActivity, 
+    this._includeEnd = false, DateTime? endingDate, LongDuration? duration}) : 
+    super(startingDate, frequency, dayOfMonth, monthOfYear: monthOfYear, includeStart: includeStart, lastDateActivity: lastDateActivity){
+    /* first control if either the ending date of the duration
+    has been given. It's not allowed both null values */
+    if(duration == null && endingDate == null){
+      throw Exception("In a limited account duration it's not allowed to have both duration and ending date null");
+    }
+
+    /* if the ending date is null,
+    add to the starting date the duration provided */
+    if(endingDate == null){
+      _endingDate = DateTime(
+        super.startingDate.year + duration!.years,
+        super.startingDate.month + duration!.months,
+        super.startingDate.day + duration!.days
+      );
+    }else{
+      _endingDate = endingDate;
+    }
+    
     if(!_endingDate.isAfter(super.startingDate)){
       throw Exception("The ending date must be after the starting date");
     }
@@ -32,7 +52,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
 
   /* *** SETTER METHODS *** */
   set endingDate(DateTime endingDate){
-    if(!_endingDate.isAfter(super.startingDate)){
+    if(!endingDate.isAfter(super.startingDate)){
       throw Exception("The ending date must be after the starting date");
     }
     if(super.lastDateActivity == null || super.lastDateActivity!.isAtSameMomentAs(endingDate)){
@@ -90,7 +110,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
   @override
   Map<String, dynamic> toMap(){
     Map<String, dynamic> additionalMap = {
-      'endingDate': _endingDate,
+      'endingDate': _endingDate.toIso8601String(),
       'includeEnd': _includeEnd
     };
     return {...super.toMap(), ...additionalMap};
@@ -104,7 +124,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
       map['startingDate'],
       DurationType.values[map['timeFrequency']],
       map['dayOfMonth'],
-      map['endingDate'],
+      endingDate: map['endingDate'],
       monthOfYear: map['monthOfYear'],
       lastDateActivity: map['lastDateActivity'],
       includeEnd: map['includeEnd']
