@@ -36,6 +36,7 @@ abstract class FinancialInstrument {
   DateTime? _endingDate;
   double _initialValue;
   double _currentValue;
+  double _taxRate;
   FinancialInstrumentStatus _status;
 
   /// Constructor to define a financial instrument with all the necessary parameters
@@ -43,13 +44,14 @@ abstract class FinancialInstrument {
   /// * [_providerType] type of provider of the service (main difference is between public and private institution)
   /// * [_subscriptionDate] date of subscription of the service
   /// * [_initialValue] initial value of the financial instrument
+  /// * [_taxRate] tax rate applied to the interests earned
   /// * [_id] ID of the financial instrument mainly used by the database (if not set it's -1)
   /// * [_description] optional description of the financial instrument 
   /// * [_provider] information about the provider of the service (mandatory if it's a private institution)
   /// * [_endingDate] optional attribute about a possible ending date of the financial instrument (not all them will need it)
   /// * [_currentValue] current value of the financial instrument with all the interest calculated so far
   /// * [_status] status of the financial instrument (ended, ongoing, stopped etc.)
-  FinancialInstrument(this._name, this._providerType, this._subscriptionDate, this._initialValue,
+  FinancialInstrument(this._name, this._providerType, this._subscriptionDate, this._initialValue, this._taxRate,
     {this._id = -1, this._description, this._provider, this._endingDate, double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
     _currentValue = currentValue ?? _initialValue, _status = financialInstrumentStatus ?? FinancialInstrumentStatus.ongoing {
       if(_provider == null && _providerType == FinancialInstrumentProvider.financialInstitution){
@@ -63,6 +65,10 @@ abstract class FinancialInstrument {
       if(_initialValue <= 0){
         throw Exception("Initial value of a financial instrument can't be zero or less");
       }
+
+      if(_taxRate < 0){
+        throw Exception("In a financial instrument tax rate can never be less than 0%");
+      }
     }
 
   /* *** GETTER METHODS *** */
@@ -74,6 +80,7 @@ abstract class FinancialInstrument {
   DateTime? get endingDate => _endingDate;
   double get initialValue => _initialValue;
   double get currentValue => _currentValue;
+  double get taxRate => _taxRate;
   FinancialInstrumentStatus get status => _status;
 
   /* *** SETTER METHODS *** */
@@ -86,6 +93,13 @@ abstract class FinancialInstrument {
     _providerType = providerType;
   }
   set provider(FinancialInstitute provider) => _provider = provider;
+  set taxRate(double taxRate) {
+    if(_taxRate < 0){
+      throw Exception("In a financial instrument tax rate can never be less than 0%");
+    }
+
+    _taxRate = taxRate;
+  }
 
   /// Method to stop a financial instrument totally before 
   /// its expiration. 
@@ -167,7 +181,8 @@ abstract class FinancialInstrument {
       'endingDate': _endingDate?.toIso8601String(),
       'initialValue': _initialValue,
       'currentValue': _currentValue,
-      'status': _status.index
+      'status': _status.index,
+      'taxRate': _taxRate
     };
   }
 }
