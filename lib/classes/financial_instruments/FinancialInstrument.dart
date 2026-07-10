@@ -32,8 +32,6 @@ abstract class FinancialInstrument {
   String? _description;
   FinancialInstrumentProvider _providerType; // if it's a public organization provider is not needeed
   FinancialInstitute? _provider;
-  DateTime _subscriptionDate;
-  DateTime? _endingDate;
   double _initialValue;
   double _currentValue;
   double _taxRate;
@@ -42,24 +40,18 @@ abstract class FinancialInstrument {
   /// Constructor to define a financial instrument with all the necessary parameters
   /// * [_name] name of the financial instrument, which has to be unique
   /// * [_providerType] type of provider of the service (main difference is between public and private institution)
-  /// * [_subscriptionDate] date of subscription of the service
   /// * [_initialValue] initial value of the financial instrument
   /// * [_taxRate] tax rate applied to the interests earned
   /// * [_id] ID of the financial instrument mainly used by the database (if not set it's -1)
   /// * [_description] optional description of the financial instrument 
   /// * [_provider] information about the provider of the service (mandatory if it's a private institution)
-  /// * [_endingDate] optional attribute about a possible ending date of the financial instrument (not all them will need it)
   /// * [_currentValue] current value of the financial instrument with all the interest calculated so far
   /// * [_status] status of the financial instrument (ended, ongoing, stopped etc.)
-  FinancialInstrument(this._name, this._providerType, this._subscriptionDate, this._initialValue, this._taxRate,
-    {this._id = -1, this._description, this._provider, this._endingDate, double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
+  FinancialInstrument(this._name, this._providerType, this._initialValue, this._taxRate,
+    {this._id = -1, this._description, this._provider, double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
     _currentValue = currentValue ?? _initialValue, _status = financialInstrumentStatus ?? FinancialInstrumentStatus.ongoing {
       if(_provider == null && _providerType == FinancialInstrumentProvider.financialInstitution){
         throw Exception("Every private institution has to be indicated with the provider information.");
-      }
-
-      if(_endingDate != null && _endingDate!.isBefore(_subscriptionDate)){
-        throw Exception("Ending date of a financial instrument can't come before the subscription date");
       }
 
       if(_initialValue <= 0){
@@ -76,8 +68,6 @@ abstract class FinancialInstrument {
   String? get description => _description;
   FinancialInstrumentProvider get providerType => _providerType;
   FinancialInstitute? get provider => _provider;
-  DateTime get subscriptionDate => _subscriptionDate;
-  DateTime? get endingDate => _endingDate;
   double get initialValue => _initialValue;
   double get currentValue => _currentValue;
   double get taxRate => _taxRate;
@@ -107,15 +97,7 @@ abstract class FinancialInstrument {
   dynamic stop({DateTime? datetimeStop}){
     datetimeStop = datetimeStop ?? DateTime.now(); // set the datetime if not done before
 
-    /* control if the the datetime given comes
-    after the subscription date, otherwise it's not 
-    possible to continue */
-    if(datetimeStop.isBefore(_subscriptionDate)){
-      throw Exception("When stopping a financial instrument ending date can't come before the subscription date");
-    }
-
     /* set the necessary attributes */
-    _endingDate = datetimeStop;
     _status = FinancialInstrumentStatus.stopped;
   }
 
@@ -145,15 +127,7 @@ abstract class FinancialInstrument {
   /// If the ending date has been specified and the time has not come,
   /// the operation will be denied by the system.
   dynamic end(){
-    /* first control if the ending date has been specified. 
-    In that case the operation of stopping the service has to come after or 
-    at the sime time of the ending date specified */
-    if(_endingDate!=null && DateTime.now().isBefore(_endingDate!)){
-      throw Exception("Ending date specified in the financial instrument has not come. Ending operation denied.");
-    }
-
     /* update attributes */
-    _endingDate = _endingDate ?? DateTime.now();
     _status = FinancialInstrumentStatus.ended;
   }
 
@@ -176,9 +150,6 @@ abstract class FinancialInstrument {
       'description': _description,
       'providerType': _providerType.index,
       if (_provider != null) 'provider': _provider!.id,
-      // serialize dates as ISO strings (or use millisecondsSinceEpoch if preferred)
-      'subscriptionDate': _subscriptionDate.toIso8601String(),
-      'endingDate': _endingDate?.toIso8601String(),
       'initialValue': _initialValue,
       'currentValue': _currentValue,
       'status': _status.index,
