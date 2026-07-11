@@ -41,7 +41,7 @@ enum DurationType{
                         (duration!.months / 12.0) + 
                         (duration!.days / 365.0); 
     }else{
-      durationInYears = endingDate.difference(startingDate!).inDays / 365.0;
+      durationInYears = endingDate.difference(startingDate!).inDays.abs() / 365.0;
     }
 
     return annualInterestRate * durationInYears;
