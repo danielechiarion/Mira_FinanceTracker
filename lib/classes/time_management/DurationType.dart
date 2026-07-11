@@ -23,4 +23,27 @@ enum DurationType{
 
   /* define constructor for the enumerator */
   const DurationType(this.name, this.duration);
+
+  /* function to get the exact interest starting
+  from the annual one */
+  double getExactInterest(double annualInterestRate, {DateTime? startingDate, DateTime? endingDate}){
+    /* first control if the duration is */
+    if(duration == null && startingDate == null){
+      throw Exception("Both duration and starting date can't be null in order to calculate the exact interet");
+    }
+    endingDate = endingDate ?? DateTime.now();
+
+    /* make a difference based on the duration of the enum
+    or the ending date given by the user */
+    double durationInYears;
+    if(duration != null){
+      durationInYears = duration!.years + 
+                        (duration!.months / 12.0) + 
+                        (duration!.days / 365.0); 
+    }else{
+      durationInYears = endingDate.difference(startingDate!).inDays / 365.0;
+    }
+
+    return annualInterestRate * durationInYears;
+  }
 }
