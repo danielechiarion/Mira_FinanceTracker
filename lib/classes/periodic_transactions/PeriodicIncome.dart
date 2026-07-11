@@ -59,4 +59,11 @@ class PeriodicIncome extends PeriodicTransaction{
     with the attributes provided */
     return PeriodicIncome(name, amount, cadence, counterParty, id: id, description: description);
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  PeriodicIncome clone(){
+    return PeriodicIncome(super.name, super.amount, super.cadence.clone(), super.counterParty.clone(),
+            description: super.description, id: super.id);
+  }
 }

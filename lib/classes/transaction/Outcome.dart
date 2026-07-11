@@ -63,4 +63,11 @@ class Outcome extends BankTransaction{
       accountingDate: map['accountingDate']
     );
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  Outcome clone(){
+    return Outcome(_category, super.reference, super.amount, super.executionDate, 
+            id: super.id, counterParty: super.counterParty, accountingDate: super.accountingDate);
+  }
 }

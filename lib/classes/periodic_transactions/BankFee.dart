@@ -57,4 +57,11 @@ class BankFee extends PeriodiAccountBillings{
     with the attributes provided */
     return BankFee(name, amount, cadence, id: id, description: description);
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  BankFee clone(){
+    return BankFee(super.name, super.amount, super.cadence.clone(), 
+                  description: super.description, id: super.id);
+  }
 }

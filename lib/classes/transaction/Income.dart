@@ -65,4 +65,11 @@ class Income extends BankTransaction{
       accountingDate: map['accountingDate']
     );
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  Income clone(){
+    return Income(_category, super.reference, super.amount, super.executionDate, 
+            id: super.id, counterParty: super.counterParty?.clone(), accountingDate: super.accountingDate);
+  }
 }

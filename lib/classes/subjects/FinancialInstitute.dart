@@ -62,4 +62,9 @@ class FinancialInstitute{
       site: map['site'] ?? '',
     );
   }
+
+  /// Method to get a deep clone of the instance
+  FinancialInstitute clone(){
+    return FinancialInstitute(_name, id: _id, address: _address, phoneNumber: _phoneNumber, site: _site);
+  }
 }

@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 
@@ -23,10 +25,12 @@ abstract class PeriodiAccountBillings{
   PeriodiAccountBillings(this._name, this._amount, this._cadence, {this._description, this._id = -1});
 
   /* *** GETTER METHODS *** */
+  @protected
+  int get id => _id;
   String get name => _name;
   String? get description => _description;
   double get amount => _amount;
-  PeriodicAccountDuration get cadence => _cadence;
+  PeriodicAccountDuration get cadence => _cadence.clone();
 
   /* *** SETTER METHODS *** */
   set description(String? description) => _description = description;
@@ -71,4 +75,7 @@ abstract class PeriodiAccountBillings{
   /// Function to check and execute billings and return
   /// a list of bank transactions for the account selected
   List<BankTransaction>? checkAndExecute();
+
+  /// Method to get a deep clone of the instance
+  PeriodiAccountBillings clone();
 }

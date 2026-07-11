@@ -11,11 +11,11 @@ class User{
   String _password;
 
   /// Constructor method of the user class
-  /// * [username] the username of the user
-  /// * [password] the password of the user which has to be already hashed, for the security of the account
-  /// * [name] the name of the user
-  /// * [surname] the surname of the user (optional)
-  /// * [id] the ID of the user (firstly it will be -1, then it will be set by the database)
+  /// * [_username] the username of the user
+  /// * [_password] the password of the user which has to be already hashed, for the security of the account
+  /// * [_name] the name of the user
+  /// * [_surname] the surname of the user (optional)
+  /// * [_id] the ID of the user (firstly it will be -1, then it will be set by the database)
   User(this._username, this._password, this._name, {this._id = -1, this._surname = ''});
 
   /* *** GETTER METHODS *** */
@@ -95,5 +95,10 @@ class User{
   /// * [password] the password to hash
   static String hashPassword(String password){
     return BCrypt.hashpw(password, BCrypt.gensalt());
+  }
+
+  /// Method to get a deep clone of the instance
+  User clone(){
+    return User(_username, _password, _name, id: _id, surname: _surname);
   }
 }

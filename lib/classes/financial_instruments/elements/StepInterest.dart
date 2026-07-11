@@ -27,7 +27,7 @@ class StepInterest {
 
   /* *** GETTER METHODS *** */
   int get position => _position;
-  LongDuration get duration => _duration;
+  LongDuration get duration => _duration.clone();
   double get interestRate => _interestRate;
 
   /* *** SETTER METHODS *** */
@@ -89,5 +89,10 @@ class StepInterest {
       LongDuration.fromString(map['duration']), 
       map['interestRate']
     );
+  }
+
+  /// Method to get a deep clone of the instance
+  StepInterest clone(){
+    return StepInterest(_position, _duration.clone(), _interestRate);
   }
 }

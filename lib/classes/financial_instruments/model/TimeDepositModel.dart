@@ -84,4 +84,11 @@ class TimeDepositModel extends FinancialInstrumentModel{
       earlyWithdrawalInterestRate: map['earlyWithdrawalInterestRate']
     );
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  TimeDepositModel clone(){
+    return TimeDepositModel(super.name, super.providerType, super.duration.clone(), super.payoutFrequency, _interestRate,
+            id: super.id, description: super.description, provider: super.provider?.clone(), taxRate: super.taxRate, isCashable: _isCashable, earlyWithdrawalInterestRate: _earlyWithdrawalInterestRate);
+  }
 }

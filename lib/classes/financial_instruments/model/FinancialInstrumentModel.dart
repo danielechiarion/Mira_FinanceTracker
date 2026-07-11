@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
@@ -51,12 +53,14 @@ abstract class FinancialInstrumentModel{
   }
 
   /* *** GETTER METHODS *** */
+  @protected
+  int get id => _id;
   String get name => _name;
   String? get description => _description;
   FinancialInstrumentProvider get providerType => _providerType;
-  FinancialInstitute? get provider => _provider;
+  FinancialInstitute? get provider => _provider?.clone();
   double get taxRate => _taxRate;
-  LongDuration get duration => _duration;
+  LongDuration get duration => _duration.clone();
   DurationType get payoutFrequency => _payoutFrequency;
 
   /* *** SETTER METHODS *** */
@@ -99,4 +103,7 @@ abstract class FinancialInstrumentModel{
       'payoutFrequency': _payoutFrequency.index
     };
   }
+
+  /// Method to get a deep clone of the instance
+  FinancialInstrumentModel clone();
 }

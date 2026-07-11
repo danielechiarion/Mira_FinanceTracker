@@ -143,4 +143,9 @@ class LongDuration implements Comparable<LongDuration>{
 
     return LongDuration(years: y, months: m, days: d);
   }
+
+  /// Method to get a deep clone of the instance
+  LongDuration clone(){
+    return LongDuration(years: years, months: months, days: days);
+  }
 }

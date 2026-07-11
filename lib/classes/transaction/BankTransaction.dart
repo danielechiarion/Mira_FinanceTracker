@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
 /// Abstract class to define a simple bank
@@ -28,8 +30,10 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   }
 
   /* *** GETTER METHODS *** */
+  @protected
+  int get id => _id;
   String get reference => _reference;
-  CounterParty? get counterParty => _counterParty;
+  CounterParty? get counterParty => _counterParty?.clone();
   double get amount => _amount;
   DateTime get executionDate => _executionDate;
   DateTime get accountingDate => _accountingDate;
@@ -92,4 +96,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   /* methods for converting the object to and from a map
   for databse management */
   Map<String, dynamic> toMap();
+
+  /// Method to get a deep clone of the instance
+  BankTransaction clone();
 }

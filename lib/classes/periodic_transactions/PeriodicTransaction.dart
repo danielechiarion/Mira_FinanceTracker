@@ -22,7 +22,7 @@ abstract class PeriodicTransaction extends PeriodiAccountBillings{
     super(name, amount, cadence, description: description, id: id);
 
   /* *** GETTER METHODS *** */
-  CounterParty get counterParty => _counterParty;
+  CounterParty get counterParty => _counterParty.clone();
 
   /* *** SETTER METHODS *** */
   set counterParty(CounterParty counterParty) => _counterParty = counterParty;

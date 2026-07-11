@@ -130,4 +130,12 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
       includeEnd: map['includeEnd']
     );
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  LimitedAccountDuration clone(){
+    return LimitedAccountDuration(super.startingDate, super.timeFrequency, super.dayOfMonth, 
+            monthOfYear: super.monthOfYear, includeStart: super.includeStart, lastDateActivity: super.lastDateActivity, 
+            includeEnd: _includeEnd, endingDate: _endingDate);
+  }
 }

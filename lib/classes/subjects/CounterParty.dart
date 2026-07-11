@@ -54,4 +54,9 @@ class CounterParty{
       IBAN: map['IBAN'] ?? '',
     );
   }
+
+  /// Method to get a deep clone of the instance
+  CounterParty clone(){
+    return CounterParty(_name, id: _id, IBAN: _IBAN);
+  }
 }

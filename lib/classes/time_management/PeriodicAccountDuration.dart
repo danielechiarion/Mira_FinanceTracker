@@ -173,4 +173,10 @@ class PeriodicAccountDuration {
       lastDateActivity: map['lastDateActivity']
     );
   }
+
+  /// Method to get a deep clone of the instance
+  PeriodicAccountDuration clone(){
+    return PeriodicAccountDuration(_startingDate, _timeFrequency, _dayOfMonth, 
+            monthOfYear: _monthOfYear, includeStart: _includeStart, lastDateActivity: _lastDateActivity);
+  }
 }

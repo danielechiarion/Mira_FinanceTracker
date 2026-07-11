@@ -90,4 +90,11 @@ class Domiciliation extends PeriodicTransaction{
     with the attributes provided */
     return Domiciliation(name, amount, cadence, counterParty, id: id, description: description, fee: fee);
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  Domiciliation clone(){
+    return Domiciliation(super.name, super.amount, super.cadence.clone(), super.counterParty.clone(),
+            description: super.description, id: super.id, fee: _fee);
+  }
 }

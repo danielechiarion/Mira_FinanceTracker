@@ -55,4 +55,11 @@ class Cashback extends PeriodiAccountBillings{
     with the attributes provided */
     return Cashback(name, amount, cadence, id: id, description: description);
   }
+
+  /// Method to get a deep clone of the instance
+  @override
+  Cashback clone(){
+    return Cashback(super.name, super.amount, super.cadence.clone(),
+                    description: super.description, id: super.id);
+  }
 }
