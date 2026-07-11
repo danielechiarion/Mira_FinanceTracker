@@ -115,4 +115,32 @@ class LongDuration implements Comparable<LongDuration>{
 
     return yearComparison;
   }
+
+  /// Method to convert duration express in format which 
+  /// is easier to save. 
+  /// The output will be a string with "{years}y {months}m {days}d"
+  @override
+  String toString() {
+    return '${years}y ${months}m ${days}d';
+  }
+
+  /// Method to convert the string of the method previously given
+  /// into the object duration date of the class
+  /// * [durationString] string given after first conversion
+  factory LongDuration.fromString(String durationString) {
+    // Regular expression to find numbers followed by y, m, and d
+    final regExp = RegExp(r'(?:(\d+)y)?\s*(?:(\d+)m)?\s*(?:(\d+)d)?');
+    final match = regExp.firstMatch(durationString.trim());
+
+    if (match == null) {
+      throw FormatException("Invalid duration format. Use 'Xy Xm Xd'");
+    }
+
+    // Extract values or default to 0 if the component is missing
+    final y = int.parse(match.group(1) ?? '0');
+    final m = int.parse(match.group(2) ?? '0');
+    final d = int.parse(match.group(3) ?? '0');
+
+    return LongDuration(years: y, months: m, days: d);
+  }
 }

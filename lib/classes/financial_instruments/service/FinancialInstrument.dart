@@ -1,17 +1,5 @@
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
-
-/// Define enumerator to classify the financial instrument
-/// by the provider offering the service
-enum FinancialInstrumentProvider{
-  financialInstitution("Istituto finanziaro"),
-  publicInstitution("Istituzione pubblica");
-
-  /* define constants */
-  final String name;
-
-  /* define constructor */
-  const FinancialInstrumentProvider(this.name);
-}
+import 'package:mira_finance_tracker/classes/financial_instruments/model/FinancialInstrumentModel.dart';
 
 /// Enumerator to classify the status of a 
 /// financial instrument, in order to use it better
@@ -84,7 +72,7 @@ abstract class FinancialInstrument {
   }
   set provider(FinancialInstitute provider) => _provider = provider;
   set taxRate(double taxRate) {
-    if(_taxRate < 0){
+    if(taxRate < 0){
       throw Exception("In a financial instrument tax rate can never be less than 0%");
     }
 
