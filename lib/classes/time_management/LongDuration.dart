@@ -46,6 +46,46 @@ class LongDuration implements Comparable<LongDuration>{
     return _calculateExpandedDifference(startDate, endDate).compareTo(this) >= 0;
   }
 
+  /// Add another LongDuration to this instance, normalizing days and months
+  /// so days < 31 and months < 12.
+  /// * [other] duration to add
+  /// Returns a new LongDuration with the summed duration.
+  LongDuration addDuration(LongDuration other) {
+    int newDays = days + other.days;
+    int newMonths = months + other.months + (newDays ~/ 31);
+    newDays = newDays % 31;
+    int newYears = years + other.years + (newMonths ~/ 12);
+    newMonths = newMonths % 12;
+    return LongDuration(years: newYears, months: newMonths, days: newDays);
+  }
+
+  /// Remove another LongDuration from this instance, normalizing by borrowing
+  /// from months/years when necessary so days >= 0 and months >= 0.
+  /// * [other] duration to subtract
+  /// Returns a new LongDuration with the resulting duration.
+  /// Throws an Exception if the resulting duration would be negative.
+  LongDuration removeDuration(LongDuration other) {
+    int newDays = days - other.days;
+    int newMonths = months - other.months;
+    int newYears = years - other.years;
+
+    while (newDays < 0) {
+      newMonths--;
+      newDays += 31;
+    }
+
+    while (newMonths < 0) {
+      newYears--;
+      newMonths += 12;
+    }
+
+    if (newYears < 0) {
+      throw Exception("Resulting duration can't be negative");
+    }
+
+    return LongDuration(years: newYears, months: newMonths, days: newDays);
+  }
+
   /// Function to calculate the difference between two dates
   /// using days, months and years
   /// * [start] starting date

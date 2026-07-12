@@ -4,7 +4,7 @@ import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 /// so an interest that could change over time in the
 /// investment, but that was already plan before the subscription of the
 /// financial instrument
-class StepInterest {
+class StepInterest implements Comparable<StepInterest>{
   /* attributes definition */
   int _position; // position inside the list of step interests
   LongDuration _duration;
@@ -94,5 +94,12 @@ class StepInterest {
   /// Method to get a deep clone of the instance
   StepInterest clone(){
     return StepInterest(_position, _duration.clone(), _interestRate);
+  }
+
+  /// Create compareTo method to order the step interests
+  /// based on their position
+  @override
+  int compareTo(StepInterest other){
+    return _position.compareTo(other._position);
   }
 }
