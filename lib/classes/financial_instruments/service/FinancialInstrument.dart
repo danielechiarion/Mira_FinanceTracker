@@ -1,5 +1,6 @@
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/model/FinancialInstrumentModel.dart';
+import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
 
 /// Enumerator to classify the status of a 
 /// financial instrument, in order to use it better
@@ -17,13 +18,15 @@ abstract class FinancialInstrument {
   /* defining attributes */
   int _id;
   String _name;
-  String? _description;
+  String _instrumentUsed; // name of the instrument used
   FinancialInstrumentProvider _providerType; // if it's a public organization provider is not needeed
   FinancialInstitute? _provider;
   double _initialValue;
   double _currentValue;
   double _taxRate;
   FinancialInstrumentStatus _status;
+  DurationType _payoutFrequency;
+  DateTime _subscriptionDate;
 
   /// Constructor to define a financial instrument with all the necessary parameters
   /// * [_name] name of the financial instrument, which has to be unique
@@ -31,13 +34,12 @@ abstract class FinancialInstrument {
   /// * [_initialValue] initial value of the financial instrument
   /// * [_taxRate] tax rate applied to the interests earned
   /// * [_id] ID of the financial instrument mainly used by the database (if not set it's -1)
-  /// * [_description] optional description of the financial instrument 
   /// * [_provider] information about the provider of the service (mandatory if it's a private institution)
   /// * [_currentValue] current value of the financial instrument with all the interest calculated so far
   /// * [_status] status of the financial instrument (ended, ongoing, stopped etc.)
-  FinancialInstrument(this._name, this._providerType, this._initialValue, this._taxRate,
-    {this._id = -1, this._description, this._provider, double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
-    _currentValue = currentValue ?? _initialValue, _status = financialInstrumentStatus ?? FinancialInstrumentStatus.ongoing {
+  FinancialInstrument(this._name, this._providerType, this._initialValue, this._taxRate, this._instrumentUsed, this._payoutFrequency,
+    {this._id = -1, this._provider, DateTime? subscriptionDate, double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
+    _currentValue = currentValue ?? _initialValue, _status = financialInstrumentStatus ?? FinancialInstrumentStatus.ongoing, _subscriptionDate = subscriptionDate ?? DateTime.now() {
       if(_provider == null && _providerType == FinancialInstrumentProvider.financialInstitution){
         throw Exception("Every private institution has to be indicated with the provider information.");
       }
@@ -53,16 +55,17 @@ abstract class FinancialInstrument {
 
   /* *** GETTER METHODS *** */
   String get name => _name;
-  String? get description => _description;
+  String? get instrumentModelName => _instrumentUsed;
   FinancialInstrumentProvider get providerType => _providerType;
   FinancialInstitute? get provider => _provider;
   double get initialValue => _initialValue;
   double get currentValue => _currentValue;
   double get taxRate => _taxRate;
   FinancialInstrumentStatus get status => _status;
+  DateTime get subscriptionDate => _subscriptionDate;
+  DurationType get payoutFrequency => _payoutFrequency;
 
   /* *** SETTER METHODS *** */
-  set description(String description) => _description = description;
   set id(int id) => _id = id;
   set providerType(FinancialInstrumentProvider providerType){
     if(providerType == FinancialInstrumentProvider.financialInstitution && _provider == null){
@@ -131,17 +134,25 @@ abstract class FinancialInstrument {
   @override
   int get hashCode => _name.hashCode;
 
+  /// Method to convert the object into a map
+  /// used for database manipulation
   Map<String, dynamic> toMap(){
     return {
       if(_id >= 0) 'id': _id,
       'name': _name,
-      'description': _description,
+      'instrumentUsed': _instrumentUsed,
       'providerType': _providerType.index,
       if (_provider != null) 'provider': _provider!.id,
       'initialValue': _initialValue,
       'currentValue': _currentValue,
       'status': _status.index,
-      'taxRate': _taxRate
+      'taxRate': _taxRate,
+      'subscriptionDate': _subscriptionDate,
+      'payoutFrequency': _payoutFrequency.index
     };
   }
+
+  /// Method to clone the object into a new one
+  /// with different references
+  FinancialInstrument clone();
 }
