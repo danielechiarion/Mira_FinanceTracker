@@ -1,6 +1,7 @@
+import 'package:meta/meta.dart';
+
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/model/FinancialInstrumentModel.dart';
-import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
 
 /// Enumerator to classify the status of a 
 /// financial instrument, in order to use it better
@@ -53,6 +54,8 @@ abstract class FinancialInstrument {
     }
 
   /* *** GETTER METHODS *** */
+  @protected
+  int get id => _id;
   String get name => _name;
   String? get instrumentModelName => _instrumentUsed;
   FinancialInstrumentProvider get providerType => _providerType;
@@ -78,13 +81,27 @@ abstract class FinancialInstrument {
 
     _taxRate = taxRate;
   }
+  @protected
+  set initialValue(double initialValue){
+    if(initialValue < 0){
+      throw Exception("In a financial instrument it's impossible to have an initial value which is <0");
+    }
+
+    _initialValue = initialValue;
+  }
+  @protected
+  set currentValue(double currentValue){
+    if(currentValue < 0){
+      throw Exception("In a financial instrument it's impossible to have a current value which is <0");
+    }
+
+    _currentValue = currentValue;
+  }
 
   /// Method to stop a financial instrument totally before 
   /// its expiration. 
   /// * [datetimeStop] date used to stop the financial service active
   dynamic stop({DateTime? datetimeStop}){
-    datetimeStop = datetimeStop ?? DateTime.now(); // set the datetime if not done before
-
     /* set the necessary attributes */
     _status = FinancialInstrumentStatus.stopped;
   }
@@ -106,6 +123,7 @@ abstract class FinancialInstrument {
       stop(datetimeStop: datetimeWithdraw);
     }else{
       _initialValue -= amount;
+      _currentValue -= amount;
       _status = FinancialInstrumentStatus.reduced;
     }
   }
@@ -143,7 +161,7 @@ abstract class FinancialInstrument {
       'initialValue': _initialValue,
       'currentValue': _currentValue,
       'status': _status.index,
-      'taxRate': _taxRate,
+      'taxRate': _taxRate
     };
   }
 

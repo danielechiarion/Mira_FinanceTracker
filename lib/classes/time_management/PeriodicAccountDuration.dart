@@ -79,6 +79,13 @@ class PeriodicAccountDuration {
   @protected
   set lastDateActivity(DateTime lastDateActivity) => _lastDateActivity = lastDateActivity;
 
+  /// Method used to return is operations
+  /// have already been started looking if a
+  /// last date activity has been registered
+  bool operationAlreadyStarted(){
+    return _lastDateActivity != null;
+  }
+
   /// Function to understand if it's time to
   /// signal the date
   bool isTime(){
