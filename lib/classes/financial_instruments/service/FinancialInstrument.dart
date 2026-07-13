@@ -18,15 +18,13 @@ abstract class FinancialInstrument {
   /* defining attributes */
   int _id;
   String _name;
-  String _instrumentUsed; // name of the instrument used
+  String? _instrumentUsed; // name of the instrument used
   FinancialInstrumentProvider _providerType; // if it's a public organization provider is not needeed
   FinancialInstitute? _provider;
   double _initialValue;
   double _currentValue;
   double _taxRate;
   FinancialInstrumentStatus _status;
-  DurationType _payoutFrequency;
-  DateTime _subscriptionDate;
 
   /// Constructor to define a financial instrument with all the necessary parameters
   /// * [_name] name of the financial instrument, which has to be unique
@@ -37,9 +35,10 @@ abstract class FinancialInstrument {
   /// * [_provider] information about the provider of the service (mandatory if it's a private institution)
   /// * [_currentValue] current value of the financial instrument with all the interest calculated so far
   /// * [_status] status of the financial instrument (ended, ongoing, stopped etc.)
-  FinancialInstrument(this._name, this._providerType, this._initialValue, this._taxRate, this._instrumentUsed, this._payoutFrequency,
-    {this._id = -1, this._provider, DateTime? subscriptionDate, double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
-    _currentValue = currentValue ?? _initialValue, _status = financialInstrumentStatus ?? FinancialInstrumentStatus.ongoing, _subscriptionDate = subscriptionDate ?? DateTime.now() {
+  /// * [_instrumentUsed] name of the possible instrument model used for this service deployed
+  FinancialInstrument(this._name, this._providerType, this._initialValue, this._taxRate,
+    {this._id = -1, this._provider, this._instrumentUsed ,double? currentValue, FinancialInstrumentStatus? financialInstrumentStatus}):
+    _currentValue = currentValue ?? _initialValue, _status = financialInstrumentStatus ?? FinancialInstrumentStatus.ongoing {
       if(_provider == null && _providerType == FinancialInstrumentProvider.financialInstitution){
         throw Exception("Every private institution has to be indicated with the provider information.");
       }
@@ -62,8 +61,6 @@ abstract class FinancialInstrument {
   double get currentValue => _currentValue;
   double get taxRate => _taxRate;
   FinancialInstrumentStatus get status => _status;
-  DateTime get subscriptionDate => _subscriptionDate;
-  DurationType get payoutFrequency => _payoutFrequency;
 
   /* *** SETTER METHODS *** */
   set id(int id) => _id = id;
@@ -147,8 +144,6 @@ abstract class FinancialInstrument {
       'currentValue': _currentValue,
       'status': _status.index,
       'taxRate': _taxRate,
-      'subscriptionDate': _subscriptionDate,
-      'payoutFrequency': _payoutFrequency.index
     };
   }
 
