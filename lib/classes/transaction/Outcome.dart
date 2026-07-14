@@ -10,6 +10,9 @@ enum OutcomeCategory{
   domiciliation,
   general_outcome,
   internal_transfer_fee,
+  stock_investment,
+  stock_fee,
+  stock_loss,
   other
 }
 

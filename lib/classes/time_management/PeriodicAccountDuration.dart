@@ -117,7 +117,6 @@ class PeriodicAccountDuration {
   }
 
   /* function to return the next date to signal */
-  @protected
   DateTime returnNextSignalDate(){
     DateTime signalDate;
     DateTime lastDate = _lastDateActivity ?? _startingDate;

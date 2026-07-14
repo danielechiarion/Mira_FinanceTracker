@@ -28,7 +28,7 @@ class LongDuration implements Comparable<LongDuration>{
       throw Exception("Start date can't be after the end date");
     }
 
-    return _calculateExpandedDifference(startDate, endDate) == this;
+    return calculateExpandedDifference(startDate, endDate) == this;
   }
 
   /// Method to control if two dates have the right time difference,
@@ -43,7 +43,7 @@ class LongDuration implements Comparable<LongDuration>{
       throw Exception("Start date can't be after the end date");
     }
 
-    return _calculateExpandedDifference(startDate, endDate).compareTo(this) >= 0;
+    return calculateExpandedDifference(startDate, endDate).compareTo(this) >= 0;
   }
 
   /// Add another LongDuration to this instance, normalizing days and months
@@ -90,7 +90,7 @@ class LongDuration implements Comparable<LongDuration>{
   /// using days, months and years
   /// * [start] starting date
   /// * [end] ending date
-  static LongDuration _calculateExpandedDifference(DateTime start, DateTime end) {
+  static LongDuration calculateExpandedDifference(DateTime start, DateTime end) {
     // If the dates are reversed, swap them to always ensure a positive result
     if (start.isAfter(end)) {
       final temp = start;

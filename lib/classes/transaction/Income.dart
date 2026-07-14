@@ -10,6 +10,7 @@ enum IncomeCategory{
   financial_interest,
   financial_dividend,
   financial_cashing,
+  stock_return,
   periodic_income,  
   general_income,
   internal_transfer,

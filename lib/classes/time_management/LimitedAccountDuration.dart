@@ -77,8 +77,9 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
     /* first get the super result, 
     and return it if it's true */
     bool superResult = super.isTime();
-    if(superResult)
+    if(superResult){
       return true;
+    }
 
     /* otherwise control if ending date is available
     and the current date passes it */

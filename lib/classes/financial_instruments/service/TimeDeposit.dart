@@ -124,6 +124,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
   double get interestRate => _interestRate;
   bool get isCashable => _isCashable;
   double get earlyWithdrawalInterestRate => _earlyWithdrawalInterestRate;
+  @override
   LimitedAccountDuration get timeInfo => _timeInfo.clone();
 
   /* *** SETTER METHODS *** */
