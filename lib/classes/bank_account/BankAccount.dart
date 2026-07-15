@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
@@ -39,7 +41,7 @@ abstract class BankAccount{
   /// * [cashbacks] list of cashbacks of the bank account
   /// * [transactions] list of transactions of the bank account (not necessarily all of them)
   BankAccount(this._name, this._bank, this._subscriptionDate, 
-    {this._id = -1, this._availableBalance = 0.0, this._IBAN, this._interest = 0.0, this._active = true, this._endingDate,
+    {this._id = -1, this._availableBalance = 0.0, this._IBAN, this._interest = 0.0, this._active = true, this._endingDate, PeriodicAccountDuration? interestTime,
     List<BankFee>? fees, List<Cashback>? cashbacks, List<BankTransaction>? transactions}){
     /* control validity of the attributes first */
     if(_subscriptionDate.isAfter(DateTime.now())){
@@ -59,16 +61,19 @@ abstract class BankAccount{
 
     /* then populate the interest time 
     with day of the month corresponding to the one of the subscription date */
-    _interestTime = PeriodicAccountDuration(_subscriptionDate, DurationType.monthly, _subscriptionDate.day);
+    _interestTime = interestTime ?? PeriodicAccountDuration(_subscriptionDate, DurationType.monthly, _subscriptionDate.day);
   }
 
   /* *** GETTER METHODS *** */
+  @protected
+  int get id => _id;
   String get name => _name;
   double get interest => _interest;
   bool get isActive => _active;
   double get availableBalance => _availableBalance;
   String? get IBAN => _IBAN;
   DateTime get subscriptionDate => _subscriptionDate;
+  DateTime? get endingDate => _endingDate;
   FinancialInstitute get bank => _bank.clone();
   PeriodicAccountDuration get interestTime => _interestTime.clone();
   List<BankFee> get fees {
@@ -90,6 +95,7 @@ abstract class BankAccount{
     for(BankTransaction singleTransaction in _transactions){
       list.add(singleTransaction.clone());
     }
+    list.sort();
     return list;
   }
 
@@ -260,7 +266,7 @@ abstract class BankAccount{
   /* *** ABSTRACT METHODS *** */
   /// Method creating a deep clone of the object
   /// removing current references
-  BankTransaction clone(); 
+  BankAccount clone(); 
 
   /// Function converting the object into a map
   /// for database manipulation
