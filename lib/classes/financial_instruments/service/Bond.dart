@@ -316,49 +316,49 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
   List<BankTransaction> checkAndExecute({double? variableInterest}){
     List<BankTransaction> transactions = []; // declare an empty list
 
-    /* if it's not time return the empty list
-    and end the function */
-    if(!_timeInfo.isTime()){
-      return transactions;
-    }
+    /* use cycle because this operation could be 
+    without a regular cadence, having even more
+    transactions of the same type to do */
+    while(_timeInfo.isTime()){
+      /* understand the interest rate 
+      to apply to the sum */
+      double interestRate;
+      if(_interestType == BondType.fixed){
+        interestRate = _couponSchedule.first.interestRate;
+      }else if(_interestType == BondType.step){
+        interestRate = _getRightInterest();
+      }else if(_interestType == BondType.variable && variableInterest == null){
+        /* if the tax rate is variable it's impossible to calculate 
+        it with the right interest, unless it's provided by the user */
+        return transactions;
+      }else{
+        interestRate = variableInterest!;
+      }
 
-    /* understand the interest rate 
-    to apply to the sum */
-    double interestRate;
-    if(_interestType == BondType.fixed){
-      interestRate = _couponSchedule.first.interestRate;
-    }else if(_interestType == BondType.step){
-      interestRate = _getRightInterest();
-    }else if(_interestType == BondType.variable && variableInterest == null){
-      /* if the tax rate is variable it's impossible to calculate 
-      it with the right interest, unless it's provided by the user */
-      return transactions;
-    }else{
-      interestRate = variableInterest!;
-    }
+      /* otherwise calculate the interest, 
+      the tax applied and the current value of the bond */
+      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(interestRate);
+      double taxes = interests * super.taxRate;
+      super.currentValue += interests - taxes;
 
-    /* otherwise calculate the interest, 
-    the tax applied and the current value of the bond */
-    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(interestRate);
-    double taxes = interests * super.taxRate;
-    super.currentValue += interests - taxes;
-
-    /* create the transactions to be returned */
-    transactions.add(
-      Income(IncomeCategory.financial_interest, "Interessi dal titolo: ${super.name}", interests, DateTime.now())
-    );
-    if(taxes > 0){
+      /* create the transactions to be returned */
       transactions.add(
-        Outcome(OutcomeCategory.financial_tax, "Tasse applicate dagli intreressi generate dal titolo: ${super.name}", taxes, DateTime.now())
+        Income(IncomeCategory.financial_interest, "Interessi dal titolo: ${super.name}", interests, DateTime.now())
       );
-    }
+      if(taxes > 0){
+        transactions.add(
+          Outcome(OutcomeCategory.financial_tax, "Tasse applicate dagli intreressi generate dal titolo: ${super.name}", taxes, DateTime.now())
+        );
+      }
 
-    _timeInfo.acknowledgeSignal(); // at the end the operation register the last activity date
+      _timeInfo.acknowledgeSignal(); // at the end the operation register the last activity date
 
-    /* if it's the ending date, force the 
-    end method to complete the procedure */
-    if(!DateTime.now().isBefore(_timeInfo.endingDate)){
-      transactions.addAll(end());
+      /* if it's the ending date, force the 
+      end method to complete the procedure */
+      if(!DateTime.now().isBefore(_timeInfo.endingDate)){
+        transactions.addAll(end());
+        break;
+      } 
     }
 
     return transactions;

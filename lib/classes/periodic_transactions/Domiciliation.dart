@@ -39,26 +39,25 @@ class Domiciliation extends PeriodicTransaction{
   List<BankTransaction> checkAndExecute(){
     List<Outcome> transactionList = []; // create the list
 
-    /* first check if it's time for the periodic transaction,
-    otherwise return an empty list */
-    if(!super.cadence.isTime()){
-      return transactionList;
-    }
+    /* use cycle because this operation could be 
+    without a regular cadence, having even more
+    transactions of the same type to do */
+    while(super.cadence.isTime()){
+      /* if the control has passed, add to the list the 
+      various transactions to do */
+      transactionList.add(
+        Outcome(OutcomeCategory.domiciliation, "Periodic domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
+      );
 
-    /* if the control has passed, add to the list the 
-    various transactions to do */
-    transactionList.add(
-      Outcome(OutcomeCategory.domiciliation, "Periodic domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
-    );
+      /* verify if the fee has to be applied, 
+      and add it as a transaction */
+      transactionList.add(
+        Outcome(OutcomeCategory.bank_fee, "Bank fee applied to domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
+      );
 
-    /* verify if the fee has to be applied, 
-    and add it as a transaction */
-    transactionList.add(
-      Outcome(OutcomeCategory.bank_fee, "Bank fee applied to domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
-    );
-
-    /* update the cadence counter */
-    super.cadence.acknowledgeSignal();
+      /* update the cadence counter */
+      super.cadence.acknowledgeSignal(); 
+      }
 
     return transactionList; // return the transaction
   }

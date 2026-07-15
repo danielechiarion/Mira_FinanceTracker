@@ -166,34 +166,34 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
   List<BankTransaction> checkAndExecute(){
     List<BankTransaction> transactions = []; // declare an empty list
 
-    /* if it's not time return the empty list
-    and end the function */
-    if(!_timeInfo.isTime()){
-      return transactions;
-    }
+    /* use cycle because this operation could be 
+    without a regular cadence, having even more
+    transactions of the same type to do */
+    while(_timeInfo.isTime()){
+      /* otherwise calculate the interest, 
+      the tax applied and the current value of the time deposit */
+      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_interestRate);
+      double taxes = interests * super.taxRate;
+      super.currentValue += interests - taxes;
 
-    /* otherwise calculate the interest, 
-    the tax applied and the current value of the time deposit */
-    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_interestRate);
-    double taxes = interests * super.taxRate;
-    super.currentValue += interests - taxes;
-
-    /* create the transactions to be returned */
-    transactions.add(
-      Income(IncomeCategory.financial_interest, "Interessi dal deposito: ${super.name}", interests, DateTime.now())
-    );
-    if(taxes > 0){
+      /* create the transactions to be returned */
       transactions.add(
-        Outcome(OutcomeCategory.financial_tax, "Tasse applicate dagli intreressi generate dal deposito: ${super.name}", taxes, DateTime.now())
+        Income(IncomeCategory.financial_interest, "Interessi dal deposito: ${super.name}", interests, DateTime.now())
       );
-    }
+      if(taxes > 0){
+        transactions.add(
+          Outcome(OutcomeCategory.financial_tax, "Tasse applicate dagli intreressi generate dal deposito: ${super.name}", taxes, DateTime.now())
+        );
+      }
 
-    _timeInfo.acknowledgeSignal(); // at the end the operation register the last activity date
+      _timeInfo.acknowledgeSignal(); // at the end the operation register the last activity date
 
-    /* if it's the ending date, force the 
-    end method to complete the procedure */
-    if(!DateTime.now().isBefore(_timeInfo.endingDate)){
-      transactions.addAll(end());
+      /* if it's the ending date, force the 
+      end method to complete the procedure */
+      if(!DateTime.now().isBefore(_timeInfo.endingDate)){
+        transactions.addAll(end());
+        break;
+      } 
     }
 
     return transactions;

@@ -25,20 +25,19 @@ class PeriodicIncome extends PeriodicTransaction{
   List<BankTransaction> checkAndExecute(){
     List<Income> transactionList = []; // create the list
 
-    /* first check if it's time for the periodic transaction,
-    otherwise return an empty list */
-    if(!super.cadence.isTime()){
-      return transactionList;
+    /* use cycle because this operation could be 
+    without a regular cadence, having even more
+    transactions of the same type to do */
+    while(super.cadence.isTime()){
+      /* if the control has passed, add to the list the 
+      various transactions to do */
+      transactionList.add(
+        Income(IncomeCategory.periodic_income, "Periodic income coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
+      );
+
+      /* update the cadence counter */
+      super.cadence.acknowledgeSignal(); 
     }
-
-    /* if the control has passed, add to the list the 
-    various transactions to do */
-    transactionList.add(
-      Income(IncomeCategory.periodic_income, "Periodic income coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
-    );
-
-    /* update the cadence counter */
-    super.cadence.acknowledgeSignal();
 
     return transactionList; // return the transaction
   }
