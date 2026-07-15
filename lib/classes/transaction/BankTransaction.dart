@@ -66,7 +66,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   /// * [other] the other bank transaction object to compare with
   @override
   bool operator ==(Object other){
-    return other is BankTransaction && _id != -1 && other._id == _id;
+    return other is BankTransaction && other.runtimeType == runtimeType && _id != -1 && other._id == _id;
   }
 
   /// Method to generate the hashcode of the instance
