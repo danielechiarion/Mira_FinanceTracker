@@ -64,6 +64,9 @@ abstract class FinancialInstrument {
   double get currentValue => _currentValue;
   double get taxRate => _taxRate;
   FinancialInstrumentStatus get status => _status;
+  bool get isActive {
+    return _status != FinancialInstrumentStatus.ended && _status != FinancialInstrumentStatus.stopped;
+  }
 
   /* *** SETTER METHODS *** */
   set id(int id) => _id = id;

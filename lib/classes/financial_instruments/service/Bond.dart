@@ -319,7 +319,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
     /* use cycle because this operation could be 
     without a regular cadence, having even more
     transactions of the same type to do */
-    while(_timeInfo.isTime()){
+    while(super.isActive && _timeInfo.isTime()){
       /* understand the interest rate 
       to apply to the sum */
       double interestRate;

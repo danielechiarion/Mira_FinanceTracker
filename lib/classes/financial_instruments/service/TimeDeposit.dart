@@ -169,7 +169,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
     /* use cycle because this operation could be 
     without a regular cadence, having even more
     transactions of the same type to do */
-    while(_timeInfo.isTime()){
+    while(super.isActive && _timeInfo.isTime()){
       /* otherwise calculate the interest, 
       the tax applied and the current value of the time deposit */
       double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_interestRate);
