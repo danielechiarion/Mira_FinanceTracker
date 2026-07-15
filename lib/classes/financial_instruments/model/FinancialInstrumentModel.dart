@@ -81,7 +81,7 @@ abstract class FinancialInstrumentModel{
   /// [other] object to compare
   @override
   bool operator ==(Object other){
-    return other is FinancialInstrumentModel && _name == other._name;
+    return other is FinancialInstrumentModel && other.runtimeType == runtimeType && _name == other._name;
   }
 
   /// Getter of the hashcode
