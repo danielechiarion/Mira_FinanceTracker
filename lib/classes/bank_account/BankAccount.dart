@@ -17,6 +17,8 @@ abstract class BankAccount{
   String? _IBAN;
   FinancialInstitute _bank;
   DateTime _subscriptionDate;
+  DateTime? _endingDate;
+  bool _active;
   late PeriodicAccountDuration _interestTime;
   late Set<BankFee> _fees;
   late Set<Cashback> _cashbacks;
@@ -31,15 +33,20 @@ abstract class BankAccount{
   /// * [_availableBalance] it indicates how much money are available for the user
   /// * [_IBAN] IBAN code of the bank account (optional)
   /// * [_interest] possible interest applied to the availble balance of the bank account
+  /// * [_active] flag to understand if the user wants this bank account active or just archived
+  /// * [_endingDate] possible ending date of use of the bank account
   /// * [fees] list of fees of the bank account
   /// * [cashbacks] list of cashbacks of the bank account
   /// * [transactions] list of transactions of the bank account (not necessarily all of them)
   BankAccount(this._name, this._bank, this._subscriptionDate, 
-    {this._id = -1, this._availableBalance = 0.0, this._IBAN, this._interest = 0.0,
+    {this._id = -1, this._availableBalance = 0.0, this._IBAN, this._interest = 0.0, this._active = true, this._endingDate,
     List<BankFee>? fees, List<Cashback>? cashbacks, List<BankTransaction>? transactions}){
     /* control validity of the attributes first */
     if(_subscriptionDate.isAfter(DateTime.now())){
       throw Exception("In a bank account the subscription date must come before the current datetime");
+    }
+    if(_endingDate != null && !_endingDate!.isAfter(_subscriptionDate)){
+      throw Exception("In a bank account the subscription date must come before the ending date");
     }
     if(_interest < 0){
       throw Exception("In a bank account the possible interest applied must be 0% or more.");
@@ -58,6 +65,7 @@ abstract class BankAccount{
   /* *** GETTER METHODS *** */
   String get name => _name;
   double get interest => _interest;
+  bool get isActive => _active;
   double get availableBalance => _availableBalance;
   String? get IBAN => _IBAN;
   DateTime get subscriptionDate => _subscriptionDate;
@@ -96,11 +104,18 @@ abstract class BankAccount{
   }
   set availableBalance(double availableBalance) => _availableBalance = availableBalance;
   set IBAN(String IBAN) => _IBAN = IBAN;
+  set isActive(bool activity) => _active = activity;
   set subscriptionDate(DateTime subscriptionDate){
     if(_subscriptionDate.isAfter(DateTime.now())){
       throw Exception("In a bank account the subscription date must come before the current datetime");
     }
     _subscriptionDate = subscriptionDate;
+  }
+  set endingDate(DateTime endingDate){
+    if(!endingDate.isAfter(_subscriptionDate)){
+      throw Exception("In a bank account the subscription date must come before the ending date");
+    }
+    _endingDate = endingDate;
   }
 
   /* *** CRUD METHODS ***
@@ -258,6 +273,8 @@ abstract class BankAccount{
       'IBAN': _IBAN,
       'bank': _bank.id,
       'subscriptionDate': _subscriptionDate.toIso8601String(),
+      'endingDate': _endingDate,
+      'active': _active,
       ..._interestTime.toMap()
     };
   }
