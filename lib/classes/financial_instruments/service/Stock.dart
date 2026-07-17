@@ -89,6 +89,10 @@ class Stock extends FinancialInstrument{
     return transactions;
   }
 
+  /// Method to sell shares immediately with
+  /// the current market value
+  /// * [sharesSold] number of shares sold from the stock
+  /// * [pricePerShare] current price for each share
   List<BankTransaction> sellShares(double sharesSold, double pricePerShare){
     /* check the validity of the attributes */
     if (sharesSold > _totalShares) {

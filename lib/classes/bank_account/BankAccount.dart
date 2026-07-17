@@ -149,7 +149,7 @@ abstract class BankAccount{
     _cashbacks.add(cashback);
   }
 
-  void addTransaction(BankTransaction transaction){
+  dynamic addTransaction(BankTransaction transaction){
     /* in this case and in the following methods,
     the bank transaction will also change the 
     available balance */
@@ -162,12 +162,12 @@ abstract class BankAccount{
 
     _transactions.add(transaction);
   }
-  void removeTransaction(BankTransaction transaction){
+  dynamic removeTransaction(BankTransaction transaction){
     /* first try to understand if the 
     element really exists */
     BankTransaction? existingTransaction = _transactions.lookup(transaction);
     if(existingTransaction == null){
-      return;
+      return existingTransaction;
     }
 
     if(existingTransaction is Income){
@@ -175,13 +175,15 @@ abstract class BankAccount{
     }else{
       availableBalance += existingTransaction.amount;
     }
+
+    return existingTransaction;
   }
-  void replaceTransaction(BankTransaction transaction){
+  dynamic replaceTransaction(BankTransaction transaction){
     /* first try to understand if the 
     element really exists */
     BankTransaction? existingTransaction = _transactions.lookup(transaction);
     if(existingTransaction == null){
-      return;
+      return null;
     }
 
     if(existingTransaction is Income){
@@ -191,6 +193,8 @@ abstract class BankAccount{
       _availableBalance += existingTransaction.amount;
       _availableBalance -= transaction.amount;
     }
+
+    return existingTransaction;
   }
 
   /// Method to add multiple or no transaction inside the bank account.

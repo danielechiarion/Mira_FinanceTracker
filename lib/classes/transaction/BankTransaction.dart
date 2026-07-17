@@ -24,8 +24,12 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
     /* first check if the amount is positive,
     otherwise it's not possible to proceed */
     if(_amount <= 0){
-      throw ArgumentError(amount, 'amount must be positive');
+      throw Exception('amount must be positive');
     }
+    if(accountingDate!=null && accountingDate.isBefore(_executionDate)){
+      throw Exception("accounting date can't be before the execution date");
+    }
+
     this._accountingDate = accountingDate ?? _executionDate;
   }
 
