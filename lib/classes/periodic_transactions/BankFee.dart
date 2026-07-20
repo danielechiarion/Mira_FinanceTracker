@@ -14,7 +14,6 @@ class BankFee extends PeriodiAccountBillings{
   /// * [cadence] temporal cadence of the billing
   /// * [description] optional description of the billing
   /// * [id] ID of the building (if negative it hasn't been set yet)
-  /// * [_fee] possible fee applied to the Bank fee
   BankFee(String name, double amount, PeriodicAccountDuration cadence, {String? description, int id = -1}) :
     super(name, amount, cadence, description: description, id: id);
 
