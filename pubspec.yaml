@@ -12,7 +12,10 @@ dependencies:
   # library for hashing password
   bcrypt: ^1.2.0
   # library for protected methods
-  meta: ^1.18.3
+  meta: ^1.18.0
+  # library to handle database connection
+  sqflite_sqlcipher: ^3.4.0
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
