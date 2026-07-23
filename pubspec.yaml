@@ -19,6 +19,10 @@ dependencies:
   # libraries for notification
   flutter_local_notifications: ^22.0.1
   timezone: ^0.11.1
+  # libraries for secure storage and cryptography
+  cryptography: ^2.9.0
+  cryptography_flutter: ^2.3.4
+  flutter_secure_storage: ^10.3.0
 
 dev_dependencies:
   flutter_test:
