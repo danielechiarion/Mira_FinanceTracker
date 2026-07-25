@@ -33,7 +33,7 @@ class KeyManager{
   /// in order to make it easier to encrypt and decrypt data
   /// * [user] eventual user associated to the key
   /// * [search] flag to indicated if the key has to be searched immediately
-  KeyManager(User? user, {bool search = true}){
+  KeyManager({User? user, bool search = true}){
     _username = user?.username; // save the username
 
     if(search) recoverKey(); // recover the key if requested
@@ -41,6 +41,13 @@ class KeyManager{
 
   /* *** GETTER METHODS *** */
   bool get isAuthenticated => _username != null;
+  Future<String?> get stringKey async {
+    if(_activeKey == null){
+      return null;
+    }
+
+    return base64Encode(await _activeKey!.extractBytes());
+  }
 
   /// Function to clear the session 
   /// erasing username and active user key
@@ -62,7 +69,7 @@ class KeyManager{
     /* generate the random key and save it
     inside the flutter secure storage */
     _activeKey = await _aesAlgorithm.newSecretKey();
-    await _secureStorage.write(key: _APPLICATIONDATABASE, value: base64Encode(await _activeKey!.extractBytes()));
+    await _secureStorage.write(key: _APPLICATIONDATABASE, value: await stringKey);
   }
 
   /* function to generate
@@ -269,5 +276,16 @@ class KeyManager{
     }on SecretBoxAuthenticationError{
       return false;
     }
+  }
+
+  /// Function to remove the secret key 
+  /// and other public information
+  /// of the selected user
+  void removeKey(){
+    if(!isAuthenticated){
+      throw Exception("To remove the key of a user it must be authenticated");
+    }
+
+    _secureStorage.delete(key: '$_USERKEYPREFIX$_username'); // delete the key
   }
 }
