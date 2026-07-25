@@ -9,6 +9,7 @@ class User{
   String _name;
   String _surname;
   String _password;
+  String _email;
 
   /// Constructor method of the user class
   /// * [_username] the username of the user
@@ -16,17 +17,30 @@ class User{
   /// * [_name] the name of the user
   /// * [_surname] the surname of the user (optional)
   /// * [_id] the ID of the user (firstly it will be -1, then it will be set by the database)
-  User(this._username, this._password, this._name, {this._id = -1, this._surname = ''});
+  /// * [_email] parameter to use only by the system to put the email of the google account
+  User(this._username, this._password, this._name, {this._id = -1, this._surname = '', String? email}): _email = '' {
+    if(email != null && email.isNotEmpty){
+      email = _email;
+    }
+  }
 
   /* *** GETTER METHODS *** */
   String get username => _username;
   String get name => _name;
   String get surname => _surname;
+  String get email => _email;
 
   /* *** SETTER METHODS *** */
   set name (String name) => _name = name;
   set surname (String surname) => _surname = surname;
   set id (int id) => _id = id;
+  set email(String email){
+    if(isValidEmail(email)){
+      _email = email;
+    }else{
+      throw FormatException("Email has not a valid format");
+    }
+  }
 
   /// Method to set the new password of the user,
   /// controlling the old one to avoid mistakes and 
@@ -72,7 +86,8 @@ class User{
       'username': _username,
       'password': _password,
       'name': _name, 
-      'surname': _surname
+      'surname': _surname,
+      'email': _email
     };
   }
 
@@ -85,7 +100,8 @@ class User{
       map['password'],
       map['name'],
       surname: map['surname'] ?? '',
-      id: map['id']
+      id: map['id'],
+      email: map['email']
     );
   }
 
@@ -100,5 +116,13 @@ class User{
   /// Method to get a deep clone of the instance
   User clone(){
     return User(_username, _password, _name, id: _id, surname: _surname);
+  }
+
+  //// Control to understand if the mail is valid
+  static bool isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email.trim());
   }
 }

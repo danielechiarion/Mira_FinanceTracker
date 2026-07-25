@@ -46,7 +46,7 @@ class EncryptedDatabase {
         path,
         password: password,
         version: version,
-        onCreate: onCreate ?? _defaultOnCreate,
+        onCreate: onCreate,
       );
     } catch (e) {
       rethrow;
@@ -104,15 +104,5 @@ class EncryptedDatabase {
         "The database is not open. Call openAppDatabase() first.",
       );
     }
-  }
-
-  /* default table creation logic invoked when no custom onCreate callback is provided */
-  Future<void> _defaultOnCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS test (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL
-      )
-    ''');
   }
 }
