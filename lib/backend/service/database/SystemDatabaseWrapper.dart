@@ -14,8 +14,7 @@ class SystemDatabaseWrapper{
   /* define static attributes for
   info about the database to follow */
   static final String _DATABASENAME = "system_database";
-  @protected
-  static final String USERDATABASPREFIX = "user_";
+  static final String USERDATABASEPREFIX = "user_";
 
   /* attributes definition */
   @protected
@@ -127,7 +126,7 @@ class SystemDatabaseWrapper{
       await database.query(sql: 'DELETE FROM User WHERE username = ?', arguments: [user.username]);
       /* delete also the database 
       dedicated to the user operations */
-      await database.deleteAppDatabase('$USERDATABASPREFIX${user.username}');
+      await database.deleteAppDatabase('$USERDATABASEPREFIX${user.username}');
     }on DatabaseException{
       throw DatabaseException;
     }catch(e){
