@@ -128,7 +128,8 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
       endingDate: map['endingDate'],
       monthOfYear: map['monthOfYear'],
       lastDateActivity: map['lastDateActivity'],
-      includeEnd: map['includeEnd']
+      includeEnd: map['includeEnd'] == 1,
+      includeStart: map['includeStart'] == 1
     );
   }
 

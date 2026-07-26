@@ -332,7 +332,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       provider: map.remove('provider'),
       currentValue: map.remove('currentValue'),
       status: FinancialInstrumentStatus.values[map.remove('status')],
-      isCashable: map.remove('isCashable'),
+      isCashable: map.remove('isCashable') == 1,
       earlyWithdrawalInterestRate: map.remove('earlyWithdrawalInterestRate'),
       LimitedAccountDuration.fromMap(map)
     );

@@ -80,7 +80,7 @@ class TimeDepositModel extends FinancialInstrumentModel{
       description: map['description'],
       provider: provider,
       taxRate: map['taxRate'],
-      isCashable: map['isCashable'],
+      isCashable: map['isCashable'] == 1,
       earlyWithdrawalInterestRate: map['earlyWithdrawalInterestRate']
     );
   }

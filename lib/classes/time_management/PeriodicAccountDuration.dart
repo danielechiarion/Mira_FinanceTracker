@@ -176,7 +176,8 @@ class PeriodicAccountDuration {
       DurationType.values[map['timeFrequency']],
       map['dayOfMonth'],
       monthOfYear: map['monthOfYear'],
-      lastDateActivity: map['lastDateActivity']
+      lastDateActivity: map['lastDateActivity'],
+      includeStart: map['includeStart'] == 1
     );
   }
 

@@ -212,7 +212,7 @@ class Card extends BankAccount{
       availableBalance: map.remove('availableBalance'),
       IBAN: map.remove('IBAN'),
       interest: map.remove('interest'),
-      active: map.remove('active'),
+      active: map.remove('active') == 1,
       endingDate: map.remove('endingDate'),
       interestTime: PeriodicAccountDuration.fromMap(map),
       fees: fees,
