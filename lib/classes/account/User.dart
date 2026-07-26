@@ -29,6 +29,7 @@ class User{
   String get name => _name;
   String get surname => _surname;
   String get email => _email;
+  String get password => _password; // for privacy reasons call it only when hashed
 
   /* *** SETTER METHODS *** */
   set name (String name) => _name = name;
@@ -62,6 +63,12 @@ class User{
 
     /* if everything is correct, set the new password */
     _password = hashPassword(newPassword);
+  }
+
+  /// Method to hash current password of the 
+  /// user to keep it private
+  void hashCurrentPassword(){
+    _password = hashPassword(_password);
   }
 
   /// Method to compare two user objects by the username, 

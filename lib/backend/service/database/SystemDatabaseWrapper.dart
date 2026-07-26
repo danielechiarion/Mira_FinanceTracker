@@ -14,6 +14,8 @@ class SystemDatabaseWrapper{
   /* define static attributes for
   info about the database to follow */
   static final String _DATABASENAME = "system_database";
+  @protected
+  static final String USERDATABASPREFIX = "user_";
 
   /* attributes definition */
   @protected
@@ -83,10 +85,121 @@ class SystemDatabaseWrapper{
     return User.fromMap(result);
   }
 
-  Future<void> addUser(User user) async{
-    try{
-      database.query(sql: '''INSERT INTO User (id,username,name,surname,password,email) 
-                            VALUES(?,?,?,?,?,?)''');
+  
+  /// Function to add a new user checking
+  /// the hash of the password and if it already exists
+  /// * [user] user to be added
+  /// * [passwordHashed] flag to indicate if the password has already been hashed
+  /// * [close] flag to indicate if the database has to be closed at the end of the operation
+  /// 
+  /// The function returns the new id of the user, which has already been set in the object
+  /// which was passed as argument
+  Future<int> addUser(User user, {bool passwordHashed = false, bool close = false}) async{
+    /* if the password is not hashed just hash it 
+    before being saved into the database */
+    if(!passwordHashed){
+      user.hashCurrentPassword();
     }
+    
+    int newId;
+    try{
+      newId = await database.query(sql: '''INSERT INTO User (username,name,surname,password,email) 
+                            VALUES(?,?,?,?,?,?)''', arguments: user.toMap().values.toList());
+      user.id = newId; // try already to set the id
+    }on DatabaseException{
+      throw DatabaseException;
+    }catch(e){
+      throw Exception(e);
+    }finally{
+      if(close){
+        database.close();
+      }
+    }
+    return newId; // return it anyway
+  }
+
+  /// Function to remove the data of the user inside the 
+  /// system and the personal database
+  /// * [user] user to be removed
+  /// * [close] flag to indicated if the database has to be closed after the operation
+  Future<void> removeUser(User user, {bool close = false}) async{
+    try{
+      await database.query(sql: 'DELETE FROM User WHERE username = ?', arguments: [user.username]);
+      /* delete also the database 
+      dedicated to the user operations */
+      await database.deleteAppDatabase('$USERDATABASPREFIX${user.username}');
+    }on DatabaseException{
+      throw DatabaseException;
+    }catch(e){
+      throw Exception(e);
+    }finally{
+      if(close){
+        database.close();
+      }
+    }
+  }
+
+  /// Function to update the data of the user
+  /// * [user] user to be updated
+  /// * [close] flag to indicated if the database has to be closed after the operation
+  Future<void> updateUser(User user, {bool close = false}) async { 
+    try{
+      await database.query(sql: ''' UPDATE User
+                                    SET name = ?, surname = ?, email = ?, password = ?
+                                    WHERE username = ? ''',
+                          arguments: [user.name, user.surname, user.email, user.password, user.username]);
+    }on DatabaseException{
+      throw DatabaseException;
+    }catch(e){
+      throw Exception(e);
+    }finally{
+      if(close){
+        database.close();
+      }
+    }
+  }
+
+  /// Function to return the list of users 
+  /// registered inside the database
+  /// * [close] flag to indicated if the database has to be closed after the operation
+  Future<List<User>> userList({bool close = false}) async{
+    try{
+      List<Map<String, dynamic>> mapList = await database.query(sql: 'SELECT id,username,name,surname,password,email FROM User');
+      /* now convert all the map
+      into user objects */
+      List<User> userList = [];
+      for(Map<String, dynamic> singleMap in mapList){
+        userList.add(User.fromMap(singleMap));
+      }
+      return userList;
+    }on DatabaseException{
+      throw DatabaseException;
+    }catch(e){
+      throw Exception(e);
+    }finally{
+      if(close){
+        database.close();
+      }
+    }
+  }
+
+  /// Method to check the user validity
+  /// in order to add it correctly inside the database
+  /// * [user] user ready to be added
+  Future<bool> userValidity(User user) async{
+    /* the only check to pass
+    is to have a user which username has
+    not been added before */
+    final result = await database.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM users WHERE username = ?) AS user_exists',
+      arguments: [user.username],
+    );
+
+    /* The query returns a list with a single Map: [{'user_exists': 1}] or [{'user_exists': 0}] */
+    if (result.isNotEmpty) {
+      return result.first['user_exists'] == 1;
+    }
+
+    return false;
   }
 }

@@ -66,7 +66,7 @@ class EncryptedDatabase {
   /// Executes a custom read query (SELECT) on the database
   /// * [sql] custom SQL query string
   /// * [arguments] optional list of positional parameters for query sanitization
-  Future<List<Map<String, dynamic>>> query({
+  Future<dynamic> query({
     required String sql,
     List<dynamic>? arguments,
   }) async {
@@ -93,6 +93,17 @@ class EncryptedDatabase {
     /* verify database connection state before starting transaction */
     _checkDbOpen();
     return await _database!.transaction(action);
+  }
+
+  /// Deletes the specified database file from local device storage
+  /// * [dbName] name of the database file to remove (e.g., 'app_database.db')
+  Future<void> deleteAppDatabase(String dbName) async {
+    /* 1. get the path to the databases directory */
+    final String dbPath = await getDatabasesPath();
+    final String fullPath = join(dbPath, dbName);
+
+    /* 2. delete the database file */
+    await deleteDatabase(fullPath);
   }
 
   /* *** PRIVATE HELPER METHODS *** */
