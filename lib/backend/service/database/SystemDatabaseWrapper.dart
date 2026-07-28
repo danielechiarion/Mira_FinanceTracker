@@ -201,4 +201,9 @@ class SystemDatabaseWrapper{
 
     return false;
   }
+
+  /// Function to close definitely the database
+  Future<void> closeDatabase() async{
+    await database.close();
+  }
 }

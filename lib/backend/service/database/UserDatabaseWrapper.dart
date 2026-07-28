@@ -3,8 +3,10 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
+import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
 
 part 'UserDatabaseWrapperReader.dart';
 part 'UserDatabaseWrapperWriter.dart';
@@ -48,6 +50,10 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
     database.openAppDatabase(dbName: '${SystemDatabaseWrapper.USERDATABASEPREFIX}${_user.username}', password: key);
   }
 
+  /* *** GETTER METHODS *** */
+  @protected
+  EncryptedDatabase get appDatabase => database;
+
   @protected
   @override
   Future<void> defineTables(Database db, int version) async{
@@ -61,6 +67,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
     await _defineFinancialInstrumentModels(db);
     await _defineFinancialInstruments(db);
     await _defineInterests(db);
+    await _definePreferences(db);
   }
 
   /* function to define subjects
@@ -430,6 +437,18 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
                           FOREIGN KEY (bond) REFERENCES BondModel(id)
                             ON DELETE CASCADE
+                        )''');
+  }
+
+  /* function to define tables 
+  for the preferences of the user to be saved */
+  Future<void> _definePreferences(Database db) async {
+    /* use another format for the name to
+    distinguish the type of tables,
+    because this one is used to save personal system settings. */
+    await db.execute('''CREATE TABLE IF NOT EXISTS application_preferences (
+                        name TEXT PRIMARY KEY,
+                        value TEXT NOT NULL
                         )''');
   }
 
