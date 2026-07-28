@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
@@ -65,7 +63,6 @@ abstract class BankAccount{
   }
 
   /* *** GETTER METHODS *** */
-  @protected
   int get id => _id;
   String get name => _name;
   double get interest => _interest;

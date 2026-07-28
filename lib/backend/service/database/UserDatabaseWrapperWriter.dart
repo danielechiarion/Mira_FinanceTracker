@@ -16,4 +16,34 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
                               arguments: [preference.name, preference.toMapEntry().value]);
     }
   }
+
+  /// Function to save transactions inside a bank account
+  /// * [account] bank account to save the transactions
+  /// * [transactions] list of transactions to save
+  /// * [close] flag to indicate if the database should be closed at the end of the operations
+  Future<void> saveTransactions(BankAccount account, List<BankTransaction> transactions, {bool close = false}) async {
+    /* cycle all the transactions and update the 
+    ID while doing the operations */
+    int id;
+    for(BankTransaction singleTransaction in transactions){
+      if(singleTransaction is Income){
+        id = await appDatabase.executeWithMap(
+          sql: '''INSERT INTO Income (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
+                  VALUES (:bankAccount, :reference, :counterParty, :amount, :executionDate, :accountingDate, :category)''',
+          parameters: {'bankAccount': account.id, ...singleTransaction.toMap()}
+        );
+      }else{
+        id = await appDatabase.executeWithMap(
+          sql: '''INSERT INTO Outcome (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
+                  VALUES (:bankAccount, :reference, :counterParty, :amount, :executionDate, :accountingDate, :category)''',
+          parameters: {'bankAccount': account.id, ...singleTransaction.toMap()}
+        );
+      }
+      singleTransaction.id = id;
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }
