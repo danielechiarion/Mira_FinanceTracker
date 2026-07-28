@@ -432,4 +432,37 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                             ON DELETE CASCADE
                         )''');
   }
+
+  /* *** DEPRECATED METHODS ***
+  Deprecate methods available only on the system database
+  and not on the custom user one */
+  @override
+  @Deprecated("Method not supported for user database instance. Try system database one.")
+  Future<int> addUser(User user, {bool passwordHashed = false, bool close = false}) async {
+    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+  }
+
+  @override
+  @Deprecated("Method not supported for user database instance. Try system database one.")
+  Future<void> removeUser(User user, {bool close = false}) async {
+    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+  }
+
+  @override
+  @Deprecated("Method not supported for user database instance. Try system database one.")
+  Future<void> updateUser(User user, {bool close = false}) async {
+    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+  }
+
+  @override
+  @Deprecated("Method not supported for user database instance. Try system database one.")
+  Future<List<User>> userList({bool close = false}) async {
+    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+  }
+
+  @override
+  @Deprecated("Method not supported for user database instance. Try system database one.")
+  Future<bool> userValidity(User user) async {
+    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+  }
 }
