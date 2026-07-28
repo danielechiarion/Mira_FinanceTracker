@@ -87,6 +87,30 @@ class EncryptedDatabase {
     return await _database!.rawInsert(sql, arguments);
   }
 
+  /// Executes a write operation with named parameters.
+  /// Example: sql = 'INSERT INTO table (name, value) VALUES (:name, :value)'
+  ///          parameters = {'name': 'foo', 'value': 42}
+  Future<int> executeWithMap({
+    required String sql,
+    Map<String, dynamic>? parameters,
+  }) async {
+    _checkDbOpen();
+    final converted = _convertNamedParameters(sql, parameters);
+    return await _database!.rawInsert(converted.sql, converted.arguments);
+  }
+
+  /// Executes a custom read query with named parameters.
+  /// Example: sql = 'SELECT * FROM table WHERE id = :id'
+  ///          parameters = {'id': 123}
+  Future<dynamic> queryWithMap({
+    required String sql,
+    Map<String, dynamic>? parameters,
+  }) async {
+    _checkDbOpen();
+    final converted = _convertNamedParameters(sql, parameters);
+    return await _database!.rawQuery(converted.sql, converted.arguments);
+  }
+
   /// Executes a set of operations wrapped inside a database transaction
   /// * [action] closure function containing transactional operations
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action) async {
@@ -116,4 +140,31 @@ class EncryptedDatabase {
       );
     }
   }
+
+  _ConvertedSqlResult _convertNamedParameters(
+      String sql, Map<String, dynamic>? parameters) {
+    if (parameters == null || parameters.isEmpty) {
+      return _ConvertedSqlResult(sql, null);
+    }
+
+    final arguments = <dynamic>[];
+    final regex = RegExp(r':([a-zA-Z_][a-zA-Z0-9_]*)');
+    final convertedSql = sql.replaceAllMapped(regex, (match) {
+      final name = match.group(1)!;
+      if (!parameters.containsKey(name)) {
+        throw ArgumentError('Missing named parameter: $name');
+      }
+      arguments.add(parameters[name]);
+      return '?';
+    });
+
+    return _ConvertedSqlResult(convertedSql, arguments);
+  }
+}
+
+class _ConvertedSqlResult {
+  final String sql;
+  final List<dynamic>? arguments;
+
+  _ConvertedSqlResult(this.sql, this.arguments);
 }
