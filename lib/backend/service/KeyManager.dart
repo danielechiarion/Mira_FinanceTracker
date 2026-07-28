@@ -41,6 +41,7 @@ class KeyManager{
 
   /* *** GETTER METHODS *** */
   bool get isAuthenticated => _username != null;
+  bool get isPasswordSet => _activeKey != null;
   Future<String?> get stringKey async {
     if(_activeKey == null){
       return null;
@@ -122,6 +123,8 @@ class KeyManager{
     _saveUserKey(password, lockerKey, userKey, salt);
   }
 
+  /* common method to save user key as an attribute and 
+  inside flutter secure storage */
   Future<void> _saveUserKey(String password, SecretKey lockerKey, SecretKey userKey, List<int> salt) async {
     _activeKey = userKey;
       /* first save data as a json to encode
@@ -287,5 +290,32 @@ class KeyManager{
     }
 
     _secureStorage.delete(key: '$_USERKEYPREFIX$_username'); // delete the key
+  }
+
+  /// Method to change the passkey given by the user
+  /// in case it gets lost or to improve security
+  /// * [password] new passkey from the user to cypher the database key
+  Future<void> changePassword(String password) async {
+    if(!isAuthenticated){
+      throw Exception("Cannot change the passkey for crypto when user is not logged");
+    }
+    if(!isPasswordSet){
+      throw Exception("Cannot change the passkey for crypto while active key is still null");
+    }
+
+    /* generate the salt and 
+    create the key to be saved */
+    List<int> salt = await _generateSalt();
+    final pbkdf2 = Pbkdf2(
+      macAlgorithm: Hmac.sha256(),
+      iterations: 100000,
+      bits: 256,
+    );
+    SecretKey lockerKey = await pbkdf2.deriveKey(
+      secretKey: SecretKey(utf8.encode(password)),
+      nonce: salt,
+    );
+
+    _saveUserKey(password, lockerKey, _activeKey!, salt);
   }
 }
