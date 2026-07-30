@@ -1,6 +1,6 @@
 {
-    "name": "mira_finance_tracker",
-    "short_name": "mira_finance_tracker",
+    "name": "Mira Finance Tracker",
+    "short_name": "Mira Finance Tracker",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

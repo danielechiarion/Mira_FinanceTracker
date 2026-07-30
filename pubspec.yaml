@@ -25,6 +25,8 @@ dependencies:
   flutter_secure_storage: ^10.3.0
   # library for shared preferences
   shared_preferences: ^2.5.5
+  # library for icon personalization
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -33,3 +35,24 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+# customizing application icon
+# settings cross-platform
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logos/application_logo.png"
+  min_sdk_android: 21 # optional
+  web:
+    generate: true
+    image_path: "assets/logos/application_logo.png"
+  windows:
+    generate: true
+    image_path: "assets/logos/application_logo.png"
+    icon_size: 48 # pixel
+  macos:
+    generate: true
+    image_path: "assets/logos/application_logo.png"
+  linux:
+    generate: true
+    image_path: "assets/logos/application_logo.png"
