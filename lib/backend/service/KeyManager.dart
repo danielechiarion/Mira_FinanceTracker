@@ -27,16 +27,21 @@ class KeyManager{
   about the cryptography key given */
   SecretKey? _activeKey;
   String? _username;
+  bool _search;
 
   /// Constructor method which tries directly to
   /// find the key and set it as an attribute
   /// in order to make it easier to encrypt and decrypt data
   /// * [user] eventual user associated to the key
   /// * [search] flag to indicated if the key has to be searched immediately
-  KeyManager({User? user, bool search = true}){
+  KeyManager({User? user, this._search = true}){
     _username = user?.username; // save the username
+  }
 
-    if(search) recoverKey(); // recover the key if requested
+  /// Function to init key manager 
+  /// and recover the key
+  Future<void> init() async {
+    if(_search) await recoverKey();
   }
 
   /* *** GETTER METHODS *** */
@@ -161,6 +166,7 @@ class KeyManager{
     generate a random key if it's for the application */
     if ((storedValue == null || storedValue.isEmpty) && !isAuthenticated) {
       await generateRandomKey();
+      return;
     }
     /* for the user try to get the user key
     otherwise throw an Exception */

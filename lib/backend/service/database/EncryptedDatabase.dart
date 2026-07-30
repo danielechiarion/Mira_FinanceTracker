@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqldesktop;
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 /// Class used to manage the encrypted database instance
@@ -39,15 +42,29 @@ class EncryptedDatabase {
     }
 
     try {
-      final dbPath = await getDatabasesPath();
-      final path = join(dbPath, dbName);
+      /* open database using FFI on desktop platforms and sqlcipher on mobile */
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        final dbFolder = await getApplicationDocumentsDirectory();
+        final path = join(dbFolder.path, dbName);
 
-      _database = await openDatabase(
-        path,
-        password: password,
-        version: version,
-        onCreate: onCreate,
-      );
+        _database = await sqldesktop.databaseFactoryFfi.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: version,
+            onCreate: onCreate,
+          ),
+        );
+      } else {
+        final dbFolder = await getDatabasesPath();
+        final path = join(dbFolder, dbName);
+
+        _database = await openDatabase(
+          path,
+          password: password,
+          version: version,
+          onCreate: onCreate,
+        );
+      }
     } catch (e) {
       rethrow;
     }

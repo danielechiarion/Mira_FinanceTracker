@@ -31,8 +31,9 @@ class SystemDatabaseWrapper{
   /// Function to initialize the databse
   /// for system purposes
   Future<void> init() async{
+    await keyManager.init();
     String key = (await keyManager.stringKey)!; // get the string key
-    database.openAppDatabase(dbName: _DATABASENAME, password: key, onCreate: defineTables);
+    await database.openAppDatabase(dbName: _DATABASENAME, password: key, onCreate: defineTables);
   }
 
   /// Method used to define tables of the database
