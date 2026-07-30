@@ -35,6 +35,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # define assets to upload in the 
+  # application to use
+  assets:
+    # logos for the application
+    - assets/logos/extended_logo.png
+    - assets/logos/restricted_logo.png
 
 # customizing application icon
 # settings cross-platform
