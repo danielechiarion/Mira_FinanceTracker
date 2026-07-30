@@ -46,6 +46,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
     /* get the secret key of the user
     researching it */
+    await super.keyManager.init();
     await super.keyManager.recoverKey();
 
     /* now open the database for the
