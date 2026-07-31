@@ -29,6 +29,9 @@ dependencies:
   shared_preferences: ^2.5.5
   # library for icon personalization
   flutter_launcher_icons: ^0.14.4
+  # library to gather more information
+  # about the current device
+  device_info_plus: ^13.1.0
 
 dev_dependencies:
   flutter_test:
