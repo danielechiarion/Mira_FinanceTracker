@@ -66,7 +66,7 @@ class SystemDatabaseWrapper{
     if the user is present */
     Map<String, dynamic> result = {};
     try{
-      result = (await database.query(sql: 'SELECT id,username,name,surname,email,password INTO User WHERE username = ?',
+      result = (await database.query(sql: 'SELECT id,username,name,surname,email,password FROM User WHERE username = ?',
                     arguments: [username])).first;
     }on StateError{
       return null;
