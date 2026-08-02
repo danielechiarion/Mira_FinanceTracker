@@ -42,6 +42,9 @@ class User{
       throw FormatException("Email has not a valid format");
     }
   }
+  set password(String password) {
+    _password = hashPassword(password);
+  }
 
   /// Method to set the new password of the user,
   /// controlling the old one to avoid mistakes and 

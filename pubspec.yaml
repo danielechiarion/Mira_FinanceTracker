@@ -32,6 +32,11 @@ dependencies:
   # library to gather more information
   # about the current device
   device_info_plus: ^13.1.0
+  # library for local authorization
+  # from the device (fingerprint, face id, etc.)
+  local_auth: ^3.0.2
+  # library for listeners management
+  provider: ^6.1.5+1
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mira_finance_tracker/frontend/HomePage.dart';
 import 'package:mira_finance_tracker/frontend/account/SignupPage.dart';
+import 'package:mira_finance_tracker/frontend/account/AccountManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/backend/operation/account/Login.dart';
@@ -45,8 +46,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToAccountManagement() {
-    /* put there the logic to navigate to 
-    the account management page when created */
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AccountManagementPage()),
+    );
   }
 
   @override
