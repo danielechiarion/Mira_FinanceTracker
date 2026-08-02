@@ -62,6 +62,7 @@ class CurrentSession{
       _os = "Windows";
       WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
       _deviceName = windowsInfo.computerName;
+      _deviceModel = null;
     }else if(Platform.isMacOS){
       _os = "MacOS";
       MacOsDeviceInfo macInfo = await deviceInfo.macOsInfo;
@@ -69,6 +70,8 @@ class CurrentSession{
       _deviceModel = macInfo.model;
     }else if(Platform.isLinux){
       _os = "Linux";
+      _deviceModel = null;
+      _deviceName = null;
     }
 
     await _saveInformation(); // save information inside the storages

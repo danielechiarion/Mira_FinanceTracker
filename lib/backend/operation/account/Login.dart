@@ -1,4 +1,5 @@
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
 /// Class to handle the login operation
@@ -23,6 +24,13 @@ class Login{
     await database.init();
 
     User? user = await database.userLogin(_username, _password, close: true);
+
+    /* if the user is not null set 
+    the current session with the necessary data */
+    if(user != null){
+      CurrentSession session = CurrentSession(user);
+      await session.init();
+    }
 
     return user != null;
   }
