@@ -8,6 +8,10 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 /// Class used to manage the encrypted database instance
 /// and perform raw or custom SQL queries
 class EncryptedDatabase {
+  /* define static attributes to use 
+  for database creation */
+  static const String _DATABASEEXTENSION = ".db";
+
   /* attributes definition */
   Database? _database;
 
@@ -35,6 +39,7 @@ class EncryptedDatabase {
     required String password,
     int version = 1,
     FutureOr<void> Function(Database, int)? onCreate,
+    bool extensionAdded = false
   }) async {
     /* check if database is already opened */
     if (isOpen) {
@@ -42,9 +47,13 @@ class EncryptedDatabase {
     }
 
     try {
+      if(!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
+        dbName += _DATABASEEXTENSION;
+      }
+      
       /* open database using FFI on desktop platforms and sqlcipher on mobile */
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        final dbFolder = await getApplicationDocumentsDirectory();
+        final dbFolder = await getApplicationSupportDirectory();
         final path = join(dbFolder.path, dbName);
 
         _database = await sqldesktop.databaseFactoryFfi.openDatabase(

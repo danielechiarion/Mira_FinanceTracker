@@ -32,7 +32,16 @@ class SystemDatabaseWrapper{
   /// for system purposes
   Future<void> init() async{
     await keyManager.init();
-    String key = (await keyManager.stringKey)!; // get the string key
+    String? key = await keyManager.stringKey; // get the string key
+    if (key == null) {
+      if (!keyManager.isAuthenticated) {
+        await keyManager.generateRandomKey();
+        key = await keyManager.stringKey;
+      }
+    }
+    if (key == null) {
+      throw Exception('Unable to initialize system database: encryption key unavailable');
+    }
     await database.openAppDatabase(dbName: _DATABASENAME, password: key, onCreate: defineTables);
   }
 
@@ -103,14 +112,23 @@ class SystemDatabaseWrapper{
     
     int newId;
     try{
-      newId = await database.query(sql: '''INSERT INTO User (username,name,surname,password,email) 
-                            VALUES(?,?,?,?,?,?)''', arguments: user.toMap().values.toList());
-      user.id = newId; // try already to set the id
-    }on DatabaseException{
-      throw DatabaseException;
-    }catch(e){
+      // Ensure argument order matches the INSERT column order
+      final args = [user.username, user.name, user.surname, user.password, user.email];
+      newId = await database.execute(
+        sql: '''INSERT INTO User (username,name,surname,password,email) 
+                            VALUES(?,?,?,?,?)''',
+        arguments: args,
+      );
+      user.id = newId; // set the id returned by rawInsert
+    } on DatabaseException catch (e) {
+      final message = e.toString();
+      if (message.contains('UNIQUE') || message.contains('unique') || message.contains('UNIQUE constraint failed')) {
+        throw Exception('USERNAME_ALREADY_EXISTS');
+      }
+      rethrow;
+    } catch (e) {
       throw Exception(e);
-    }finally{
+    } finally{
       if(close){
         database.close();
       }
@@ -128,8 +146,8 @@ class SystemDatabaseWrapper{
       /* delete also the database 
       dedicated to the user operations */
       await database.deleteAppDatabase('$USERDATABASEPREFIX${user.username}');
-    }on DatabaseException{
-      throw DatabaseException;
+    } on DatabaseException{
+      rethrow;
     }catch(e){
       throw Exception(e);
     }finally{
@@ -148,8 +166,8 @@ class SystemDatabaseWrapper{
                                     SET name = ?, surname = ?, email = ?, password = ?
                                     WHERE username = ? ''',
                           arguments: [user.name, user.surname, user.email, user.password, user.username]);
-    }on DatabaseException{
-      throw DatabaseException;
+    } on DatabaseException {
+      rethrow;
     }catch(e){
       throw Exception(e);
     }finally{
@@ -172,8 +190,8 @@ class SystemDatabaseWrapper{
         userList.add(User.fromMap(singleMap));
       }
       return userList;
-    }on DatabaseException{
-      throw DatabaseException;
+    } on DatabaseException{
+      rethrow;
     }catch(e){
       throw Exception(e);
     }finally{
@@ -185,19 +203,19 @@ class SystemDatabaseWrapper{
 
   /// Method to check the user validity
   /// in order to add it correctly inside the database
-  /// * [user] user ready to be added
-  Future<bool> userValidity(User user) async{
+  /// * [username] username to be checked
+  Future<bool> userValidity(String username) async{
     /* the only check to pass
     is to have a user which username has
     not been added before */
     final result = await database.query(
-      sql: 'SELECT EXISTS(SELECT 1 FROM users WHERE username = ?) AS user_exists',
-      arguments: [user.username],
+      sql: 'SELECT EXISTS(SELECT 1 FROM User WHERE username = ?) AS user_exists',
+      arguments: [username],
     );
 
     /* The query returns a list with a single Map: [{'user_exists': 1}] or [{'user_exists': 0}] */
     if (result.isNotEmpty) {
-      return result.first['user_exists'] == 1;
+      return result.first['user_exists'] != 1;
     }
 
     return false;

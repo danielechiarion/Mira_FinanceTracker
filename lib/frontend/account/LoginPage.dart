@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mira_finance_tracker/frontend/HomePage.dart';
+import 'package:mira_finance_tracker/frontend/account/SignupPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/backend/operation/account/Login.dart';
@@ -37,8 +38,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToRegister() {
-    /* put there the logic to navigate to 
-    the registration page when created */
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const SignupPage()),
+    );
   }
 
   void _navigateToAccountManagement() {

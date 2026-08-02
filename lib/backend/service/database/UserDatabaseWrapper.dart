@@ -34,7 +34,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
   /// Defining also the system database if it has not done before. 
   @override
   Future<void> init() async {
-    super.init(); // first start to initialize the system database
+    await super.init(); // first start to initialize the system database
     /* then try to add the user, 
     if it has not been done before */
     try{
@@ -47,12 +47,21 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
     /* get the secret key of the user
     researching it */
     await super.keyManager.init();
-    await super.keyManager.recoverKey();
+    // Ensure we attempt to recover the user key explicitly
+    try {
+      await super.keyManager.recoverKey();
+    } catch (e) {
+      // If recoverKey fails, rethrow a clearer exception for callers
+      throw Exception('Impossibile recuperare la chiave utente: $e');
+    }
 
     /* now open the database for the
     user and initialize it if necessary */
-    String key = (await super.keyManager.stringKey)!;
-    database.openAppDatabase(dbName: '${SystemDatabaseWrapper.USERDATABASEPREFIX}${_user.username}', password: key);
+    final String? key = await super.keyManager.stringKey;
+    if (key == null) {
+      throw Exception('Chiave di cifratura utente non disponibile per ${_user.username}');
+    }
+    await database.openAppDatabase(dbName: '${SystemDatabaseWrapper.USERDATABASEPREFIX}${_user.username}', password: key, onCreate: defineTables);
   }
 
   /* *** GETTER METHODS *** */
@@ -486,7 +495,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
   @override
   @Deprecated("Method not supported for user database instance. Try system database one.")
-  Future<bool> userValidity(User user) async {
+  Future<bool> userValidity(String username) async {
     throw UnimplementedError("Method not supported for user database instance. Try system database one.");
   }
 }
