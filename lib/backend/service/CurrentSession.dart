@@ -45,8 +45,17 @@ class CurrentSession{
   Future<void> init() async{
     _sharedPreferences = await SharedPreferences.getInstance(); // get the shared preferences instance
 
+    await _saveInformation(); // save information inside the storages
+
     /* understand how to get system information
-    based on the os where the application is executed */
+    based on the os where the application is executed.
+    But do this operation only if the device still doesn't have the 
+    system information */
+    if(_hasSystemInfo()){
+      _setSystemInformation(); // set system information
+      return;
+    }
+
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     if(Platform.isAndroid){
       _os = "Android"; // set the os
@@ -74,7 +83,14 @@ class CurrentSession{
       _deviceName = null;
     }
 
-    await _saveInformation(); // save information inside the storages
+    await _saveSystemInformation(); // save the system information inside the shared preferences
+  }
+
+  /* function to understand if the application
+  has the right system information to save
+  the current session */
+  bool _hasSystemInfo() {
+    return _sharedPreferences.containsKey( '${_SHAREDPREFERENCEPREFIX}deviceName');
   }
 
   /* function to save information inside 
@@ -82,12 +98,27 @@ class CurrentSession{
   and shared preferences provided by flutter */
   Future<void> _saveInformation() async {
     await _secureStorage.write(key: '{$_SECURESTORAGEPREFIX}user', value: jsonEncode(_user.toMap())); // save the user in the secure storage
-    /* now save other data into 
+  }
+
+  /* function to save system information
+  inside the shared preferences */
+  Future<void> _saveSystemInformation() async {
+     /* now save other data into 
     shared preferences */
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}deviceName', _deviceName ?? '');
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}deviceModel', _deviceModel ?? '');
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}os', _os);
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}accessTime', _accessTime.toIso8601String());
+  }
+
+  /* function to set system information. 
+  Use only after the confirm the applicatio
+  has system information */
+  void _setSystemInformation() {
+    /* then set the attributes of the user */
+    _os = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}os')!;
+    _deviceName = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}deviceName')!;
+    _deviceModel = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}deviceModel')!;
   }
 
   /// Function to return the current session from
