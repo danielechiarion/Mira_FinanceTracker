@@ -12,8 +12,27 @@ class EncryptedDatabase {
   for database creation */
   static const String _DATABASEEXTENSION = ".db";
 
+  /* static registry used to turn EncryptedDatabase into a singleton
+  per database file: every instance pointing to the same physical path
+  shares the same underlying connection instead of opening a new one */
+  static final Map<String, Database> _sharedConnections = {};
+
+  /* reference counter tied to each shared connection, increased every time
+  an instance starts using it and decreased on close(); the physical
+  connection is only closed for real once the counter reaches zero */
+  static final Map<String, int> _referenceCounters = {};
+
+  /* tracks opening operations still in progress for a given path, so that
+  concurrent calls on the same database file wait for the same connection
+  instead of racing to open two different physical connections */
+  static final Map<String, Future<Database>> _pendingOpenings = {};
+
   /* attributes definition */
   Database? _database;
+
+  /* path of the shared connection currently used by this instance,
+  needed to release the correct reference when close() is called */
+  String? _connectionPath;
 
   /// Constructor method to build the database manager
   EncryptedDatabase();
@@ -30,6 +49,8 @@ class EncryptedDatabase {
 
   /// Opens the encrypted database using the provided password key.
   /// Creates the database file and executes initial setup if it doesn't exist yet.
+  /// If another instance already holds an open connection towards the same
+  /// database file, that connection is reused instead of opening a new one.
   /// * [dbName] file name of the SQLite database
   /// * [password] secret key used for encryption/decryption (AES-256)
   /// * [version] target schema version of the database
@@ -50,41 +71,48 @@ class EncryptedDatabase {
       if(!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
         dbName += _DATABASEEXTENSION;
       }
-      
-      /* open database using FFI on desktop platforms and sqlcipher on mobile */
-      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        final dbFolder = await getApplicationSupportDirectory();
-        final path = join(dbFolder.path, dbName);
 
-        _database = await sqldesktop.databaseFactoryFfi.openDatabase(
-          path,
-          options: OpenDatabaseOptions(
-            version: version,
-            onCreate: onCreate,
-          ),
-        );
-      } else {
-        final dbFolder = await getDatabasesPath();
-        final path = join(dbFolder, dbName);
+      /* resolve the physical path first: it is the key used to look up
+      or register the shared connection in the static registry */
+      final String path = await _resolvePath(dbName);
 
-        _database = await openDatabase(
-          path,
-          password: password,
-          version: version,
-          onCreate: onCreate,
-        );
-      }
+      _database = await _acquireConnection(
+        path: path,
+        password: password,
+        version: version,
+        onCreate: onCreate,
+      );
+      _connectionPath = path;
     } catch (e) {
       rethrow;
     }
   }
 
-  /// Closes the active database connection
+  /// Closes the active database connection.
+  /// Since the underlying connection can be shared with other instances
+  /// pointing to the same database file, it is only closed for real once
+  /// every instance referencing it has released it.
   Future<void> close() async {
-    if (_database != null && _database!.isOpen) {
-      await _database!.close();
-      _database = null;
+    if (_database == null || _connectionPath == null) {
+      return;
     }
+
+    final String path = _connectionPath!;
+    final int remaining = (_referenceCounters[path] ?? 1) - 1;
+
+    if (remaining <= 0) {
+      /* no other instance is using this connection anymore: close it for real */
+      if (_database!.isOpen) {
+        await _database!.close();
+      }
+      _sharedConnections.remove(path);
+      _referenceCounters.remove(path);
+    } else {
+      _referenceCounters[path] = remaining;
+    }
+
+    _database = null;
+    _connectionPath = null;
   }
 
   /* *** QUERY EXECUTION METHODS *** */
@@ -148,11 +176,26 @@ class EncryptedDatabase {
   /// Deletes the specified database file from local device storage
   /// * [dbName] name of the database file to remove (e.g., 'app_database.db')
   Future<void> deleteAppDatabase(String dbName) async {
-    /* 1. get the path to the databases directory */
-    final String dbPath = await getDatabasesPath();
-    final String fullPath = join(dbPath, dbName);
+    /* 1. get the path to the databases directory, resolved the same way
+    openAppDatabase does it, so it matches the registry key exactly */
+    final String fullPath = await _resolvePath(dbName);
 
-    /* 2. delete the database file */
+    /* 2. if a shared connection towards this file is still registered,
+    close it and drop it from the registry before deleting the file:
+    otherwise the delete could fail, or leave a stale entry behind.
+    note that any other instance still referencing this connection will
+    find it closed on its next operation, just like when a file is deleted
+    while still in use */
+    if (_sharedConnections.containsKey(fullPath)) {
+      final Database staleConnection = _sharedConnections[fullPath]!;
+      if (staleConnection.isOpen) {
+        await staleConnection.close();
+      }
+      _sharedConnections.remove(fullPath);
+      _referenceCounters.remove(fullPath);
+    }
+
+    /* 3. delete the database file */
     await deleteDatabase(fullPath);
   }
 
@@ -163,6 +206,94 @@ class EncryptedDatabase {
     if (!isOpen) {
       throw Exception(
         "The database is not open. Call openAppDatabase() first.",
+      );
+    }
+  }
+
+  /* resolves the platform-specific full path of a database file. used
+  consistently by openAppDatabase and deleteAppDatabase so the singleton
+  registry is always indexed with the same key for the same database */
+  Future<String> _resolvePath(String dbName) async {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      final dbFolder = await getApplicationSupportDirectory();
+      return join(dbFolder.path, dbName);
+    } else {
+      final dbFolder = await getDatabasesPath();
+      return join(dbFolder, dbName);
+    }
+  }
+
+  /* returns the shared connection for the given path, opening it only if
+  no other instance already opened it (or is currently opening it);
+  concurrent requests for the same path are serialized through
+  _pendingOpenings so two physical connections are never created for
+  the same database */
+  Future<Database> _acquireConnection({
+    required String path,
+    required String password,
+    required int version,
+    FutureOr<void> Function(Database, int)? onCreate,
+  }) async {
+    if (_sharedConnections.containsKey(path)) {
+      final Database existing = _sharedConnections[path]!;
+      if (existing.isOpen) {
+        _referenceCounters[path] = (_referenceCounters[path] ?? 0) + 1;
+        return existing;
+      }
+      /* stale entry: the connection was closed outside of the normal
+      close() flow (e.g. through deleteAppDatabase), clean it up
+      and fall through to open a brand new one below */
+      _sharedConnections.remove(path);
+      _referenceCounters.remove(path);
+    }
+
+    if (_pendingOpenings.containsKey(path)) {
+      final Database db = await _pendingOpenings[path]!;
+      _referenceCounters[path] = (_referenceCounters[path] ?? 0) + 1;
+      return db;
+    }
+
+    final Future<Database> openingFuture = _openPhysicalConnection(
+      path: path,
+      password: password,
+      version: version,
+      onCreate: onCreate,
+    );
+    _pendingOpenings[path] = openingFuture;
+
+    try {
+      final Database db = await openingFuture;
+      _sharedConnections[path] = db;
+      _referenceCounters[path] = 1;
+      return db;
+    } finally {
+      _pendingOpenings.remove(path);
+    }
+  }
+
+  /* opens the actual physical connection using FFI on desktop platforms
+  and sqlcipher on mobile, exactly as it was done before the singleton
+  registry was introduced */
+  Future<Database> _openPhysicalConnection({
+    required String path,
+    required String password,
+    required int version,
+    FutureOr<void> Function(Database, int)? onCreate,
+  }) async {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      return await sqldesktop.databaseFactoryFfi.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: version,
+          onCreate: onCreate,
+        ),
+      );
+    } else {
+      return await openDatabase(
+        path,
+        password: password,
+        version: version,
+        onCreate: onCreate,
       );
     }
   }
