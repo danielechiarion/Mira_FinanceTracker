@@ -98,6 +98,7 @@ class CurrentSession{
   and shared preferences provided by flutter */
   Future<void> _saveInformation() async {
     await _secureStorage.write(key: '{$_SECURESTORAGEPREFIX}user', value: jsonEncode(_user.toMap())); // save the user in the secure storage
+    await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}accessTime', _accessTime.toIso8601String());
   }
 
   /* function to save system information
@@ -108,7 +109,6 @@ class CurrentSession{
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}deviceName', _deviceName ?? '');
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}deviceModel', _deviceModel ?? '');
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}os', _os);
-    await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}accessTime', _accessTime.toIso8601String());
   }
 
   /* function to set system information. 
@@ -197,18 +197,11 @@ class CurrentSession{
   }
 
   /// Function to remove the data after 
-  /// the end of the session
+  /// the end of the session 
   Future<void> disconnect() async {
-    /* first find the keys and remove
-    them from the shared preferences */
-    final Set<String> keys = _sharedPreferences.getKeys();
-    final List<String> fullKeys = keys.where((singleKey) => singleKey.startsWith(_SHAREDPREFERENCEPREFIX)).toList();
-    for(String singleKey in fullKeys){
-      await _sharedPreferences.remove(singleKey);
-    }
-
-    /* then remove also the ones 
-    in the flutter secure storage */
+    /* delete only the information
+    connected to the single user */
     await _secureStorage.delete(key: '${_SECURESTORAGEPREFIX}user');
+    await _sharedPreferences.remove('${_SHAREDPREFERENCEPREFIX}accessTime');
   }
 }
