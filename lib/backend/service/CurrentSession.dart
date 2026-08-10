@@ -97,7 +97,7 @@ class CurrentSession{
   the flutter secure storage
   and shared preferences provided by flutter */
   Future<void> _saveInformation() async {
-    await _secureStorage.write(key: '{$_SECURESTORAGEPREFIX}user', value: jsonEncode(_user.toMap())); // save the user in the secure storage
+    await _secureStorage.write(key: '${_SECURESTORAGEPREFIX}user', value: jsonEncode(_user.toMap())); // save the user in the secure storage
     await _sharedPreferences.setString('${_SHAREDPREFERENCEPREFIX}accessTime', _accessTime.toIso8601String());
   }
 
@@ -124,26 +124,34 @@ class CurrentSession{
   /// Function to return the current session from
   /// the flutter storages where the attributes where saved
   static Future<CurrentSession?> getFromMemory() async {
+    // ensure shared preferences instance is available
+    _sharedPreferences = await SharedPreferences.getInstance();
+
     /* first understand if the user has
     been registered, otherwise return a null */
-    if(!(await _secureStorage.containsKey(key: '${_SECURESTORAGEPREFIX}user'))){
+    if (!(await _secureStorage.containsKey(key: '${_SECURESTORAGEPREFIX}user'))) {
       return null;
     }
 
     /* get the user and datetime from the storages 
     to build the constructor */
     String? userValue = await _secureStorage.read(key: '${_SECURESTORAGEPREFIX}user');
-    if(userValue == null){
+    if (userValue == null) {
       return null;
     }
     User user = User.fromMap(jsonDecode(userValue));
-    DateTime accessTime = DateTime.parse((_sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}accessTime'))!);
+
+    String? accessTimeStr = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}accessTime');
+    if (accessTimeStr == null) {
+      return null;
+    }
+    DateTime accessTime = DateTime.parse(accessTimeStr);
     CurrentSession session = CurrentSession(user, accessTime: accessTime);
 
     /* then set the attributes of the user */
-    session._os = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}os')!;
-    session._deviceName = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}deviceName')!;
-    session._deviceModel = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}deviceModel')!;
+    session._os = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}os') ?? '';
+    session._deviceName = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}deviceName') ?? '';
+    session._deviceModel = _sharedPreferences.getString('${_SHAREDPREFERENCEPREFIX}deviceModel') ?? '';
 
     return session;
   }
@@ -168,8 +176,8 @@ class CurrentSession{
     return {
       'user': _user.toMap(),
       'os': _os,
-      'model': _deviceModel,
-      'hostname': _deviceName,
+      'deviceModel': _deviceModel,
+      'deviceName': _deviceName,
       'accessTime': _accessTime.toIso8601String()
     };
   }

@@ -2,9 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
+import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 
-void main() {
+import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
+import 'package:mira_finance_tracker/frontend/HomePage.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ensure all libraries have been loaded
 
   /* configure ffi system for desktop ios and platforms */
@@ -13,11 +16,16 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   }
 
-  runApp(const MainApp());
+  /* understand if the user is logged */
+  bool userLogged = (await CurrentSession.getFromMemory()) != null;
+
+  runApp(MainApp(isLogged: userLogged));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final bool isLogged; // attribute to understand if the user is logged
+
+  const MainApp({super.key, required this.isLogged});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +38,7 @@ class MainApp extends StatelessWidget {
       ),
       /* sets login page as the 
       page opened on first access */
-      home: const LoginPage(),
+      home: isLogged ? const HomePage() : const LoginPage(),
     );
   }
 }
