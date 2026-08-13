@@ -37,6 +37,9 @@ dependencies:
   local_auth: ^3.0.2
   # library for listeners management
   provider: ^6.1.5+1
+  # library for the charts
+  fl_chart: ^1.2.0
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:
