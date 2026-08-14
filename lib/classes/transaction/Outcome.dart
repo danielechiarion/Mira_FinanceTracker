@@ -48,7 +48,7 @@ class Outcome extends BankTransaction{
       'reference': super.reference,
       'amount': super.amount,
       'executionDate': super.executionDate,
-      'counterParty': super.counterParty,
+      'counterParty': super.counterParty?.identifier,
       'accountingDate': super.accountingDate,
     };
   }
@@ -56,14 +56,14 @@ class Outcome extends BankTransaction{
   /// Static method to convert a map object
   /// to an outcome one to use it inside the application
   /// * [map] map object coming from the database
-  static Outcome fromMap(Map<String, dynamic> map){
+  static Outcome fromMap(Map<String, dynamic> map, {CounterParty? counterParty}){
     return Outcome(
       OutcomeCategory.values[map['category']],
       map['reference'],
       map['amount'],
       map['executionDate'],
       id: map['id'],
-      counterParty: map['counterParty'],
+      counterParty: counterParty,
       accountingDate: map['accountingDate']
     );
   }

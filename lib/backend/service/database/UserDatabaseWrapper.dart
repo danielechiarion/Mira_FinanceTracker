@@ -1,16 +1,24 @@
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
-import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
+import 'package:mira_finance_tracker/classes/bank_account/Card.dart';
+import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
+import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
+import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
+import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
+
+import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
+import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';
 
 part 'UserDatabaseWrapperReader.dart';
 part 'UserDatabaseWrapperWriter.dart';
