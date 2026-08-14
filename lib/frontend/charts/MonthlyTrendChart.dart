@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';
+import 'package:mira_finance_tracker/frontend/charts/EmptyChartPlaceholder.dart';
 
 /// Grouped bar chart: compares income (green) and expenses (red)
 /// month by month. Complements the pie chart with a "over time" view.
@@ -12,17 +13,16 @@ class MonthlyTrendChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.isEmpty) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: Text('Nessun dato disponibile')),
-      );
-    }
-
     final maxValue = data
         .expand((m) => [m.income, m.outcome])
         .fold<double>(0, (max, v) => v > max ? v : max);
 
+    if (data.isEmpty || maxValue <= 0) {
+      return const EmptyChartPlaceholder(
+        icon: Icons.show_chart_rounded,
+        message: 'Nessun movimento registrato in questo periodo.',
+      );
+    }
     return Column(
       children: [
         SizedBox(

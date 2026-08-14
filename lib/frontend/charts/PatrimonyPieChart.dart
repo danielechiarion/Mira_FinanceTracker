@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';
+import 'package:mira_finance_tracker/frontend/charts/EmptyChartPlaceholder.dart';
 
 /// Pie chart showing how total assets are distributed
 /// across various accounts/institutions (explicitly requested for the Home Page).
@@ -13,9 +14,9 @@ class PatrimonyPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (distribution.isEmpty) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: Text('Nessun dato disponibile')),
+      return const EmptyChartPlaceholder(
+        icon: Icons.pie_chart_outline_rounded,
+        message: 'Nessun conto con saldo disponibile.\nAggiungi un conto per vedere qui la distribuzione del tuo patrimonio.',
       );
     }
 
