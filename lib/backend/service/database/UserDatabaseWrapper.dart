@@ -30,12 +30,13 @@ part 'UserDatabaseWrapperUpdate.dart';
 class UserDatabaseWrapper extends SystemDatabaseWrapper{
   /* define attributes */
   User _user;
+  KeyManager _userKeyManager;
   
   /// Constructor of the user database wrapper 
   /// starting from user information 
   /// * [user] user owner of the database
-  UserDatabaseWrapper(User user): _user = user,
-    super(keyManagerInput: KeyManager(user: user, search: false));
+  UserDatabaseWrapper(User user): _user = user, _userKeyManager = KeyManager(user: user),
+    super();
 
   /// Function to initialize the database 
   /// defining the tables. 
@@ -54,10 +55,8 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
     /* get the secret key of the user
     researching it */
-    await super.keyManager.init();
-    // Ensure we attempt to recover the user key explicitly
     try {
-      await super.keyManager.recoverKey();
+      await _userKeyManager.init();
     } catch (e) {
       // If recoverKey fails, rethrow a clearer exception for callers
       throw Exception('Impossibile recuperare la chiave utente: $e');
@@ -65,7 +64,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
     /* now open the database for the
     user and initialize it if necessary */
-    final String? key = await super.keyManager.stringKey;
+    final String? key = await _userKeyManager.stringKey;
     if (key == null) {
       throw Exception('Chiave di cifratura utente non disponibile per ${_user.username}');
     }
@@ -116,7 +115,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
     to manage correctly common fields
     and common entity related such as incomes and outcomes */
     await db.execute('''CREATE TABLE IF NOT EXISTS BankAccount(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         financialInstitute INTEGER,
                         subscriptionDate TEXT NOT NULL,
                         interest REAL NOT NULL,
@@ -129,7 +128,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         timeFrequency INTEGER NOT NULL,
                         dayOfMonth INTEGER NOT NULL,
                         monthOfYear INTEGER,
-                        lastDateActivity TEXT
+                        lastDateActivity TEXT,
                         
                         FOREIGN KEY (financialInstitute) REFERENCES FinancialInstitute(id)
                           ON DELETE RESTRICT
@@ -178,7 +177,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         amount REAL NOT NULL,
                         executionDate TEXT NOT NULL,
                         accountingDate TEXT,
-                        category INTEGER NOT NULL
+                        category INTEGER NOT NULL,
 
                         FOREIGN KEY (bankAccount) REFERENCES BankAccount(id)
                           ON DELETE CASCADE,
@@ -193,7 +192,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         amount REAL NOT NULL,
                         executionDate TEXT NOT NULL,
                         accountingDate TEXT,
-                        category INTEGER NOT NULL
+                        category INTEGER NOT NULL,
 
                         FOREIGN KEY (bankAccount) REFERENCES BankAccount(id)
                           ON DELETE CASCADE,

@@ -52,7 +52,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT CurrentAccount.id, CurrentAccount.name, 
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            FinancialInstitute.name AS institute_name, address, phoneNumber, site
+            FinancialInstitute.name AS institute_name, email, phoneNumber, site
             FROM CurrentAccount JOIN BankAccount on BankAccount.id = CurrentAccount.id 
             JOIN FinancialInstitute ON BankAccount.financialInstitute = FinancialInstitute.id''');
 
@@ -61,7 +61,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       institute object */
       Map<String, dynamic> financialInstituteRaw = {
         'name': singleResult['institute_name'],
-        'address': singleResult['address'],
+        'email': singleResult['email'],
         'phoneNumber': singleResult['phoneNumber'],
         'site': singleResult['site']
       };
@@ -87,7 +87,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT SavingsAccount.id, SavingsAccount.name, ledgerBalance,
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            FinancialInstitute.name AS institute_name, address, phoneNumber, site
+            FinancialInstitute.name AS institute_name, email, phoneNumber, site
             FROM SavingsAccount JOIN BankAccount on BankAccount.id = SavingsAccount.id
             JOIN FinancialInstitute ON BankAccount.financialInstitute = FinancialInstitute.id''');
 
@@ -96,7 +96,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       institute object */
       Map<String, dynamic> financialInstituteRaw = {
         'name': singleResult['institute_name'],
-        'address': singleResult['address'],
+        'email': singleResult['email'],
         'phoneNumber': singleResult['phoneNumber'],
         'site': singleResult['site']
       };
@@ -122,7 +122,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT Card.id, Card.name, cardType,
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            FinancialInstitute.name AS institute_name, address, phoneNumber, site
+            FinancialInstitute.name AS institute_name, email, phoneNumber, site
             FROM Card JOIN BankAccount on BankAccount.id = Card.id
             JOIN FinancialInstitute ON BankAccount.financialInstitute = FinancialInstitute.id''');
 
@@ -131,7 +131,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       institute object */
       Map<String, dynamic> financialInstituteRaw = {
         'name': singleResult['institute_name'],
-        'address': singleResult['address'],
+        'email': singleResult['email'],
         'phoneNumber': singleResult['phoneNumber'],
         'site': singleResult['site']
       };
@@ -166,16 +166,16 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     do the same with the outcomes */
     List<Map<String, dynamic>> incomeResults = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-          FROM Income LEFT JOIN CounterParty ON Income.CounterParty = CounterParty.id
-          WHERE accountingDate >= ? && executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
+          FROM Income LEFT JOIN CounterParty ON Income.counterParty = CounterParty.id
+          WHERE accountingDate >= ? AND executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
     for(Map<String, dynamic> singleIncome in incomeResults){
       transactions.add(Income.fromMap(singleIncome, counterParty: _getCounterPartyFromMap(singleIncome)));
     }
 
     List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-          FROM Outcome LEFT JOIN CounterParty ON Income.CounterParty = CounterParty.id
-          WHERE accountingDate >= ? && executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
+          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+          WHERE accountingDate >= ? AND executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
     for(Map<String, dynamic> singleOutcome in outcomeResults){
       transactions.add(Income.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
@@ -234,10 +234,17 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
       /* get the sum of incomes and outcomes and 
       get the result */
-      Map<String, dynamic> incomeSum = await appDatabase.query(sql: 'SELECT SUM(amount) AS sum FROM Income WHERE accountingDate >= ? && accountingDate <= ?',
-                                                              arguments: [startingDate, endingDate]);
-      Map<String, dynamic> outcomeSum = await appDatabase.query(sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? && accountingDate <= ?',
-                                                              arguments: [startingDate, endingDate]);
+      List<Map<String, dynamic>> incomeResult = await appDatabase.query(
+        sql: 'SELECT SUM(amount) AS sum FROM Income WHERE accountingDate >= ? AND accountingDate <= ?',
+        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String()]
+      );
+      List<Map<String, dynamic>> outcomeResult = await appDatabase.query(
+        sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? AND accountingDate <= ?',
+        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String()]
+      );
+
+      Map<String, dynamic> incomeSum = incomeResult.isNotEmpty ? incomeResult.first : {'sum': 0};
+      Map<String, dynamic> outcomeSum = outcomeResult.isNotEmpty ? outcomeResult.first : {'sum': 0};
 
       /* add the result to the list 
       with the name of the corresponding month */

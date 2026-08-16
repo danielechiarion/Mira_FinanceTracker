@@ -20,25 +20,18 @@ class SystemDatabaseWrapper{
   @protected
   EncryptedDatabase database;
   @protected
-  KeyManager keyManager;
+  KeyManager systemKeyManager;
 
   /// Constructor of the database wrapper for system functionalities
   /// in order to manage custom functions
-  /// [keyManagerInput] keymanager provided by the program which is suggested to be done only by the extended classes
-  SystemDatabaseWrapper({KeyManager? keyManagerInput}) 
-    : keyManager = keyManagerInput ?? KeyManager(), database = EncryptedDatabase();
+  SystemDatabaseWrapper() 
+    :  systemKeyManager = KeyManager(), database = EncryptedDatabase();
   
   /// Function to initialize the databse
   /// for system purposes
   Future<void> init() async{
-    await keyManager.init();
-    String? key = await keyManager.stringKey; // get the string key
-    if (key == null) {
-      if (!keyManager.isAuthenticated) {
-        await keyManager.generateRandomKey();
-        key = await keyManager.stringKey;
-      }
-    }
+    await systemKeyManager.init();
+    String? key = await systemKeyManager.stringKey;
     if (key == null) {
       throw Exception('Unable to initialize system database: encryption key unavailable');
     }

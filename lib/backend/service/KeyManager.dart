@@ -125,7 +125,7 @@ class KeyManager{
 
     /* save the secret key as an attribute
     and inside the flutter secure storage */
-    _saveUserKey(password, lockerKey, userKey, salt);
+    await _saveUserKey(password, lockerKey, userKey, salt);
   }
 
   /* common method to save user key as an attribute and 
@@ -273,19 +273,32 @@ class KeyManager{
   /// * [password] passkey given by the user to decrypt
   /// * [keyData] data of the user to decrypt
   Future<bool> importKeyData(String password, Map<String, dynamic> keyData) async {
-    /* get the data from the json map
-    and process them */
-    List<int> salt = base64Decode(keyData['salt']);
-    await generateKeyFromPassword(password, givenSalt: salt); // get the locker key
+    final salt = base64Decode(keyData['salt']);
+    final pbkdf2 = Pbkdf2(
+      macAlgorithm: Hmac.sha256(),
+      iterations: 100000,
+      bits: 256,
+    );
+    final lockerKey = await pbkdf2.deriveKey(
+      secretKey: SecretKey(utf8.encode(password)),
+      nonce: salt,
+    );
 
-    /* try to decrypt the user key, otherwise
-    return a false flag */
-    try{
-      SecretKey userKey = SecretKey(await decryptData(base64Decode(keyData['userKey'])));
-      SecretKey lockerKey = _activeKey!; // save current locker key
-      _saveUserKey(password, lockerKey, userKey, salt);
+    try {
+      final encryptedUserKey = base64Decode(keyData['userKey']);
+      final secretBox = SecretBox.fromConcatenation(
+        encryptedUserKey,
+        nonceLength: 12,
+        macLength: 16,
+      );
+      final userKeyBytes = await _aesAlgorithm.decrypt(
+        secretBox,
+        secretKey: lockerKey,
+      );
+      final userKey = SecretKey(userKeyBytes);
+      await _saveUserKey(password, lockerKey, userKey, salt);
       return true;
-    }on SecretBoxAuthenticationError{
+    } on SecretBoxAuthenticationError {
       return false;
     }
   }
@@ -325,6 +338,6 @@ class KeyManager{
       nonce: salt,
     );
 
-    _saveUserKey(password, lockerKey, _activeKey!, salt);
+    await _saveUserKey(password, lockerKey, _activeKey!, salt);
   }
 }
