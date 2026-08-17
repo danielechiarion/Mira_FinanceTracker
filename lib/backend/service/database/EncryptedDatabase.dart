@@ -115,6 +115,14 @@ class EncryptedDatabase {
     _connectionPath = null;
   }
 
+  /// Function to close all the instances of the database
+  Future<void> forcedClosure() async {
+    if(_database == null){
+      return;
+    }
+    await _database!.close();
+  }
+
   /* *** QUERY EXECUTION METHODS *** */
 
   /// Executes a custom read query (SELECT) on the database

@@ -221,4 +221,11 @@ class SystemDatabaseWrapper{
   Future<void> closeDatabase() async{
     await database.close();
   }
+
+  /// Method to close the current session
+  /// and all the other which were left open,
+  /// to be sure nothing is connected anymore
+  Future<void> closeCompletelyDatabase() async {
+    await database.forcedClosure();
+  }
 }

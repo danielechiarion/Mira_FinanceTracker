@@ -52,12 +52,6 @@ class User{
   /// * [oldPassword] the old password, NOT HASHED
   /// * [newPassword] the new password, NOT HASHED
   void setPassword(String oldPassword, String newPassword){
-    /* first check if the new password is different
-    from the old one */
-    if(oldPassword == newPassword){
-      throw Exception("The new password can't be the same as the old one");
-    }
-
     /* then check if the old password matches
     with the one registered */
     if(!BCrypt.checkpw(oldPassword, _password)){
