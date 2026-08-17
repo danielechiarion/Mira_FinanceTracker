@@ -13,9 +13,9 @@ class UserPreferences{
   static final String _KEYPREFIX = "userpreference_"; // prefix for values used only in shared preferences
 
   /* attributes definition */
-  late Set<SinglePreference> _userPreferences;
+  Set<SinglePreference> _userPreferences;
   late final SharedPreferences _sharedPreferences;
-  late User _user;
+  User _user;
 
   /// Method to define user preferences,
   /// initializing them or just reading them from shared preferences.
@@ -35,13 +35,13 @@ class UserPreferences{
     _sharedPreferences = await SharedPreferences.getInstance();
 
     if(readDatabase){
-      _recoverFromDatabase();
+      await _recoverFromDatabase();
     }
     else if(_keysRegistered()){
       _recoverFromSharedPreferences();
     }
     else{
-       _giveDefaultValues();
+      await _giveDefaultValues();
     }
   }
 
@@ -58,7 +58,7 @@ class UserPreferences{
     /* add them into the object with the 
     method created */
     for(SinglePreference preference in result){
-      addPreference(preference);
+      await addPreference(preference);
     }
   }
 
@@ -79,7 +79,11 @@ class UserPreferences{
     /* find for each key the corresponding value 
     and add them to the object */
     for(String singleKey in fullKeys){
-      _userPreferences.add(SinglePreference.fromSharedPreference(singleKey, _sharedPreferences.get(singleKey).toString()));
+      _userPreferences.add(SinglePreference.fromSharedPreference(
+        singleKey,
+        _sharedPreferences.get(singleKey).toString(),
+        prefix: _KEYPREFIX
+      ));
     }
   }
 
@@ -88,9 +92,9 @@ class UserPreferences{
   Future<void> _giveDefaultValues() async {
     /* add the values set for the 
     essential work of the application */
-    addPreference(SinglePreference('enableBackground', true, currentValue: true)); // enable background activity
-    addPreference(SinglePreference('enableNotifications', true, currentValue: true)); // enable notifications
-    addPreference(SinglePreference('backupTime', false, currentValue: 1)); // express the time window to save for the backup (in years)
+    await addPreference(SinglePreference('enableBackground', true, currentValue: true)); // enable background activity
+    await addPreference(SinglePreference('enableNotifications', true, currentValue: true)); // enable notifications
+    await addPreference(SinglePreference('backupTime', false, currentValue: 1)); // express the time window to save for the backup (in years)
   }
 
   /* *** GETTER METHODS *** */
@@ -104,7 +108,7 @@ class UserPreferences{
 
   /// Method to get the preference by its name
   SinglePreference getPreference(String name) {
-    return _userPreferences.firstWhere((preference) => preference.name == name);
+    return _userPreferences.firstWhere((preference) => preference.name == name).clone();
   }
 
   /// Method to add a user preference 
@@ -136,6 +140,13 @@ class UserPreferences{
     await _sharedPreferences.setString(mapEntry.key, mapEntry.value);
   }
 
+  /// Method to update preference knowing only its [key] in the shared preferences
+  /// in order to change its [value]
+  Future<void> updatePreferenceValue(String key, dynamic value) async {
+    SinglePreference preference = SinglePreference(key, false, currentValue: value); // the flag doesn't matter while searching the prefernce
+    await updatePreference(preference); // call the method to update preference using the preference object
+  }
+
   /// Method to remove user preference.
   /// If the preference hasn't existed before,
   /// nothing will be done.   
@@ -159,7 +170,7 @@ class UserPreferences{
     /* then save the user preferences
     inside the database */
     UserDatabaseWrapper database = UserDatabaseWrapper(_user);
-    database.saveUserPreferences(userPreferences);
+    await database.saveUserPreferences(userPreferences);
 
     _userPreferences.clear(); // then clear the set to make the user unable to access to them anymore
   } 

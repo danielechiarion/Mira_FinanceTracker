@@ -4,9 +4,13 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
 import 'package:mira_finance_tracker/frontend/HomePage.dart';
+import 'package:mira_finance_tracker/frontend/ActionsPage.dart';
+import 'package:mira_finance_tracker/frontend/CustomCheckPage.dart';
+import 'package:mira_finance_tracker/frontend/SettingsPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ensure all libraries have been loaded
@@ -41,6 +45,12 @@ class MainApp extends StatelessWidget {
       /* sets login page as the 
       page opened on first access */
       home: isLogged ? const HomePage() : const LoginPage(),
+      routes: {
+        AppRoutes.home:(context) => const HomePage(),
+        AppRoutes.check:(context) => const CustomCheckPage(),
+        AppRoutes.actions:(context) => const ActionsPage(),
+        AppRoutes.settings:(context) => const SettingsPage()
+      },
     );
   }
 }

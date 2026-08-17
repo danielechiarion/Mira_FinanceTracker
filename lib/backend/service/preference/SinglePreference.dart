@@ -80,9 +80,9 @@ class SinglePreference{
   /// in a map entry with its key and value
   /// ready to be saved inside a shared preference
   MapEntry<String, String> toMapEntry({String prefix = ''}){
-    return MapEntry(_preferenceName, '$prefix${toString()}');
+    return MapEntry('$prefix$_preferenceName', toString());
   }
-
+  
   /// Method to convert the key and the value saved 
   /// in the shared preference into a single preference object
   factory SinglePreference.fromSharedPreference(String key, String value, {String prefix = ''}){

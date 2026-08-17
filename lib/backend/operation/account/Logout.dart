@@ -34,7 +34,7 @@ class Logout{
     /* then erase from the current shared preferences
     the one of the user logged */
     UserPreferences preferences = UserPreferences(_user);
-    await session.init();
+    await preferences.init();
     await preferences.disconnect();
   }
 }

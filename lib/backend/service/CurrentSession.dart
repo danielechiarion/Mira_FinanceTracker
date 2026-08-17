@@ -157,7 +157,7 @@ class CurrentSession{
   }
 
   /* *** GETTER METHODS *** */
-  User get user => _user.clone();
+  User get user => _user;
 
   /// Function to compare two sessions based on the 
   /// user logged and the device name

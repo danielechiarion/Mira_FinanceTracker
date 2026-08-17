@@ -297,7 +297,9 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
                       // --- LOGOUT ---
                       OutlinedButton.icon(
-                        onPressed: _logout,
+                        onPressed: () async {
+                          await _logout(); // call the logout function
+                        },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
                           side: const BorderSide(color: Colors.red, width: 1.5),
