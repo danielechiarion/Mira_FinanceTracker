@@ -117,10 +117,16 @@ class EncryptedDatabase {
 
   /// Function to close all the instances of the database
   Future<void> forcedClosure() async {
-    if(_database == null){
+    if(_database == null || _connectionPath == null){
       return;
     }
     await _database!.close();
+
+    /* reset all the registers
+    about the database */
+    _sharedConnections.remove(_connectionPath);
+    _referenceCounters[_connectionPath!] = (_referenceCounters[_connectionPath] ?? 1) - 1;
+    
   }
 
   /* *** QUERY EXECUTION METHODS *** */

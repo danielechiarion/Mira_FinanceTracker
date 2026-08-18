@@ -20,7 +20,7 @@ class User{
   /// * [_email] parameter to use only by the system to put the email of the google account
   User(this._username, this._password, this._name, {this._id = -1, this._surname = '', String? email}): _email = '' {
     if(email != null && email.isNotEmpty){
-      email = _email;
+      _email = email;
     }
   }
 
