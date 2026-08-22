@@ -276,4 +276,86 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return distribution; // return the distribution
   }
+
+  /// Function to return the complete list of counterparties
+  /// registered inside the database
+  Future<List<CounterParty>> getCounterParties({bool close = false}) async {
+    List<CounterParty> contacts = [];
+
+    /* call the database to find all 
+    the contacts inside the database */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: 'SELECT id,name,IBAN FROM CounterParty');
+
+    /* then fetch all the results and 
+    return the list of contacts */
+    for(Map<String, dynamic> map in result){
+      contacts.add(CounterParty.fromMap(map));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return contacts;
+  }
+
+  /// Function to check if the counterparty name is available to
+  /// be chosen among the one already inserted
+  /// * [name] name to be inserted
+  Future<bool> checkCounterpartyAvailability(String name) async {
+    /* check the result coming
+    from the database */
+    final result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM CounterParty WHERE name = ?) AS counter_exists',
+      arguments: [name],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['counter_exists'] != 1;
+    }
+
+    return false;
+  }
+
+  /// Function to get the complete list of financial institutes
+  /// coming from the database
+  /// * [close] flag to indicate if the database has to be closed
+  Future<List<FinancialInstitute>> getFinancialInstitutes({bool close = false}) async {
+    List<FinancialInstitute> institutes = [];
+
+    /* call the database to find
+    all the financial institutes occurencies */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: 'SELECT id, name, email, phoneNumber, site FROM FinancialInstitute');
+
+    /* convert all the maps into
+    a list of financial institutes */
+    for(Map<String, dynamic> map in result){
+      institutes.add(FinancialInstitute.fromMap(map));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return institutes;
+  }
+
+  /// Function to check if the financial institute name 
+  /// is available and return a boolean result
+  /// * [name] name to be checked
+  /// * [close] flag to indicate if the database has to be closed
+  Future<bool> checkFinancialInstituteAvailability(String name, {bool close = false}) async {
+    /* check the result coming
+    from the database */
+    final result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM FinancialInstitute WHERE name = ?) AS institute_exists',
+      arguments: [name],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['institute_exists'] != 1;
+    }
+
+    return false;
+  }
 }

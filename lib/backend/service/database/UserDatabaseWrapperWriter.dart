@@ -46,4 +46,49 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save the counterparty inside the database
+  /// * [counterParty] object to save
+  /// * [close] flag to indicate when to close the database
+  Future<void> saveCounterparty(CounterParty counterParty, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: 'INSERT INTO CounterParty (name, IBAN) VALUES (:name, :IBAN)',
+            parameters: {...counterParty.toMap()});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete the counterparty inside the database
+  /// * [counterParty] object to be removed
+  /// * [close] flag to indicate whether to close the database
+  Future<void> deleteCounterparty(CounterParty counterParty, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM CounterParty WHERE name=?', arguments: [counterParty.name]);
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to save a financial institute inside a database
+  /// * [institute] institute to be saved
+  /// * [close] flag to indicate if the database has to be closed
+  Future<void> saveFinancialInstitute(FinancialInstitute institute, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: ''' INSERT INTO FinancialInstitute (name, email, phoneNumber, site) 
+            VALUES (:name, :email, :phoneNumber, :site)''', 
+            parameters: {...institute.toMap()});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete a financial institute inside a database
+  /// * [institute] institute to be deleted
+  /// * [close] flag to indicate if the database has to be closed
+  Future<void> deleteFinancialInstitute(FinancialInstitute institute, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM FinancialInstitute WHERE name = ?', arguments: [institute.name]);
+    if(close){
+      await appDatabase.close();
+    }
+  } 
 }

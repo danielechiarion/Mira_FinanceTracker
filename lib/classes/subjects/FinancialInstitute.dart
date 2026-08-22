@@ -4,26 +4,28 @@ class FinancialInstitute{
   /* attribute definition */
   int _id;
   String _name;
-  String _address;
+  String _email;
   String _phoneNumber;
   String _site;
 
   /// Constructor method of the financial institute class
-  /// * [name] the name of the financial institute
-  /// * [address] the address of the financial institute
-  /// * [phoneNumber] the phone number of the financial institute
-  /// * [site] the website of the financial institute
-  /// * [id] the ID of the financial institute (firstly it will be -1, then it will be set by the database)
-  FinancialInstitute(this._name, {this._id = -1, this._address = '', this._phoneNumber = '', this._site = ''});
+  /// * [_name] the name of the financial institute
+  /// * [_email] the address of the financial institute
+  /// * [_phoneNumber] the phone number of the financial institute
+  /// * [_site] the website of the financial institute
+  /// * [_id] the ID of the financial institute (firstly it will be -1, then it will be set by the database)
+  FinancialInstitute(this._name, {this._id = -1, this._email = '', this._phoneNumber = '', this._site = ''});
 
   /* *** GETTER METHODS *** */
   String get name => _name;
-  String get address => _address;
+  String get email => _email;
   String get phoneNumber => _phoneNumber;
   int get id => _id;
+  String get site => _site;
 
   /* *** SETTER METHODS *** */
-  set address (String address) => _address = address;
+  set site (String site) => _site = site;
+  set email(String email) => _email = email;
   set phoneNumber (String phoneNumber) => _phoneNumber = phoneNumber;
   set id (int id) => _id = id;
 
@@ -44,7 +46,7 @@ class FinancialInstitute{
     return {
       if(_id != -1) 'id': _id,
       'name': _name,
-      'address': _address,
+      'email': _email,
       'phoneNumber': _phoneNumber,
       'site': _site
     };
@@ -57,7 +59,7 @@ class FinancialInstitute{
     return FinancialInstitute(
       map['name'],
       id: map['id'],
-      address: map['address'] ?? '',
+      email: map['email'] ?? '',
       phoneNumber: map['phoneNumber'] ?? '',
       site: map['site'] ?? '',
     );
@@ -65,6 +67,6 @@ class FinancialInstitute{
 
   /// Method to get a deep clone of the instance
   FinancialInstitute clone(){
-    return FinancialInstitute(_name, id: _id, address: _address, phoneNumber: _phoneNumber, site: _site);
+    return FinancialInstitute(_name, id: _id, email: _email, phoneNumber: _phoneNumber, site: _site);
   }
 }
