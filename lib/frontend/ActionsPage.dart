@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
@@ -22,11 +24,21 @@ class ActionsPage extends StatefulWidget {
 
 class _ActionsPageState extends State<ActionsPage> {
   late final Future<UserDatabaseWrapper> _databaseFuture;
+  UserDatabaseWrapper? _database;
 
   @override
   void initState() {
     super.initState();
     _databaseFuture = _initializeDatabase();
+  }
+
+  @override
+  void dispose(){
+    final database = _database;
+    if (database != null) {
+      unawaited(database.closeDatabase());
+    }
+    super.dispose();
   }
 
   Future<UserDatabaseWrapper> _initializeDatabase() async {
@@ -38,6 +50,7 @@ class _ActionsPageState extends State<ActionsPage> {
 
     final database = UserDatabaseWrapper(session.user);
     await database.init();
+    _database = database;
 
     return database;
   }
