@@ -358,4 +358,101 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return false;
   }
+
+  /// Function to check if a counterparty object can be deleted.
+  /// That means that there is no other entity which is related to it,
+  /// otherwise it wouldn't be possible to delete it, because that data could be orphan
+  /// * [counterParty] object to check
+  /// * [close] flag to close the database
+  Future<bool> checkCounterPartyDeletion(CounterParty counterParty, {bool close = false}) async {
+    List<Map<String, dynamic>> result;
+    
+    /* first control inside 
+    incomes and outcomes. 
+    If anywhere compares the counterparty signal it's not possible 
+    to erase it */
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Income WHERE counterParty = ?',
+                      arguments: [counterParty.identifier]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Outcome WHERE counterParty = ?',
+                      arguments: [counterParty.identifier]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+
+    /* then check among periodic income and 
+    domiciliation, to make sure nothing 
+    is related to the counterparty */
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM PeriodicIncome WHERE counterParty = ?',
+                      arguments: [counterParty.identifier]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Domiciliation WHERE counterParty = ?',
+                      arguments: [counterParty.identifier]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return true;
+  }
+
+  /// Function to check if a financial institute object can be deleted.
+  /// That means that there is no other entity which is related to it,
+  /// otherwise it wouldn't be possible to delete it, because that data could be orphan
+  /// * [financialInstitute] object to check
+  /// * [close] flag to close the database
+  Future<bool> checkFinancialInstituteDeletion(FinancialInstitute financialInstitute, {bool close = false}) async {
+    List<Map<String, dynamic>> result;
+
+    /* first check if there is something registered
+    into the bank accounts */
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM BankAccount WHERE financialInstitute = ?',
+                      arguments: [financialInstitute.id]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+
+    /* then check among the 
+    financial instrument models
+    registered by the user */
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM TimeDepositModel WHERE provider = ?',
+                      arguments: [financialInstitute.id]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM BondModel WHERE provider = ?',
+                      arguments: [financialInstitute.id]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+
+    /* then check between the actual
+    financial instruments and services 
+    purchased by the user */
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM TimeDeposit WHERE provider = ?',
+                      arguments: [financialInstitute.id]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Bond WHERE provider = ?',
+                      arguments: [financialInstitute.id]);
+    if(_checkCounterField(result, 'counter')){
+      return false;
+    }
+
+    return true;
+  }
+
+  /* function to check if the counter
+  is positive, so elements have been found */
+  bool _checkCounterField(List<Map<String, dynamic>> map, String counterFieldName){
+    return map[0][counterFieldName] != 0;
+  }
 }

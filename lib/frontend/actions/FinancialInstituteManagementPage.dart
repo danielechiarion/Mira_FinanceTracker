@@ -4,6 +4,7 @@ import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/frontend/templates/EntityManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
@@ -112,6 +113,11 @@ class FinancialInstituteManagementPage extends StatelessWidget {
       buildAddPage: (context) => _buildForm(context),
       buildEditPage: (context, item) => _buildForm(context, existing: item),
       deleteItem: (item) async {
+        if(!(await database.checkFinancialInstituteDeletion(item))){
+          AppToast.show(context, "Eliminazione non riuscita. Elemento collegato ad altre entità", ToastType.warning);
+          return;
+        }
+
         await database.deleteFinancialInstitute(item);
       },
     );

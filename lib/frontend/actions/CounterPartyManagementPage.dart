@@ -4,6 +4,7 @@ import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 import 'package:mira_finance_tracker/frontend/templates/EntityManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
@@ -87,6 +88,11 @@ class CounterpartyManagementPage extends StatelessWidget {
       buildAddPage: (context) => _buildForm(context),
       buildEditPage: (context, item) => _buildForm(context, existing: item),
       deleteItem: (item) async {
+        if(!(await database.checkCounterPartyDeletion(item))){
+          AppToast.show(context, "Eliminazione non riuscita. Elemento collegato ad altre entità", ToastType.warning);
+          return;
+        }
+
         await database.deleteCounterparty(item);
       },
     );
