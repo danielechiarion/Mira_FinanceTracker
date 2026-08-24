@@ -177,7 +177,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
           FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
           WHERE accountingDate >= ? AND executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
     for(Map<String, dynamic> singleOutcome in outcomeResults){
-      transactions.add(Income.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
+      transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
     
     if(close){

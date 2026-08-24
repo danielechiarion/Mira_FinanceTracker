@@ -10,9 +10,14 @@ import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 /// Enumerator to classify different
 /// types of card
 enum CardType{
-  credit,
-  debit,
-  prepaid
+  credit("Carta di credito"),
+  debit("Carta di debito"),
+  prepaid("Carta prepagata");
+
+  /* define attributes */
+  final String name;
+
+  const CardType(this.name);
 }
 
 /// Class to manage specific single card management,

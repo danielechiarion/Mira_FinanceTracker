@@ -11,6 +11,7 @@ import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/bank_account/Card.dart';
 import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';

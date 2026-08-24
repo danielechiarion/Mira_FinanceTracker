@@ -57,8 +57,10 @@ class Income extends BankTransaction{
   /// to an income one to use it inside the application
   /// * [map] map object coming from the database
   static Income fromMap(Map<String, dynamic> map, {CounterParty? counterParty}){
+    final categoryIndex = map['category'] as int? ?? IncomeCategory.general_income.index;
+
     return Income(
-      IncomeCategory.values[map['category']],
+      IncomeCategory.values[categoryIndex],
       map['reference'],
       map['amount'],
       map['executionDate'],

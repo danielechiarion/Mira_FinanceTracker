@@ -129,4 +129,56 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save inside the database a
+  /// savings account not saving the entities connected to them. 
+  /// For that ones call other functions. 
+  /// * [account] savings account to save
+  /// * [close] flag to close the database
+  Future<void> saveSavingsAccount(SavingsAccount account, {bool close = false}) async {
+    /* first save information into general
+    bank account database */
+    int newId = await _saveBankAccountInformation(account);
+    
+    /* check the id, 
+    if it's wrong return an exception in that case */
+    if(newId < 0){
+      throw Exception("DATABASE ERROR: Savings account save didn't end well");
+    }
+
+    /* then save the information inside the 
+    specific database of the savings account */
+    await appDatabase.execute(sql: 'INSERT INTO SavingsAccount (id, name, ledgerBalance) VALUES (?, ?, ?)', 
+      arguments: [newId, account.name, account.ledgerBalance]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to save inside the database a
+  /// card account not saving the entities connected to them. 
+  /// For that ones call other functions. 
+  /// * [account] savings account to save
+  /// * [close] flag to close the database
+  Future<void> saveCardAccount(Card account, {bool close = false}) async {
+    /* first save information into general
+    bank account database */
+    int newId = await _saveBankAccountInformation(account);
+    
+    /* check the id, 
+    if it's wrong return an exception in that case */
+    if(newId < 0){
+      throw Exception("DATABASE ERROR: Savings account save didn't end well");
+    }
+
+    /* then save the information inside the 
+    specific database of the savings account */
+    await appDatabase.execute(sql: 'INSERT INTO Card (id, name, cardType) VALUES (?, ?, ?)', 
+      arguments: [newId, account.name, account.cardType.index]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

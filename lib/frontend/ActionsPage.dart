@@ -12,6 +12,8 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 import 'package:mira_finance_tracker/frontend/actions/CounterPartyManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/FinancialInstituteManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewCurrentAccountPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewSavingsAccountPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewCardAccountPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -59,13 +61,23 @@ class _ActionsPageState extends State<ActionsPage> {
   // Placeholder category/action list: replace with the real one.
   static final List<_ActionCategory> _categories = [
     _ActionCategory(
-      title: 'Conti e istituti',
+      title: 'Conti e operazioni',
       color: Colors.teal,
       actions: [
         _ActionItem(
           label: 'Nuovo conto corrente',
           icon: Icons.account_balance,
           pageBuilder: (context, database) => NewCurrentAccountPage(database: database)
+        ),
+        _ActionItem(
+          label: 'Nuovo conto deposito',
+          icon: Icons.account_balance,
+          pageBuilder: (context, database) => NewSavingsAccountPage(database: database)
+        ),
+        _ActionItem(
+          label: 'Nuova carta',
+          icon: Icons.card_membership,
+          pageBuilder: (context, database) => NewCardAccountPage(database: database)
         ),
       ],
     ),

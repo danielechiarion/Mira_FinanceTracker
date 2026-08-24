@@ -171,10 +171,14 @@ class PeriodicAccountDuration {
   /// into an object of the class for the application
   /// * [map] map object from the database
   factory PeriodicAccountDuration.fromMap(Map<String, dynamic> map){
+    final startingDate = DateTime.parse(map['startingDate'] as String);
+    final frequencyIndex = map['timeFrequency'] as int? ?? DurationType.monthly.index;
+    final dayOfMonth = map['dayOfMonth'] as int? ?? startingDate.day;
+
     return PeriodicAccountDuration(
-      DateTime.parse(map['startingDate']),
-      DurationType.values[map['timeFrequency']],
-      map['dayOfMonth'],
+      startingDate,
+      DurationType.values[frequencyIndex],
+      dayOfMonth,
       monthOfYear: map['monthOfYear'],
       lastDateActivity: map['lastDateActivity'] == null ? null : DateTime.parse(map['lastDateActivity']),
       includeStart: map['includeStart'] == 1

@@ -57,8 +57,10 @@ class Outcome extends BankTransaction{
   /// to an outcome one to use it inside the application
   /// * [map] map object coming from the database
   static Outcome fromMap(Map<String, dynamic> map, {CounterParty? counterParty}){
+    final categoryIndex = map['category'] as int? ?? OutcomeCategory.general_outcome.index;
+
     return Outcome(
-      OutcomeCategory.values[map['category']],
+      OutcomeCategory.values[categoryIndex],
       map['reference'],
       map['amount'],
       map['executionDate'],
