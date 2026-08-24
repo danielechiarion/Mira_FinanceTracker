@@ -278,10 +278,10 @@ abstract class BankAccount{
       'interest': _interest,
       'availableBalance': _availableBalance,
       'IBAN': _IBAN,
-      'bank': _bank.id,
+      'financialInstitute': _bank.id,
       'subscriptionDate': _subscriptionDate.toIso8601String(),
-      'endingDate': _endingDate,
-      'active': _active,
+      'endingDate': _endingDate?.toIso8601String(),
+      'active': _active ? 1 : 0,
       ..._interestTime.toMap()
     };
   }

@@ -249,7 +249,7 @@ class SavingsAccount extends BankAccount{
       IBAN: map.remove('IBAN'),
       interest: map.remove('interest'),
       active: map.remove('active') == 1,
-      endingDate: map.remove('endingDate'),
+      endingDate: DateTime.tryParse((map.remove('endingDate') as String?) ?? ''),
       interestTime: PeriodicAccountDuration.fromMap(map),
       fees: fees,
       cashbacks: cashbacks,

@@ -158,12 +158,12 @@ class PeriodicAccountDuration {
   /// for database manipulation
   Map<String, dynamic> toMap(){
     return {
-      'startingDate': _startingDate,
-      'includeStart': _includeStart,
+      'startingDate': _startingDate.toIso8601String(),
+      'includeStart': _includeStart ? 1 : 0,
       'timeFrequency': _timeFrequency.index,
       'dayOfMonth': _dayOfMonth,
       'monthOfYear': _monthOfYear,
-      'lastDateActivity': _lastDateActivity
+      'lastDateActivity': _lastDateActivity?.toIso8601String()
     };
   }
 
@@ -172,11 +172,11 @@ class PeriodicAccountDuration {
   /// * [map] map object from the database
   factory PeriodicAccountDuration.fromMap(Map<String, dynamic> map){
     return PeriodicAccountDuration(
-      map['startingDate'],
+      DateTime.parse(map['startingDate']),
       DurationType.values[map['timeFrequency']],
       map['dayOfMonth'],
       monthOfYear: map['monthOfYear'],
-      lastDateActivity: map['lastDateActivity'],
+      lastDateActivity: map['lastDateActivity'] == null ? null : DateTime.parse(map['lastDateActivity']),
       includeStart: map['includeStart'] == 1
     );
   }

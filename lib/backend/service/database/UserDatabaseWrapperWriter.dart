@@ -91,4 +91,42 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   } 
+
+  /* function to save information throughout all bank accounts
+  in the common database in order to track unique IDs,
+  which will be returned by the function */
+  Future<int> _saveBankAccountInformation(BankAccount account) async {
+    return await appDatabase.executeWithMap(sql: '''INSERT INTO BankAccount 
+      (financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, IBAN,
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+      VALUES (:financialInstitute, :subscriptionDate, :interest, :endingDate, :availableBalance, :active, 
+      :IBAN, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      parameters: account.toMap());
+  }
+
+  /// Function to save inside the database a
+  /// current account not saving the entities connected to them. 
+  /// For that ones call other functions. 
+  /// * [account] current account to save
+  /// * [close] flag to close the database
+  Future<void> saveCurrentAccount(CurrentAccount account, {bool close = false}) async {
+    /* first save information into general
+    bank account database */
+    int newId = await _saveBankAccountInformation(account);
+    
+    /* check the id, 
+    if it's wrong return an exception in that case */
+    if(newId < 0){
+      throw Exception("DATABASE ERROR: CurrentAccount save didn't end well");
+    }
+
+    /* then save the information inside the 
+    specific database of the current account */
+    await appDatabase.execute(sql: 'INSERT INTO CurrentAccount (id, name) VALUES (?, ?)', 
+      arguments: [newId, account.name]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

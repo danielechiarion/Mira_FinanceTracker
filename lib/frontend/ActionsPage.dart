@@ -11,6 +11,7 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 
 import 'package:mira_finance_tracker/frontend/actions/CounterPartyManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/FinancialInstituteManagementPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewCurrentAccountPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -64,30 +65,7 @@ class _ActionsPageState extends State<ActionsPage> {
         _ActionItem(
           label: 'Nuovo conto corrente',
           icon: Icons.account_balance,
-          pageBuilder: (context, database) => ActionOperationPage(
-            title: 'Nuovo conto corrente',
-            inputBuilder: (context) => const TextField(
-              decoration: InputDecoration(labelText: 'Nome conto'),
-            ),
-            onConfirm: (context) async {
-              // TODO: call the save/processing function for this action
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        _ActionItem(
-          label: 'Nuovo istituto finanziario',
-          icon: Icons.business,
-          pageBuilder: (context, database) => ActionOperationPage(
-            title: 'Nuovo istituto finanziario',
-            inputBuilder: (context) => const TextField(
-              decoration: InputDecoration(labelText: 'Nome istituto'),
-            ),
-            onConfirm: (context) async {
-              // TODO: call the save/processing function for this action
-              Navigator.pop(context);
-            },
-          ),
+          pageBuilder: (context, database) => NewCurrentAccountPage(database: database)
         ),
       ],
     ),
