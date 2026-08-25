@@ -480,6 +480,10 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       fees.add(BankFee.fromMap(singleResult));
     }
 
+    if(close){
+      await appDatabase.close();
+    }
+
     return fees;
   }
 
@@ -490,17 +494,21 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   Future<List<Cashback>> getAccountCashbacks(BankAccount account, {bool close = false}) async {
     List<Map<String, dynamic>> result = [];
 
-    /* get the query to get the account fees
+    /* get the query to get the account cashbacks
     from the database */
     result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
       FROM Cashback WHERE bankAccount = ?''',
       arguments: [account.id]);
 
     /* parse all the data and generate
-    the list of bank fees */
+    the list of bank cashbacks */
     List<Cashback> fees = [];
     for(Map<String, dynamic> singleResult in result){
       fees.add(Cashback.fromMap(singleResult));
+    }
+
+    if(close){
+      await appDatabase.close();
     }
 
     return fees;

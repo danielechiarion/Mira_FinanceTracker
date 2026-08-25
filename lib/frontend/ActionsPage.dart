@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
+import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
+
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
@@ -14,6 +17,7 @@ import 'package:mira_finance_tracker/frontend/actions/FinancialInstituteManageme
 import 'package:mira_finance_tracker/frontend/actions/NewCurrentAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewSavingsAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewCardAccountPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -78,6 +82,16 @@ class _ActionsPageState extends State<ActionsPage> {
           label: 'Nuova carta',
           icon: Icons.card_membership,
           pageBuilder: (context, database) => NewCardAccountPage(database: database)
+        ),
+        _ActionItem(
+          label: 'Nuovo cashback conto',
+          icon: Icons.monetization_on,
+          pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi cashback', nameLabel: 'cashback', database: database, classRequested: Cashback)
+        ),
+        _ActionItem(
+          label: 'Nuova commissione conto',
+          icon: Icons.money_off,
+          pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi commissione', nameLabel: 'commissione', database: database, classRequested: BankFee)
         ),
       ],
     ),

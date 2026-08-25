@@ -181,4 +181,34 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save a cashback inside the bank account
+  /// connected to it
+  /// * [account] bank account connected to the billing
+  /// * [cashback] cashback to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountCashback(BankAccount account, Cashback cashback, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO Cashback (name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+      VALUES (:name, :description, :amount, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      parameters: {...cashback.toMap(), 'bankAccount': account.id});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to save a fee inside the bank account
+  /// connected to it
+  /// * [account] bank account connected to the billing
+  /// * [fee] fee to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountFee(BankAccount account, BankFee fee, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO BankFee (name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+      VALUES (:name, :description, :amount, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      parameters: {...fee.toMap(), 'bankAccount': account.id});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }
