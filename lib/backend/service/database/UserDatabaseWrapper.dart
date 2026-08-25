@@ -159,6 +159,8 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         id INTEGER PRIMARY KEY,
                         name TEXT NOT NULL UNIQUE,
                         cardType INTEGER NOT NULL,
+                        dayOfMonthCredit INTEGER,
+                        lastDateActivityCredit TEXT,
 
                         FOREIGN KEY (id) REFERENCES BankAccount(id) 
                           ON DELETE CASCADE 

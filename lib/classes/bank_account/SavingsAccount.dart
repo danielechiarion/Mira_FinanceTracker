@@ -213,7 +213,7 @@ class SavingsAccount extends BankAccount{
   SavingsAccount clone(){
     return SavingsAccount(super.name, super.bank, super.subscriptionDate, id: super.id, availableBalance: super.availableBalance,
                           IBAN: super.IBAN, interest: super.interest, active: super.isActive, endingDate: super.endingDate,
-                          interestTime: super.interestTime, fees: super.fees, cashbacks: super.cashbacks,
+                          interestTime: super.interestTime.clone(), fees: super.fees, cashbacks: super.cashbacks,
                           transactions: super.transactions, financialInstruments: financialServices, ledgerBalance: _ledgerBalance);
   }
 
@@ -240,22 +240,24 @@ class SavingsAccount extends BankAccount{
   /// so they have to be already converted. 
   factory SavingsAccount.fromMap(Map<String, dynamic> map, List<BankFee> fees, List<Cashback> cashbacks, List<BankTransaction> transactions, 
                                   List<FinancialInstrument> services, FinancialInstitute financialInstitute){
+    final accountMap = Map<String, dynamic>.from(map);
+
     return SavingsAccount(
-      map.remove('name'),
+      accountMap.remove('name'),
       financialInstitute,
-      DateTime.parse(map.remove('subscriptionDate')),
-      id: map.remove('id'),
-      availableBalance: map.remove('availableBalance'),
-      IBAN: map.remove('IBAN'),
-      interest: map.remove('interest'),
-      active: map.remove('active') == 1,
-      endingDate: DateTime.tryParse((map.remove('endingDate') as String?) ?? ''),
-      interestTime: PeriodicAccountDuration.fromMap(map),
+      DateTime.parse(accountMap.remove('subscriptionDate')),
+      id: accountMap.remove('id'),
+      availableBalance: accountMap.remove('availableBalance'),
+      IBAN: accountMap.remove('IBAN'),
+      interest: accountMap.remove('interest'),
+      active: accountMap.remove('active') == 1,
+      endingDate: DateTime.tryParse((accountMap.remove('endingDate') as String?) ?? ''),
+      interestTime: PeriodicAccountDuration.fromMap(accountMap),
       fees: fees,
       cashbacks: cashbacks,
       transactions: transactions,
       financialInstruments: services,
-      ledgerBalance: map['ledgerBalance']
+      ledgerBalance: accountMap['ledgerBalance']
     );
   }
 }

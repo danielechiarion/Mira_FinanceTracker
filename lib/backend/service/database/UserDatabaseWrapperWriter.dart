@@ -174,8 +174,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
 
     /* then save the information inside the 
     specific database of the savings account */
-    await appDatabase.execute(sql: 'INSERT INTO Card (id, name, cardType) VALUES (?, ?, ?)', 
-      arguments: [newId, account.name, account.cardType.index]);
+    await appDatabase.execute(sql: 'INSERT INTO Card (id, name, cardType, dayOfMonthCredit, lastDateActivityCredit) VALUES (?, ?, ?, ?, ?)', 
+      arguments: [newId, account.name, account.cardType.index, account.creditTime?.dayOfMonth, account.creditTime?.lastDateActivity?.toIso8601String()]);
 
     if(close){
       await appDatabase.close();

@@ -228,13 +228,16 @@ class EncryptedDatabase {
   consistently by openAppDatabase and deleteAppDatabase so the singleton
   registry is always indexed with the same key for the same database */
   Future<String> _resolvePath(String dbName) async {
+    final String fullPath;
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       final dbFolder = await getApplicationSupportDirectory();
-      return join(dbFolder.path, dbName);
+      fullPath = join(dbFolder.path, dbName);
     } else {
       final dbFolder = await getDatabasesPath();
-      return join(dbFolder, dbName);
+      fullPath = join(dbFolder, dbName);
     }
+
+    return fullPath;
   }
 
   /* returns the shared connection for the given path, opening it only if

@@ -182,7 +182,7 @@ class Card extends BankAccount{
   Card clone(){
     return Card(super.name, super.bank, super.subscriptionDate, _cardType, id: super.id, availableBalance: super.availableBalance,
                       IBAN: super.IBAN, interest: super.interest, active: super.isActive, endingDate: super.endingDate,
-                      interestTime: super.interestTime, fees: super.fees, cashbacks: super.cashbacks, transactions: super.transactions,
+                      interestTime: super.interestTime.clone(), fees: super.fees, cashbacks: super.cashbacks, transactions: super.transactions,
                       dayOfMonthCredit: _creditTime?.dayOfMonth, lastDateActivityCredit: _creditTime?.lastDateActivity);
   }
 
@@ -208,23 +208,27 @@ class Card extends BankAccount{
   /// All the arguments except for the map comes from other tables,
   /// so they have to be already converted. 
   factory Card.fromMap(Map<String, dynamic> map, List<BankFee> fees, List<Cashback> cashbacks, List<BankTransaction> transactions, FinancialInstitute financialInstitute){
+    final cardMap = Map<String, dynamic>.from(map);
+
     return Card(
-      map.remove('name'),
+      cardMap.remove('name'),
       financialInstitute,
-      DateTime.parse(map.remove('subscriptionDate')),
-      CardType.values[map['cardType']],
-      id: map.remove('id'),
-      availableBalance: map.remove('availableBalance'),
-      IBAN: map.remove('IBAN'),
-      interest: map.remove('interest'),
-      active: map.remove('active') == 1,
-      endingDate: DateTime.tryParse((map.remove('endingDate') as String?) ?? ''),
-      interestTime: PeriodicAccountDuration.fromMap(map),
+      DateTime.parse(cardMap.remove('subscriptionDate')),
+      CardType.values[cardMap['cardType']],
+      id: cardMap.remove('id'),
+      availableBalance: cardMap.remove('availableBalance'),
+      IBAN: cardMap.remove('IBAN'),
+      interest: cardMap.remove('interest'),
+      active: cardMap.remove('active') == 1,
+      endingDate: DateTime.tryParse((cardMap.remove('endingDate') as String?) ?? ''),
+      interestTime: PeriodicAccountDuration.fromMap(cardMap),
       fees: fees,
       cashbacks: cashbacks,
       transactions: transactions,
-      dayOfMonthCredit: map['dayOfMonthCredit'],
-      lastDateActivityCredit: DateTime.parse(map['lastDateActivityCredit'])
+      dayOfMonthCredit: cardMap['dayOfMonthCredit'],
+      lastDateActivityCredit: cardMap['lastDateActivityCredit'] == null
+          ? null
+          : DateTime.parse(cardMap['lastDateActivityCredit'])
     );
   }
 }

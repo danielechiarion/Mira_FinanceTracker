@@ -60,6 +60,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       /* create the map for the financial
       institute object */
       Map<String, dynamic> financialInstituteRaw = {
+        'id': singleResult['financialInstitute'],
         'name': singleResult['institute_name'],
         'email': singleResult['email'],
         'phoneNumber': singleResult['phoneNumber'],
@@ -95,6 +96,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       /* create the map for the financial
       institute object */
       Map<String, dynamic> financialInstituteRaw = {
+        'id': singleResult['financialInstitute'],
         'name': singleResult['institute_name'],
         'email': singleResult['email'],
         'phoneNumber': singleResult['phoneNumber'],
@@ -119,10 +121,11 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Card> cardAccounts = []; // create the list
 
     /* get the query for the bank accounts */
-    List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT Card.id, Card.name, cardType,
+    List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT Card.id, Card.name,
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            FinancialInstitute.name AS institute_name, email, phoneNumber, site
+            FinancialInstitute.name AS institute_name, email, phoneNumber, site,
+            cardType, dayOfMonthCredit, lastDateActivityCredit
             FROM Card JOIN BankAccount on BankAccount.id = Card.id
             JOIN FinancialInstitute ON BankAccount.financialInstitute = FinancialInstitute.id''');
 
@@ -130,6 +133,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       /* create the map for the financial
       institute object */
       Map<String, dynamic> financialInstituteRaw = {
+        'id': singleResult['financialInstitute'],
         'name': singleResult['institute_name'],
         'email': singleResult['email'],
         'phoneNumber': singleResult['phoneNumber'],
