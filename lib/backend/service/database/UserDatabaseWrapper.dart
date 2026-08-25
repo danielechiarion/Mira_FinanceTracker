@@ -17,6 +17,8 @@ import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
+import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
+import 'package:mira_finance_tracker/classes/periodic_transactions/CashBack.dart';
 
 import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';

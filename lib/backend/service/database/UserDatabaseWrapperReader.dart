@@ -459,4 +459,50 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   bool _checkCounterField(List<Map<String, dynamic>> map, String counterFieldName){
     return map[0][counterFieldName] != 0;
   }
+
+  /// Function to get the list of fees
+  /// connected to a bank account
+  /// * [account] bank account selected
+  /// * [close] flag to close database
+  Future<List<BankFee>> getAccountFees(BankAccount account, {bool close = false}) async {
+    List<Map<String, dynamic>> result = [];
+
+    /* get the query to get the account fees
+    from the database */
+    result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
+      FROM BankFee WHERE bankAccount = ?''',
+      arguments: [account.id]);
+
+    /* parse all the data and generate
+    the list of bank fees */
+    List<BankFee> fees = [];
+    for(Map<String, dynamic> singleResult in result){
+      fees.add(BankFee.fromMap(singleResult));
+    }
+
+    return fees;
+  }
+
+  /// Function to get the list of cashbacks
+  /// connected to a bank account
+  /// * [account] bank account selected
+  /// * [close] flag to close database
+  Future<List<Cashback>> getAccountCashbacks(BankAccount account, {bool close = false}) async {
+    List<Map<String, dynamic>> result = [];
+
+    /* get the query to get the account fees
+    from the database */
+    result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
+      FROM Cashback WHERE bankAccount = ?''',
+      arguments: [account.id]);
+
+    /* parse all the data and generate
+    the list of bank fees */
+    List<Cashback> fees = [];
+    for(Map<String, dynamic> singleResult in result){
+      fees.add(Cashback.fromMap(singleResult));
+    }
+
+    return fees;
+  }
 }

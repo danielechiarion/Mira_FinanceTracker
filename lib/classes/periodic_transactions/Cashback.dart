@@ -5,7 +5,7 @@ import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 
 /// Class made to manage the periodic cashback inside a bank accounts,
 /// registering the incomes provided 
-class Cashback extends PeriodiAccountBillings{
+class Cashback extends PeriodicAccountBillings{
   /// Constructor method of the cashback 
   /// inside a bank account, with all the parameters needed
   /// * [name] name of the billing (unique)

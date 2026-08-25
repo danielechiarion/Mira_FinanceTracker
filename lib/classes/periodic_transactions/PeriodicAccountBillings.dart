@@ -7,7 +7,7 @@ import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 /// inside a bank account.
 /// This class will be specified in domiciliation and cashback
 /// applied to a bank account
-abstract class PeriodiAccountBillings{
+abstract class PeriodicAccountBillings{
   /* attributes definition */
   int _id;
   String _name;
@@ -22,7 +22,7 @@ abstract class PeriodiAccountBillings{
   /// * [_cadence] temporal cadence of the billing
   /// * [_description] optional description of the billing
   /// * [_id] ID of the building (if negative it hasn't been set yet)
-  PeriodiAccountBillings(this._name, this._amount, this._cadence, {this._description, this._id = -1});
+  PeriodicAccountBillings(this._name, this._amount, this._cadence, {this._description, this._id = -1});
 
   /* *** GETTER METHODS *** */
   @protected
@@ -47,7 +47,7 @@ abstract class PeriodiAccountBillings{
   /// * [other] object to be compared
   @override
   bool operator ==(Object other){
-    return other is PeriodiAccountBillings && other.runtimeType == runtimeType && 
+    return other is PeriodicAccountBillings && other.runtimeType == runtimeType && 
       other._name == _name;
   }
 
@@ -77,5 +77,5 @@ abstract class PeriodiAccountBillings{
   List<BankTransaction>? checkAndExecute();
 
   /// Method to get a deep clone of the instance
-  PeriodiAccountBillings clone();
+  PeriodicAccountBillings clone();
 }

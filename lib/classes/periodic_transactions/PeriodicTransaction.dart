@@ -6,7 +6,7 @@ import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDura
 /// a bank account which is not related to
 /// the bank fees and cashback configured in the bank account,
 /// but requires another counter party
-abstract class PeriodicTransaction extends PeriodiAccountBillings{
+abstract class PeriodicTransaction extends PeriodicAccountBillings{
   /* attributes definition */
   CounterParty _counterParty;
 

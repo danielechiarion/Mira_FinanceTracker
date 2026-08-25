@@ -5,7 +5,7 @@ import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
 /// Class made to manage the periodic Bank fees inside a bank accounts,
 /// registering the outcomes provided 
-class BankFee extends PeriodiAccountBillings{
+class BankFee extends PeriodicAccountBillings{
   
   /// Constructor method of the Bank fee
   /// inside a bank account, with all the parameters needed
