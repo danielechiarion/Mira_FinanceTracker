@@ -5,23 +5,24 @@ import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 /// income used by the application to identify the different types
 /// of income that can be registered by the user and the application
 enum IncomeCategory{
-  bank_interest("Interesse conto"),
-  bank_cashback("Cashback conto"),
-  financial_interest("Interesse finanziario"),
-  financial_dividend("Dividendo da azione"),
-  financial_cashing("Riscossione capitale investimento"),
-  stock_return("Ricavo vendita azione"),
-  periodic_income("Incasso periodico"),  
-  general_income("Accredito generico"),
-  internal_transfer("Accredito da girofondo"),
-  other("Altro");
+  bank_interest("Interesse conto", false),
+  bank_cashback("Cashback conto", false),
+  financial_interest("Interesse finanziario", false),
+  financial_dividend("Dividendo da azione", false),
+  financial_cashing("Riscossione capitale investimento", false),
+  stock_return("Ricavo vendita azione", false),
+  periodic_income("Incasso periodico", true),  
+  general_income("Accredito generico", true),
+  internal_transfer("Accredito da girofondo", false),
+  other("Altro", true);
 
   /* define attributes */
   final String name;
+  final bool counterPartyRequired;
 
   /* constructor accepting the name
   of the type of movement */
-  const IncomeCategory(this.name);
+  const IncomeCategory(this.name, this.counterPartyRequired);
 
   /// Method to get operations for current account
   static List<IncomeCategory> getCurrentAccountOperations(){
@@ -36,7 +37,7 @@ enum IncomeCategory{
   }
 
   /// Method to get operations for savings account
-  static List<IncomeCategory> getCurrentSavingsOperations(){
+  static List<IncomeCategory> getSavingsAccountOperations(){
     return [
       bank_interest,
       bank_cashback,
@@ -92,9 +93,9 @@ class Income extends BankTransaction{
       'category': _category.index,
       'reference': super.reference,
       'amount': super.amount,
-      'executionDate': super.executionDate,
+      'executionDate': super.executionDate.toIso8601String(),
       'counterParty': super.counterParty?.identifier,
-      'accountingDate': super.accountingDate,
+      'accountingDate': super.accountingDate.toIso8601String(),
     };
   }
 
@@ -108,10 +109,10 @@ class Income extends BankTransaction{
       IncomeCategory.values[categoryIndex],
       map['reference'],
       map['amount'],
-      map['executionDate'],
+      DateTime.parse(map['executionDate']),
       id: map['id'],
       counterParty: counterParty,
-      accountingDate: map['accountingDate']
+      accountingDate: DateTime.parse(map['accountingDate'])
     );
   }
 

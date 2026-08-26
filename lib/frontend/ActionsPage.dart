@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
+import 'package:mira_finance_tracker/classes/transaction/Income.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
-import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 
 import 'package:mira_finance_tracker/frontend/actions/CounterPartyManagementPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/FinancialInstituteManagementPage.dart';
@@ -18,6 +19,7 @@ import 'package:mira_finance_tracker/frontend/actions/NewCurrentAccountPage.dart
 import 'package:mira_finance_tracker/frontend/actions/NewSavingsAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewCardAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewAccountMovementPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -102,30 +104,12 @@ class _ActionsPageState extends State<ActionsPage> {
         _ActionItem(
           label: 'Nuova entrata',
           icon: Icons.arrow_downward,
-          pageBuilder: (context, database) => ActionOperationPage(
-            title: 'Nuova entrata',
-            inputBuilder: (context) => const TextField(
-              decoration: InputDecoration(labelText: 'Importo'),
-            ),
-            onConfirm: (context) async {
-              // TODO: call the save/processing function for this action
-              Navigator.pop(context);
-            },
-          ),
+          pageBuilder: (context, database) => MovementFormPage(title: 'Aggiungi accredito', referenceLabel: 'Accredito', database: database, classRequested: Income)
         ),
         _ActionItem(
           label: 'Nuova uscita',
-          icon: Icons.arrow_upward,
-          pageBuilder: (context, database) => ActionOperationPage(
-            title: 'Nuova uscita',
-            inputBuilder: (context) => const TextField(
-              decoration: InputDecoration(labelText: 'Importo'),
-            ),
-            onConfirm: (context) async {
-              // TODO: call the save/processing function for this action
-              Navigator.pop(context);
-            },
-          ),
+          icon: Icons.arrow_downward,
+          pageBuilder: (context, database) => MovementFormPage(title: 'Aggiungi addebito', referenceLabel: 'Addebito', database: database, classRequested: Outcome)
         ),
       ],
     ),

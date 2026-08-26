@@ -5,23 +5,24 @@ import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 /// different categories of an outcome for the application
 /// made by the user or by the automatic calculation of the software
 enum OutcomeCategory{
-  bank_fee("Commissione conto"),
-  financial_tax("Tassa d'investimento"),
-  domiciliation("Domiciliazione"),
-  general_outcome("Addebito generico"),
-  internal_transfer("Addebito da girofondo"),
-  internal_transfer_fee("Commissione da girofondo"),
-  financial_investment("Investimento"),
-  stock_fee("Tassazione azioni"),
-  stock_loss("Perdita azioni"),
-  other("Altro");
+  bank_fee("Commissione conto", false),
+  financial_tax("Tassa d'investimento", false),
+  domiciliation("Domiciliazione", true),
+  general_outcome("Addebito generico", true),
+  internal_transfer("Addebito da girofondo", false),
+  internal_transfer_fee("Commissione da girofondo", false),
+  financial_investment("Investimento", false),
+  stock_fee("Tassazione azioni", false),
+  stock_loss("Perdita azioni", false),
+  other("Altro", true);
 
   /* define attributes */
   final String name;
+  final bool counterPartyRequired;
 
   /* define constructor allowing names 
   to define the outcome operation */
-  const OutcomeCategory(this.name);
+  const OutcomeCategory(this.name, this.counterPartyRequired);
 
   /// Get the different outcome operations types
   /// for the current account
@@ -95,9 +96,9 @@ class Outcome extends BankTransaction{
       'category': _category.index,
       'reference': super.reference,
       'amount': super.amount,
-      'executionDate': super.executionDate,
+      'executionDate': super.executionDate.toIso8601String(),
       'counterParty': super.counterParty?.identifier,
-      'accountingDate': super.accountingDate,
+      'accountingDate': super.accountingDate.toIso8601String(),
     };
   }
 
@@ -111,10 +112,10 @@ class Outcome extends BankTransaction{
       OutcomeCategory.values[categoryIndex],
       map['reference'],
       map['amount'],
-      map['executionDate'],
+      DateTime.parse(map['executionDate']),
       id: map['id'],
       counterParty: counterParty,
-      accountingDate: map['accountingDate']
+      accountingDate: DateTime.parse(map['accountingDate'])
     );
   }
 
