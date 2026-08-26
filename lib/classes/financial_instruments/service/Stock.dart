@@ -83,7 +83,7 @@ class Stock extends FinancialInstrument{
     /* return the transaction to register */
     List<BankTransaction> transactions = [];
     transactions.add(
-      Outcome(OutcomeCategory.stock_investment, "Acquisto di $sharesBought azioni $_ticker al prezzo di $pricePerShare${currency.symbol} ciascuna", sharesBought*pricePerShare, DateTime.now())
+      Outcome(OutcomeCategory.financial_investment, "Acquisto di $sharesBought azioni $_ticker al prezzo di $pricePerShare${currency.symbol} ciascuna", sharesBought*pricePerShare, DateTime.now())
     );
 
     return transactions;

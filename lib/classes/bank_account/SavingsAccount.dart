@@ -129,7 +129,7 @@ class SavingsAccount extends BankAccount{
     but not displaying it in the list */
     if(transaction is Income && transaction.category == IncomeCategory.financial_cashing){
       super.availableBalance += transaction.amount;
-    }else if(transaction is Outcome && transaction.category == OutcomeCategory.stock_investment){
+    }else if(transaction is Outcome && transaction.category == OutcomeCategory.financial_investment){
       super.availableBalance -= transaction.amount;
     }else{
       /* call the superclass method and updating

@@ -5,16 +5,61 @@ import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 /// income used by the application to identify the different types
 /// of income that can be registered by the user and the application
 enum IncomeCategory{
-  bank_interest,
-  bank_cashback,
-  financial_interest,
-  financial_dividend,
-  financial_cashing,
-  stock_return,
-  periodic_income,  
-  general_income,
-  internal_transfer,
-  other
+  bank_interest("Interesse conto"),
+  bank_cashback("Cashback conto"),
+  financial_interest("Interesse finanziario"),
+  financial_dividend("Dividendo da azione"),
+  financial_cashing("Riscossione capitale investimento"),
+  stock_return("Ricavo vendita azione"),
+  periodic_income("Incasso periodico"),  
+  general_income("Accredito generico"),
+  internal_transfer("Accredito da girofondo"),
+  other("Altro");
+
+  /* define attributes */
+  final String name;
+
+  /* constructor accepting the name
+  of the type of movement */
+  const IncomeCategory(this.name);
+
+  /// Method to get operations for current account
+  static List<IncomeCategory> getCurrentAccountOperations(){
+    return [
+      bank_interest,
+      bank_cashback,
+      periodic_income,
+      general_income,
+      internal_transfer,
+      other
+    ];
+  }
+
+  /// Method to get operations for savings account
+  static List<IncomeCategory> getCurrentSavingsOperations(){
+    return [
+      bank_interest,
+      bank_cashback,
+      financial_interest,
+      financial_cashing,
+      financial_dividend,
+      stock_return,
+      general_income,
+      internal_transfer,
+      other
+    ];
+  }
+
+  /// Method to get operations for card account
+  static List<IncomeCategory> getCardOperations(){
+    return [
+      bank_interest,
+      bank_cashback,
+      general_income,
+      internal_transfer,
+      other
+    ];
+  }
 }
 
 class Income extends BankTransaction{

@@ -5,16 +5,64 @@ import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 /// different categories of an outcome for the application
 /// made by the user or by the automatic calculation of the software
 enum OutcomeCategory{
-  bank_fee,
-  financial_tax,
-  domiciliation,
-  general_outcome,
-  internal_transfer,
-  internal_transfer_fee,
-  stock_investment,
-  stock_fee,
-  stock_loss,
-  other
+  bank_fee("Commissione conto"),
+  financial_tax("Tassa d'investimento"),
+  domiciliation("Domiciliazione"),
+  general_outcome("Addebito generico"),
+  internal_transfer("Addebito da girofondo"),
+  internal_transfer_fee("Commissione da girofondo"),
+  financial_investment("Investimento"),
+  stock_fee("Tassazione azioni"),
+  stock_loss("Perdita azioni"),
+  other("Altro");
+
+  /* define attributes */
+  final String name;
+
+  /* define constructor allowing names 
+  to define the outcome operation */
+  const OutcomeCategory(this.name);
+
+  /// Get the different outcome operations types
+  /// for the current account
+  static List<OutcomeCategory> getCurrentAccountOperations(){
+    return [
+      bank_fee,
+      domiciliation,
+      general_outcome,
+      internal_transfer,
+      internal_transfer_fee,
+      other
+    ];
+  }
+
+  /// Get the different outcome operations types
+  /// for the savings account
+  static List<OutcomeCategory> getSavingsAccountOperations(){
+    return [
+      bank_fee,
+      financial_tax,
+      financial_investment,
+      stock_fee,
+      stock_loss,
+      general_outcome,
+      internal_transfer,
+      internal_transfer_fee,
+      other
+    ];
+  }
+
+  /// Get the different outcome operations types
+  /// for the card account
+  static List<OutcomeCategory> getCardOperations(){
+    return [
+      bank_fee,
+      general_outcome,
+      internal_transfer,
+      internal_transfer_fee,
+      other
+    ];
+  }
 }
 
 class Outcome extends BankTransaction{
