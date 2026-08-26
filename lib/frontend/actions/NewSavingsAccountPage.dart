@@ -56,26 +56,6 @@ class NewSavingsAccountPage extends StatelessWidget {
     DateTime subscriptionDate = DateTime.now();
     DateTime? endingDate;
     bool isActive = true;
-    bool updatingLedger = false;
-
-    void updateLedgerBalance() {
-      final availableBalance = double.tryParse(balanceController.text) ?? 0.0;
-      final ledgerBalance = double.tryParse(ledgerController.text) ?? 0.0;
-
-      if (ledgerBalance >= availableBalance || updatingLedger) return;
-
-      updatingLedger = true;
-      ledgerController.value = ledgerController.value.copyWith(
-        text: availableBalance.toString(),
-        selection: TextSelection.collapsed(offset: availableBalance.toString().length),
-      );
-      updatingLedger = false;
-    }
-
-    final decimalFormatter = TextInputFormatter.withFunction((oldValue, newValue) {
-      final isValid = RegExp(r'^\d*(\.\d*)?$').hasMatch(newValue.text);
-      return isValid ? newValue : oldValue;
-    });
 
     return ActionOperationPage(
       title: 'Nuovo conto deposito',
@@ -143,34 +123,57 @@ class NewSavingsAccountPage extends StatelessWidget {
               TextFormField(
                 controller: balanceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [decimalFormatter],
-                decoration: const InputDecoration(labelText: 'Saldo disponibile'),
-                onChanged: (_) => updateLedgerBalance(),
-                validator: (value) => (value != null && value.isNotEmpty && double.tryParse(value) == null)
-                    ? 'Inserisci un numero valido'
-                    : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Saldo disponibile',
+                  prefixIcon: Icon(Icons.euro, color: Colors.teal),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null; // campo opzionale, default 0
+                  final parsed = double.tryParse(value.replaceAll(',', '.'));
+                  if (parsed == null) return 'Inserisci un numero valido';
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: ledgerController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [decimalFormatter],
-                decoration: const InputDecoration(labelText: 'Saldo contabile'),
-                onChanged: (_) => updateLedgerBalance(),
-                validator: (value) => (value != null && value.isNotEmpty && double.tryParse(value) == null)
-                    ? 'Inserisci un numero valido'
-                    : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Saldo contabile',
+                  prefixIcon: Icon(Icons.euro, color: Colors.teal),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null; // campo opzionale, default 0
+                  final parsed = double.tryParse(value.replaceAll(',', '.'));
+                  if (parsed == null) return 'Inserisci un numero valido';
+                  return null;
+                },
               ),
-              const SizedBox(height: 16),
 
               TextFormField(
                 controller: interestController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Tasso di interesse'),
-                validator: (value) => (value != null && value.isNotEmpty && double.tryParse(value) == null)
-                    ? 'Inserisci un numero valido'
-                    : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Tasso di interesse',
+                  prefixIcon: Icon(Icons.percent, color: Colors.teal),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  final parsed = double.tryParse(value.replaceAll(',', '.'));
+                  if (parsed == null) return 'Inserisci un numero valido';
+                  if(parsed < 0 || parsed > 100) return 'Il tasso deve essere compreso tra 0% e 100%';
+                  return null;
+                },
               ),
             ],
           ),
@@ -184,12 +187,12 @@ class NewSavingsAccountPage extends StatelessWidget {
           selectedInstitute!,
           subscriptionDate,
           IBAN: ibanController.text.trim().isEmpty ? null : ibanController.text.trim(),
-          availableBalance: double.tryParse(balanceController.text.trim()) ?? 0.0,
+          availableBalance: double.tryParse(balanceController.text.trim().replaceAll(',', '.')) ?? 0.0,
           ledgerBalance: [
-            double.tryParse(ledgerController.text.trim()) ?? 0.0,
-            double.tryParse(balanceController.text.trim()) ?? 0.0,
+            double.tryParse(ledgerController.text.trim().replaceAll(',', '.')) ?? 0.0,
+            double.tryParse(balanceController.text.trim().replaceAll(',', '.')) ?? 0.0,
           ].reduce((maximum, value) => maximum > value ? maximum : value),
-          interest: double.tryParse(interestController.text.trim()) ?? 0.0,
+          interest: double.tryParse(interestController.text.trim().replaceAll(',', '.')) ?? 0.0,
           active: isActive,
           endingDate: endingDate,
         );

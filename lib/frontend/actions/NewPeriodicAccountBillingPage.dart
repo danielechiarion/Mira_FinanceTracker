@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
@@ -176,11 +177,19 @@ class PeriodicBillingFormPage extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(labelText: 'Importo'),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+[.,]?\d{0,2}'),
+                    ),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Importo',
+                    prefixIcon: Icon(Icons.euro, color: Colors.teal),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty)
                       return 'Il valore deve essere impostato';
-                    final parsed = double.tryParse(value);
+                    final parsed = double.tryParse(value.replaceAll(',', '.'));
                     if (parsed == null || parsed < 0)
                       return 'Inserisci un importo valido';
                     return null;
@@ -295,7 +304,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
           context,
           selectedAccount!,
           nameController.text.trim(),
-          double.parse(amountController.text.trim()),
+          double.parse(amountController.text.trim().replaceAll(',', '.')),
           descriptionController.text.trim().isEmpty
               ? null
               : descriptionController.text.trim(),

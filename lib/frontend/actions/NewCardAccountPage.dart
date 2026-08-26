@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/classes/bank_account/Card.dart' as card_account;
@@ -134,20 +135,39 @@ class NewCardAccountPage extends StatelessWidget {
               TextFormField(
                 controller: balanceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Saldo disponibile'),
-                validator: (value) => (value != null && value.isNotEmpty && double.tryParse(value) == null)
-                    ? 'Inserisci un numero valido'
-                    : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Saldo disponibile',
+                  prefixIcon: Icon(Icons.euro, color: Colors.teal),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  final parsed = double.tryParse(value.replaceAll(',', '.'));
+                  if (parsed == null) return 'Inserisci un numero valido';
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: interestController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Tasso di interesse'),
-                validator: (value) => (value != null && value.isNotEmpty && double.tryParse(value) == null)
-                    ? 'Inserisci un numero valido'
-                    : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Tasso di interesse',
+                  prefixIcon: Icon(Icons.percent, color: Colors.teal),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  final parsed = double.tryParse(value.replaceAll(',', '.'));
+                  if (parsed == null) return 'Inserisci un numero valido';
+                  if(parsed < 0 || parsed > 100) return 'Il tasso deve essere compreso tra 0% e 100%';
+                  return null;
+                },
               ),
 
               // --- CREDIT DAY SELECTION ---
@@ -189,8 +209,8 @@ class NewCardAccountPage extends StatelessWidget {
           subscriptionDate,
           cardType!,
           IBAN: ibanController.text.trim().isEmpty ? null : ibanController.text.trim(),
-          availableBalance: double.tryParse(balanceController.text.trim()) ?? 0.0,
-          interest: double.tryParse(interestController.text.trim()) ?? 0.0,
+          availableBalance: double.tryParse(balanceController.text.trim().replaceAll(',', '.')) ?? 0.0,
+          interest: double.tryParse(interestController.text.trim().replaceAll(',', '.')) ?? 0.0,
           active: isActive,
           endingDate: endingDate,
           dayOfMonthCredit: creditDay
