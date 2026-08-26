@@ -41,8 +41,10 @@ class Cashback extends PeriodicAccountBillings{
 
   /// Method to build the cashback instance from
   /// a map of the database
-  /// * [map] map of the database
-  factory Cashback.fromMap(Map<String, dynamic> map){
+  /// * [inputMap] map of the database
+  factory Cashback.fromMap(Map<String, dynamic> inputMap){
+    Map<String, dynamic> map = Map<String, dynamic>.from(inputMap);
+    
     /* first get the various parameters */
     int id = map.remove('id');
     String name = map.remove('name');

@@ -188,8 +188,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [cashback] cashback to save
   /// * [close] flag to close the database
   Future<void> saveAccountCashback(BankAccount account, Cashback cashback, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO Cashback (name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
-      VALUES (:name, :description, :amount, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+    await appDatabase.executeWithMap(sql: '''INSERT INTO Cashback (name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, bankAccount)
+      VALUES (:name, :description, :amount, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity, :bankAccount)''',
       parameters: {...cashback.toMap(), 'bankAccount': account.id});
 
     if(close){
@@ -203,8 +203,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [fee] fee to save
   /// * [close] flag to close the database
   Future<void> saveAccountFee(BankAccount account, BankFee fee, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO BankFee (name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
-      VALUES (:name, :description, :amount, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+    await appDatabase.executeWithMap(sql: '''INSERT INTO BankFee (name, description, amount, startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, bankAccount)
+      VALUES (:name, :description, :amount, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity, :bankAccount)''',
       parameters: {...fee.toMap(), 'bankAccount': account.id});
 
     if(close){

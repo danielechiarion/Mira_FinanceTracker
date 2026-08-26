@@ -37,15 +37,24 @@ class ActionOperationPage extends StatefulWidget {
 }
 
 class _ActionOperationPageState extends State<ActionOperationPage> {
+  late final Widget _input;
+
   /// Whether the confirm action is currently being processed.
   /// Used to disable the buttons and show a loading state while
   /// the save/processing function(s) are running.
   bool _isProcessing = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _input = Builder(builder: widget.inputBuilder);
+  }
+
   /// Validates the form (if any) and delegates the actual
   /// save/processing work to the action-specific [ActionOperationPage.onConfirm].
   Future<void> _handleConfirm() async {
-    if (widget.formKey != null && !(widget.formKey!.currentState?.validate() ?? true)) {
+    if (widget.formKey != null &&
+        !(widget.formKey!.currentState?.validate() ?? true)) {
       return;
     }
 
@@ -80,7 +89,10 @@ class _ActionOperationPageState extends State<ActionOperationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          widget.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -94,7 +106,7 @@ class _ActionOperationPageState extends State<ActionOperationPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // --- ACTION-SPECIFIC INPUT AREA ---
-                    Builder(builder: widget.inputBuilder),
+                    _input,
                     const SizedBox(height: 32),
 
                     // --- CONFIRM BUTTON ---
@@ -109,9 +121,15 @@ class _ActionOperationPageState extends State<ActionOperationPage> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
-                          : const Text('CONFERMA', style: TextStyle(fontSize: 16)),
+                          : const Text(
+                              'CONFERMA',
+                              style: TextStyle(fontSize: 16),
+                            ),
                     ),
                     const SizedBox(height: 12),
 
@@ -120,10 +138,16 @@ class _ActionOperationPageState extends State<ActionOperationPage> {
                       onPressed: _isProcessing ? null : _handleCancel,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black87,
-                        side: const BorderSide(color: Color(0xFFD1D1D1), width: 1.5),
+                        side: const BorderSide(
+                          color: Color(0xFFD1D1D1),
+                          width: 1.5,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('ANNULLA', style: TextStyle(fontSize: 16)),
+                      child: const Text(
+                        'ANNULLA',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                   ],
                 ),

@@ -28,6 +28,7 @@ class UniqueNameField extends StatefulWidget {
 
 class _UniqueNameFieldState extends State<UniqueNameField> {
   Timer? _debounceTimer;
+  int _requestId = 0;
   bool _isChecking = false;
   bool _isAvailable = false;
   String? _availabilityMessage;
@@ -41,11 +42,13 @@ class _UniqueNameFieldState extends State<UniqueNameField> {
 
   @override
   void dispose() {
+    _requestId++;
     _debounceTimer?.cancel();
     super.dispose();
   }
 
   void _onChanged(String value) {
+    final requestId = ++_requestId;
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
 
     // unchanged value while editing: no need to check again
@@ -66,17 +69,33 @@ class _UniqueNameFieldState extends State<UniqueNameField> {
 
     _debounceTimer = Timer(const Duration(milliseconds: 600), () async {
       if (value.isEmpty) {
+        if (!mounted || requestId != _requestId) return;
         setState(() => _isChecking = false);
         widget.onAvailabilityChanged(false);
         return;
       }
 
-      final bool available = await widget.checkAvailability(value);
+      bool available;
+      try {
+        available = await widget.checkAvailability(value);
+      } catch (_) {
+        if (!mounted || requestId != _requestId) return;
+        setState(() {
+          _isChecking = false;
+          _isAvailable = false;
+          _availabilityMessage = 'Impossibile verificare il nome';
+        });
+        widget.onAvailabilityChanged(false);
+        return;
+      }
+      if (!mounted || requestId != _requestId) return;
 
       setState(() {
         _isChecking = false;
         _isAvailable = available;
-        _availabilityMessage = available ? 'Nome disponibile' : 'Nome già in uso';
+        _availabilityMessage = available
+            ? 'Nome disponibile'
+            : 'Nome già in uso';
       });
       widget.onAvailabilityChanged(available);
     });
@@ -94,14 +113,23 @@ class _UniqueNameFieldState extends State<UniqueNameField> {
         suffixIcon: _isChecking
             ? const Padding(
                 padding: EdgeInsets.all(12),
-                child: SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
               )
             : (_availabilityMessage == null
-                ? null
-                : Icon(_isAvailable ? Icons.check_circle : Icons.error, color: _isAvailable ? Colors.green : Colors.red)),
+                  ? null
+                  : Icon(
+                      _isAvailable ? Icons.check_circle : Icons.error,
+                      color: _isAvailable ? Colors.green : Colors.red,
+                    )),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+        if (value == null || value.isEmpty) {
+          return 'Il valore deve essere impostato';
+        }
         if (!_isAvailable) return 'Questo nome è già in uso';
         return null;
       },

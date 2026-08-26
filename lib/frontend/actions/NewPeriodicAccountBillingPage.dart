@@ -3,7 +3,8 @@ import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
-import 'package:mira_finance_tracker/classes/bank_account/Card.dart' as card_account;
+import 'package:mira_finance_tracker/classes/bank_account/Card.dart'
+    as card_account;
 import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
@@ -13,7 +14,6 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart'
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
-
 
 /// Shared form to create a periodic account billing (cashback or bank
 /// fee), built on top of [ActionOperationPage]. Cashback and bank fees
@@ -31,7 +31,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
     required this.title,
     required this.nameLabel,
     required this.database,
-    required this.classRequested
+    required this.classRequested,
   });
 
   Future<List<BankAccount>> _loadAccounts() async {
@@ -40,13 +40,15 @@ class PeriodicBillingFormPage extends StatelessWidget {
 
   Future<bool> _isNameAvailable(String name, BankAccount account) async {
     List<PeriodicAccountBillings> billings = [];
-    if(classRequested == Cashback){
+    if (classRequested == Cashback) {
       billings = await database.getAccountCashbacks(account);
-    }else{
+    } else {
       billings = await database.getAccountFees(account);
     }
 
-    return !billings.any((billing) => billing.name.toLowerCase() == name.toLowerCase());
+    return !billings.any(
+      (billing) => billing.name.toLowerCase() == name.toLowerCase(),
+    );
   }
 
   String _accountTypeName(BankAccount account) {
@@ -68,13 +70,31 @@ class PeriodicBillingFormPage extends StatelessWidget {
     DateTime startingDate,
   ) async {
     PeriodicAccountBillings billing; // declare variable for the future object
-    if(classRequested == Cashback){
-      billing = Cashback(name, amount, PeriodicAccountDuration(startingDate, frequency, dayOfMonth, 
-        monthOfYear: monthOfYear), description: description);
+    if (classRequested == Cashback) {
+      billing = Cashback(
+        name,
+        amount,
+        PeriodicAccountDuration(
+          startingDate,
+          frequency,
+          dayOfMonth,
+          monthOfYear: monthOfYear,
+        ),
+        description: description,
+      );
       await database.saveAccountCashback(account, billing as Cashback);
-    }else{
-      billing = BankFee(name, amount, PeriodicAccountDuration(startingDate, frequency, dayOfMonth, 
-        monthOfYear: monthOfYear), description: description);
+    } else {
+      billing = BankFee(
+        name,
+        amount,
+        PeriodicAccountDuration(
+          startingDate,
+          frequency,
+          dayOfMonth,
+          monthOfYear: monthOfYear,
+        ),
+        description: description,
+      );
       await database.saveAccountFee(account, billing as BankFee);
     }
   }
@@ -109,7 +129,9 @@ class PeriodicBillingFormPage extends StatelessWidget {
                   if (snapshot.connectionState != ConnectionState.done) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Center(child: CircularProgressIndicator(color: Colors.teal)),
+                      child: Center(
+                        child: CircularProgressIndicator(color: Colors.teal),
+                      ),
                     );
                   }
 
@@ -118,13 +140,19 @@ class PeriodicBillingFormPage extends StatelessWidget {
                     value: selectedAccount,
                     decoration: const InputDecoration(labelText: 'Conto'),
                     items: accounts
-                        .map((account) => DropdownMenuItem(
-                              value: account,
-                              child: Text('${account.name} (${_accountTypeName(account)})'),
-                            ))
+                        .map(
+                          (account) => DropdownMenuItem(
+                            value: account,
+                            child: Text(
+                              '${account.name} (${_accountTypeName(account)})',
+                            ),
+                          ),
+                        )
                         .toList(),
-                    onChanged: (value) => setLocalState(() => selectedAccount = value),
-                    validator: (value) => value == null ? 'Seleziona un conto' : null,
+                    onChanged: (value) =>
+                        setLocalState(() => selectedAccount = value),
+                    validator: (value) =>
+                        value == null ? 'Seleziona un conto' : null,
                   );
                 },
               ),
@@ -136,19 +164,25 @@ class PeriodicBillingFormPage extends StatelessWidget {
                 UniqueNameField(
                   controller: nameController,
                   label: nameLabel,
-                  checkAvailability: (name) => _isNameAvailable(name, selectedAccount!),
-                  onAvailabilityChanged: (available) => nameAvailable = available,
+                  checkAvailability: (name) =>
+                      _isNameAvailable(name, selectedAccount!),
+                  onAvailabilityChanged: (available) =>
+                      nameAvailable = available,
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(labelText: 'Importo'),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+                    if (value == null || value.isEmpty)
+                      return 'Il valore deve essere impostato';
                     final parsed = double.tryParse(value);
-                    if (parsed == null || parsed < 0) return 'Inserisci un importo valido';
+                    if (parsed == null || parsed < 0)
+                      return 'Inserisci un importo valido';
                     return null;
                   },
                 ),
@@ -157,7 +191,9 @@ class PeriodicBillingFormPage extends StatelessWidget {
                 TextFormField(
                   controller: descriptionController,
                   maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Descrizione (opzionale)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Descrizione (opzionale)',
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -166,27 +202,37 @@ class PeriodicBillingFormPage extends StatelessWidget {
                   value: frequency,
                   decoration: const InputDecoration(labelText: 'Ricorrenza'),
                   items: DurationType.values
-                      .where((durationType) => durationType != DurationType.atMaturity)
-                      .map((durationType) => DropdownMenuItem<DurationType>(
-                            value: durationType,
-                            child: Text(durationType.name),
-                          ))
+                      .where(
+                        (durationType) =>
+                            durationType != DurationType.atMaturity,
+                      )
+                      .map(
+                        (durationType) => DropdownMenuItem<DurationType>(
+                          value: durationType,
+                          child: Text(durationType.name),
+                        ),
+                      )
                       .toList(),
-                  onChanged: (value) => setLocalState(() => frequency = value ?? DurationType.monthly),
+                  onChanged: (value) => setLocalState(
+                    () => frequency = value ?? DurationType.monthly,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   initialValue: dayOfMonth.toString(),
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Giorno del mese'),
+                  decoration: const InputDecoration(
+                    labelText: 'Giorno del mese',
+                  ),
                   onChanged: (value) {
                     final parsed = int.tryParse(value);
                     if (parsed != null) dayOfMonth = parsed;
                   },
                   validator: (value) {
                     final parsed = int.tryParse(value ?? '');
-                    if (parsed == null || parsed < 1 || parsed > 31) return 'Inserisci un giorno tra 1 e 31';
+                    if (parsed == null || parsed < 1 || parsed > 31)
+                      return 'Inserisci un giorno tra 1 e 31';
                     return null;
                   },
                 ),
@@ -197,9 +243,19 @@ class PeriodicBillingFormPage extends StatelessWidget {
                     value: monthOfYear,
                     decoration: const InputDecoration(labelText: 'Mese'),
                     items: List.generate(12, (index) => index + 1)
-                        .map((month) => DropdownMenuItem(value: month, child: Text(DateFormat.MMMM('it_IT').format(DateTime(2024, month)))))
+                        .map(
+                          (month) => DropdownMenuItem(
+                            value: month,
+                            child: Text(
+                              DateFormat.MMMM(
+                                'it_IT',
+                              ).format(DateTime(2024, month)),
+                            ),
+                          ),
+                        )
                         .toList(),
-                    onChanged: (value) => setLocalState(() => monthOfYear = value ?? 1),
+                    onChanged: (value) =>
+                        setLocalState(() => monthOfYear = value ?? 1),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -213,12 +269,16 @@ class PeriodicBillingFormPage extends StatelessWidget {
                       firstDate: DateTime(1970),
                       lastDate: DateTime(2100),
                     );
-                    if (picked != null) setLocalState(() => startingDate = picked);
+                    if (picked != null)
+                      setLocalState(() => startingDate = picked);
                   },
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       labelText: 'Data di inizio',
-                      prefixIcon: Icon(Icons.calendar_today, color: Colors.teal),
+                      prefixIcon: Icon(
+                        Icons.calendar_today,
+                        color: Colors.teal,
+                      ),
                     ),
                     child: Text(dateFormat.format(startingDate)),
                   ),
@@ -236,12 +296,18 @@ class PeriodicBillingFormPage extends StatelessWidget {
           selectedAccount!,
           nameController.text.trim(),
           double.parse(amountController.text.trim()),
-          descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+          descriptionController.text.trim().isEmpty
+              ? null
+              : descriptionController.text.trim(),
           frequency,
           dayOfMonth,
           frequency.index >= DurationType.annual.index ? monthOfYear : null,
           startingDate,
         );
+
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
       },
     );
   }

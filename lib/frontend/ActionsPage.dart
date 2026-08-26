@@ -86,12 +86,12 @@ class _ActionsPageState extends State<ActionsPage> {
         _ActionItem(
           label: 'Nuovo cashback conto',
           icon: Icons.monetization_on,
-          pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi cashback', nameLabel: 'cashback', database: database, classRequested: Cashback)
+          pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi cashback', nameLabel: 'Cashback', database: database, classRequested: Cashback)
         ),
         _ActionItem(
           label: 'Nuova commissione conto',
           icon: Icons.money_off,
-          pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi commissione', nameLabel: 'commissione', database: database, classRequested: BankFee)
+          pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi commissione', nameLabel: 'Commissione', database: database, classRequested: BankFee)
         ),
       ],
     ),
