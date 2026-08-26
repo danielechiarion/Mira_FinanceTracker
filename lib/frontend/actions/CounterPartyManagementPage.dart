@@ -48,7 +48,6 @@ class CounterpartyManagementPage extends StatelessWidget {
             TextFormField(
               controller: ibanController,
               decoration: const InputDecoration(labelText: 'IBAN'),
-              validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
             ),
           ],
         ),
