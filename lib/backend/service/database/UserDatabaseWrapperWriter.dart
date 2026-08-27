@@ -211,4 +211,36 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save a periodic income 
+  /// inside a current account in the database
+  /// * [account] current account where to save the periodic income
+  /// * [periodicIncome] entity to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountPeriodicIncome(CurrentAccount account, PeriodicIncome periodicIncome, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO PeriodicIncome (name, description, amount, bankAccount
+      counterParty, includeStart, timeFrequency, startingDate, dayOfMonth, monthOfYear, lastDateActivity)
+      VALUES (:name, :description, :amount, :counterParty, :includeStart, :timeFrequency, :startingDate, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      parameters: {...periodicIncome.toMap(), 'bankAccount': account.id});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to save a domiciliation
+  /// inside a current account in the database
+  /// * [account] current account where to save the domiciliation
+  /// * [domiciliation] entity to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountDomiciliation(CurrentAccount account, Domiciliation domiciliation, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO Domiciliation (name, description, amount, bankAccount, fee
+      counterParty, includeStart, timeFrequency, startingDate, dayOfMonth, monthOfYear, lastDateActivity)
+      VALUES (:name, :description, :amount, :counterParty, :includeStart, :timeFrequency, :startingDate, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      parameters: {...domiciliation.toMap(), 'bankAccount': account.id});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

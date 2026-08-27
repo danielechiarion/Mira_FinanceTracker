@@ -6,6 +6,8 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart'
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicIncome.dart';
+import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation.dart';
 
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
@@ -21,6 +23,7 @@ import 'package:mira_finance_tracker/frontend/actions/NewCardAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewAccountMovementPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewInternalTransferPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewPeriodicTransactionPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -83,7 +86,7 @@ class _ActionsPageState extends State<ActionsPage> {
         ),
         _ActionItem(
           label: 'Nuova carta',
-          icon: Icons.card_membership,
+          icon: Icons.payment,
           pageBuilder: (context, database) => NewCardAccountPage(database: database)
         ),
         _ActionItem(
@@ -108,14 +111,30 @@ class _ActionsPageState extends State<ActionsPage> {
       color: Colors.indigo,
       actions: [
         _ActionItem(
-          label: 'Nuova entrata',
+          label: 'Nuovo entrata',
           icon: Icons.arrow_downward,
           pageBuilder: (context, database) => MovementFormPage(title: 'Aggiungi accredito', referenceLabel: 'Accredito', database: database, classRequested: Income)
         ),
         _ActionItem(
           label: 'Nuova uscita',
-          icon: Icons.arrow_downward,
+          icon: Icons.arrow_upward,
           pageBuilder: (context, database) => MovementFormPage(title: 'Aggiungi addebito', referenceLabel: 'Addebito', database: database, classRequested: Outcome)
+        ),
+      ],
+    ),
+    _ActionCategory(
+      title: 'Operazioni - conto corrente',
+      color: Colors.redAccent,
+      actions: [
+        _ActionItem(
+          label: 'Nuovo accredito periodico',
+          icon: Icons.move_to_inbox,
+          pageBuilder: (context, database) => PeriodicTransactionFormPage(title: 'Aggiungi accredito', nameLabel: 'Accredito periodico', database: database, classRequested: PeriodicIncome)
+        ),
+        _ActionItem(
+          label: 'Nuova domiciliazione',
+          icon: Icons.receipt_long,
+          pageBuilder: (context, database) => PeriodicTransactionFormPage(title: 'Aggiungi domiciliazione', nameLabel: 'Domiciliazione', database: database, classRequested: Domiciliation)
         ),
       ],
     ),

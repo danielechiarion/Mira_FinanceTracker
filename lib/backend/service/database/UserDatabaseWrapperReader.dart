@@ -509,4 +509,54 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return fees;
   }
+
+  /// Function to get the periodic incomes from the database
+  /// with all the entities connected to them
+  /// * [account] current account where to extract periodic incomes
+  Future<List<PeriodicIncome>> getAccountPeriodicIncomes(CurrentAccount account, {bool close = false}) async {
+    List<PeriodicIncome> periodicIncomes = [];
+    /* get the list of periodic incomes
+    from the database with related entities */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''
+      SELECT PeriodicIncome.id, PeriodicIncome.name, description, amount, 
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
+      Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
+      FROM PeriodicIncome JOIN CounterParty ON CounterParty.id = PeriodicIncome.counterParty
+      WHERE bankAccount = ? ''', arguments: [account.id]);
+    
+    for(Map<String, dynamic> singleResult in result){
+      periodicIncomes.add(PeriodicIncome.fromMap(singleResult, _getCounterPartyFromMap(singleResult)!));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return periodicIncomes;
+  }
+
+  /// Function to get the domiciliations from the database
+  /// with all the entities connected to them
+  /// * [account] current account where to extract domiciliations
+  Future<List<Domiciliation>> getAccountDomiciliations(CurrentAccount account, {bool close = false}) async {
+    List<Domiciliation> domiciliations = [];
+    /* get the list of periodic incomes
+    from the database with related entities */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''
+      SELECT Domiciliation.id, Domiciliation.name, description, amount, fee,
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
+      Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
+      FROM Domiciliation JOIN CounterParty ON CounterParty.id = PeriodicIncome.counterParty
+      WHERE bankAccount = ? ''', arguments: [account.id]);
+    
+    for(Map<String, dynamic> singleResult in result){
+      domiciliations.add(Domiciliation.fromMap(singleResult, _getCounterPartyFromMap(singleResult)!));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return domiciliations;
+  }
 }
