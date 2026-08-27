@@ -220,30 +220,24 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   /// 
   /// * [close] flag to indicate if the database has to be closed at the end of the operation
   Future<List<MonthlyFlow>> getMonthsTrend({int monthTimeWindow = 6, bool close = false}) async {
-    /* get the the first month time window
-    to start, so the farthest one */
+    /* Build each interval independently so months with different lengths
+    do not shift the end date into the following month. */
     DateTime currentDate = DateTime.now();
-    DateTime startingDate = DateTime(currentDate.year, currentDate.month - monthTimeWindow, 1);
-    DateTime endingDate = DateTime(startingDate.year, startingDate.month + 1, 0);
 
     List<MonthlyFlow> results = []; // create list to return results
 
-    /* now cycle all the months and calculate
-    for each one the trend acquired */
     for(int i=0; i<=monthTimeWindow; i++){
-      if(i!=0){
-        startingDate = DateTime(startingDate.year, startingDate.month+i, startingDate.day);
-        endingDate = DateTime(endingDate.year, endingDate.month+i, endingDate.day);
-      }
+      final startingDate = DateTime(currentDate.year, currentDate.month - monthTimeWindow + i, 1);
+      final endingDate = DateTime(startingDate.year, startingDate.month + 1, 1);
 
       /* get the sum of incomes and outcomes and 
       get the result */
       List<Map<String, dynamic>> incomeResult = await appDatabase.query(
-        sql: 'SELECT SUM(amount) AS sum FROM Income WHERE accountingDate >= ? AND accountingDate <= ?',
+        sql: 'SELECT SUM(amount) AS sum FROM Income WHERE accountingDate >= ? AND accountingDate < ?',
         arguments: [startingDate.toIso8601String(), endingDate.toIso8601String()]
       );
       List<Map<String, dynamic>> outcomeResult = await appDatabase.query(
-        sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? AND accountingDate <= ?',
+        sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? AND accountingDate < ?',
         arguments: [startingDate.toIso8601String(), endingDate.toIso8601String()]
       );
 
@@ -275,7 +269,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     create the account share to give 
     to the pie chart */
     for(int i=0;i<bankAccounts.length;i++){
-      distribution.add(AccountShare(label: bankAccounts[i].name, amount: bankAccounts[i].availableBalance, index: i));
+      distribution.add(AccountShare(label: bankAccounts[i].name, amount: bankAccounts[i] is SavingsAccount ? (bankAccounts[i] as SavingsAccount).ledgerBalance : bankAccounts[i].availableBalance, index: i));
     }
 
     return distribution; // return the distribution

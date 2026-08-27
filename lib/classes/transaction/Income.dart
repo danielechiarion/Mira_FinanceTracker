@@ -14,7 +14,7 @@ enum IncomeCategory{
   periodic_income("Incasso periodico", true),  
   general_income("Accredito generico", true),
   internal_transfer("Accredito da girofondo", false),
-  other("Altro", true);
+  other("Altro", false);
 
   /* define attributes */
   final String name;

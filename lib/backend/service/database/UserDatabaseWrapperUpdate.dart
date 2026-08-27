@@ -27,4 +27,23 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save specifically the new balance
+  /// of a bank account, including the ledger balance 
+  /// for a savings account
+  Future<void> updateBankAccountBalance(BankAccount account, {bool close = false}) async {
+    await appDatabase.execute(sql: 'UPDATE BankAccount SET availableBalance=? WHERE id=?', 
+      arguments: [account.availableBalance, account.id]);
+    
+    /* if the account is a savings one 
+    update also the ledger balance */
+    if(account is SavingsAccount){
+      await appDatabase.execute(sql: 'UPDATE SavingsAccount SET ledgerBalance=? WHERE id=?',
+        arguments: [account.ledgerBalance, account.id]);
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

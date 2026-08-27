@@ -14,7 +14,7 @@ enum OutcomeCategory{
   financial_investment("Investimento", false),
   stock_fee("Tassazione azioni", false),
   stock_loss("Perdita azioni", false),
-  other("Altro", true);
+  other("Altro", false);
 
   /* define attributes */
   final String name;

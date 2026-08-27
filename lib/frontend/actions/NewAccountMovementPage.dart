@@ -9,6 +9,7 @@ import 'package:mira_finance_tracker/classes/bank_account/Card.dart'
 import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
+import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
@@ -89,8 +90,9 @@ class MovementFormPage extends StatelessWidget {
     DateTime? accountingDate,
     CounterParty? counterParty,
   ) async {
+    BankTransaction movement;
     if (classRequested == Income) {
-      final movement = Income(
+      movement = Income(
         category,
         reference,
         amount,
@@ -98,10 +100,8 @@ class MovementFormPage extends StatelessWidget {
         counterParty: counterParty,
         accountingDate: accountingDate,
       );
-
-      await database.saveTransactions(account, [movement]);
     } else {
-      final movement = Outcome(
+      movement = Outcome(
         category,
         reference,
         amount,
@@ -109,9 +109,13 @@ class MovementFormPage extends StatelessWidget {
         counterParty: counterParty,
         accountingDate: accountingDate,
       );
-
-      await database.saveTransactions(account, [movement]);
     }
+
+    /* then save the movement inside the 
+    account and update the available balance */
+    await database.saveTransactions(account, [movement]);
+    account.addTransaction(movement);
+    await database.updateBankAccountBalance(account);
   }
 
   @override
@@ -246,7 +250,7 @@ class MovementFormPage extends StatelessWidget {
 
                 TextFormField(
                   controller: referenceController,
-                  decoration: InputDecoration(labelText: referenceLabel),
+                  decoration: InputDecoration(labelText: 'Causale $referenceLabel'),
                   validator: (value) => (value == null || value.trim().isEmpty)
                       ? 'Il valore deve essere impostato'
                       : null,

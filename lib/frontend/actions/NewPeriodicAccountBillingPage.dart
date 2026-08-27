@@ -164,7 +164,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
               if (selectedAccount != null) ...[
                 UniqueNameField(
                   controller: nameController,
-                  label: nameLabel,
+                  label: 'Nome $nameLabel',
                   checkAvailability: (name) =>
                       _isNameAvailable(name, selectedAccount!),
                   onAvailabilityChanged: (available) =>
