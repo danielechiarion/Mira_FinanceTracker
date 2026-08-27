@@ -19,15 +19,12 @@ import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 /// account / ending account, amount / fee).
 class NewInternalTransferPage extends StatelessWidget {
   final UserDatabaseWrapper database;
+  final Future<List<BankAccount>> _accountsFuture;
 
-  const NewInternalTransferPage({
+  NewInternalTransferPage({
     super.key,
     required this.database
-  });
-
-  Future<List<BankAccount>> _loadAccounts() async {
-    return await database.getBankAccounts();
-  }
+  }) : _accountsFuture = database.getBankAccounts();
 
   String _accountTypeName(BankAccount account) {
     if (account is CurrentAccount) return 'conto corrente';
@@ -93,7 +90,7 @@ class NewInternalTransferPage extends StatelessWidget {
             children: [
               // --- STARTING ACCOUNT (the account to debit) ---
               FutureBuilder<List<BankAccount>>(
-                future: _loadAccounts(),
+                future: _accountsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.done) {
                     return const Padding(
@@ -140,7 +137,7 @@ class NewInternalTransferPage extends StatelessWidget {
               if (startingAccount != null) ...[
                 // --- ENDING ACCOUNT (the account to credit) ---
                 FutureBuilder<List<BankAccount>>(
-                  future: _loadAccounts(),
+                  future: _accountsFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
                       return const Padding(

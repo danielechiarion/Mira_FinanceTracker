@@ -231,14 +231,16 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       final endingDate = DateTime(startingDate.year, startingDate.month + 1, 1);
 
       /* get the sum of incomes and outcomes and 
-      get the result */
+      get the result.
+      Exclude the internal transfers in order not to add more money
+      to the counter */
       List<Map<String, dynamic>> incomeResult = await appDatabase.query(
-        sql: 'SELECT SUM(amount) AS sum FROM Income WHERE accountingDate >= ? AND accountingDate < ?',
-        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String()]
+        sql: 'SELECT SUM(amount) AS sum FROM Income WHERE accountingDate >= ? AND accountingDate < ? AND category != ?',
+        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), IncomeCategory.internal_transfer.index]
       );
       List<Map<String, dynamic>> outcomeResult = await appDatabase.query(
-        sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? AND accountingDate < ?',
-        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String()]
+        sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? AND accountingDate < ? AND category != ?',
+        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), OutcomeCategory.internal_transfer.index]
       );
 
       Map<String, dynamic> incomeSum = incomeResult.isNotEmpty ? incomeResult.first : {'sum': 0};

@@ -95,7 +95,7 @@ class Card extends BankAccount{
       super.availableBalance += transaction.amount;
     }
 
-    addTransaction(transaction); // save the transaction
+    super.addTransaction(transaction); // save the transaction
   }
 
   /// Method to remove a transaction considering the 

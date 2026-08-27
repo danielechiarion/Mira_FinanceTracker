@@ -26,7 +26,7 @@ class MonthlyTrendChart extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          height: 220,
+          height: 200,
           child: BarChart(
             BarChartData(
               maxY: maxValue == 0 ? 100 : maxValue * 1.2,
@@ -39,6 +39,7 @@ class MonthlyTrendChart extends StatelessWidget {
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
+                    reservedSize: 32,
                     getTitlesWidget: (value, meta) {
                       final index = value.toInt();
                       if (index < 0 || index >= data.length) return const SizedBox.shrink();

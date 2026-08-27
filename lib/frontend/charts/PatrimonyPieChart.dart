@@ -25,7 +25,7 @@ class PatrimonyPieChart extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          height: 220,
+          height: 200,
           child: PieChart(
             PieChartData(
               sectionsSpace: 2,

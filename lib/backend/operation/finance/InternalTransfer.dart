@@ -64,8 +64,11 @@ class InternalTransfer{
     _endingAccount.addTransactions(endingTransactions);
 
     /* then save them into the database */
-    await _database.saveTransactions(_startingAccount.clone(), startingTransactions);
-    await _database.saveTransactions(_endingAccount.clone(), endingTransactions, close: true);
+    await _database.saveTransactions(_startingAccount, startingTransactions);
+    await _database.updateBankAccountBalance(_startingAccount);
+
+    await _database.saveTransactions(_endingAccount, endingTransactions);
+    await _database.updateBankAccountBalance(_endingAccount);
 
     return true;
   }
