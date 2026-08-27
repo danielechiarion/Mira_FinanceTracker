@@ -20,6 +20,7 @@ import 'package:mira_finance_tracker/frontend/actions/NewSavingsAccountPage.dart
 import 'package:mira_finance_tracker/frontend/actions/NewCardAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewAccountMovementPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewInternalTransferPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -94,6 +95,11 @@ class _ActionsPageState extends State<ActionsPage> {
           label: 'Nuova commissione conto',
           icon: Icons.money_off,
           pageBuilder: (context, database) => PeriodicBillingFormPage(title: 'Aggiungi commissione', nameLabel: 'Commissione', database: database, classRequested: BankFee)
+        ),
+        _ActionItem(
+          label: 'Nuovo girofondo',
+          icon: Icons.currency_exchange_outlined,
+          pageBuilder: (context, database) => NewInternalTransferPage(database: database)
         ),
       ],
     ),

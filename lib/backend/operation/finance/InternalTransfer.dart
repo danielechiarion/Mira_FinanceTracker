@@ -2,7 +2,6 @@ import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
-import 'package:mira_finance_tracker/classes/account/User.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
@@ -16,17 +15,17 @@ class InternalTransfer{
   double _fee;
   DateTime _executionDate;
   DateTime _accountingDate;
-  User _user;
+  UserDatabaseWrapper _database;
 
   /// Constructor of the internal transfer with all the necessary parameters
-  /// * [_user] owner of the two bank accounts
+  /// * [_database] database for the operation
   /// * [_startingAccount] bank account where to start the operation
   /// * [_endingAccount] bank account where to end the operation
   /// * [_amount] amount of money of the transfer
   /// * [_fee] fee applied for the transfer to the starting account
   /// * [_executionDate] date of execution of the transfer
   /// * [_accountingDate] date when the transfer has been accounted
-  InternalTransfer(this._user, this._startingAccount, this._endingAccount, this._amount,
+  InternalTransfer(this._database, this._startingAccount, this._endingAccount, this._amount,
     {DateTime? executionDate, DateTime? accountingDate, this._fee = 0.0}):
     _executionDate = executionDate ?? DateTime.now(), _accountingDate = accountingDate ?? executionDate ?? DateTime.now(){
       /* control attributes validity */
@@ -65,9 +64,8 @@ class InternalTransfer{
     _endingAccount.addTransactions(endingTransactions);
 
     /* then save them into the database */
-    UserDatabaseWrapper database = UserDatabaseWrapper(_user);
-    await database.saveTransactions(_startingAccount.clone(), startingTransactions);
-    await database.saveTransactions(_endingAccount.clone(), endingTransactions, close: true);
+    await _database.saveTransactions(_startingAccount.clone(), startingTransactions);
+    await _database.saveTransactions(_endingAccount.clone(), endingTransactions, close: true);
 
     return true;
   }
