@@ -218,9 +218,9 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [periodicIncome] entity to save
   /// * [close] flag to close the database
   Future<void> saveAccountPeriodicIncome(CurrentAccount account, PeriodicIncome periodicIncome, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO PeriodicIncome (name, description, amount, bankAccount
+    await appDatabase.executeWithMap(sql: '''INSERT INTO PeriodicIncome (name, description, amount, bankAccount,
       counterParty, includeStart, timeFrequency, startingDate, dayOfMonth, monthOfYear, lastDateActivity)
-      VALUES (:name, :description, :amount, :counterParty, :includeStart, :timeFrequency, :startingDate, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      VALUES (:name, :description, :amount, :bankAccount, :counterParty, :includeStart, :timeFrequency, :startingDate, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
       parameters: {...periodicIncome.toMap(), 'bankAccount': account.id});
 
     if(close){
@@ -234,9 +234,9 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [domiciliation] entity to save
   /// * [close] flag to close the database
   Future<void> saveAccountDomiciliation(CurrentAccount account, Domiciliation domiciliation, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO Domiciliation (name, description, amount, bankAccount, fee
+    await appDatabase.executeWithMap(sql: '''INSERT INTO Domiciliation (name, description, amount, bankAccount, fee,
       counterParty, includeStart, timeFrequency, startingDate, dayOfMonth, monthOfYear, lastDateActivity)
-      VALUES (:name, :description, :amount, :counterParty, :includeStart, :timeFrequency, :startingDate, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
+      VALUES (:name, :description, :amount, :bankAccount, :fee, :counterParty, :includeStart, :timeFrequency, :startingDate, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
       parameters: {...domiciliation.toMap(), 'bankAccount': account.id});
 
     if(close){

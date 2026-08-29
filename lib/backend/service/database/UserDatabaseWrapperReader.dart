@@ -519,8 +519,8 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     from the database with related entities */
     List<Map<String, dynamic>> result = await appDatabase.query(sql: '''
       SELECT PeriodicIncome.id, PeriodicIncome.name, description, amount, 
-      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
-      Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
+      Counterparty.id AS counter_id, CounterParty.name AS counter_name, IBAN AS counter_IBAN
       FROM PeriodicIncome JOIN CounterParty ON CounterParty.id = PeriodicIncome.counterParty
       WHERE bankAccount = ? ''', arguments: [account.id]);
     
@@ -544,9 +544,9 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     from the database with related entities */
     List<Map<String, dynamic>> result = await appDatabase.query(sql: '''
       SELECT Domiciliation.id, Domiciliation.name, description, amount, fee,
-      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
-      Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-      FROM Domiciliation JOIN CounterParty ON CounterParty.id = PeriodicIncome.counterParty
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
+      Counterparty.id AS counter_id, CounterParty.name AS counter_name, IBAN AS counter_IBAN
+      FROM Domiciliation JOIN CounterParty ON CounterParty.id = Domiciliation.counterParty
       WHERE bankAccount = ? ''', arguments: [account.id]);
     
     for(Map<String, dynamic> singleResult in result){
