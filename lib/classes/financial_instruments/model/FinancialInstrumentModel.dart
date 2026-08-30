@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
@@ -53,7 +51,6 @@ abstract class FinancialInstrumentModel{
   }
 
   /* *** GETTER METHODS *** */
-  @protected
   int get id => _id;
   String get name => _name;
   String? get description => _description;

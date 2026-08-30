@@ -46,4 +46,40 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to update time deposit model inside the database
+  /// * [model] model to update
+  /// * [close] flag to close the database
+  Future<void> updateTimeDepositModel(TimeDepositModel model, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''UPDATE TimeDepositModel SET description = :description, taxRate = :taxRate,
+      interestRate = :interestRate, isCashable = :isCashable, earlyWithdrawalInterestRate = :earlyWithdrawalInterestRate,
+      duration = :duration, payoutFrequency = :payoutFrequency''',
+      parameters: model.toMap());
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to update bond model inside the database
+  /// * [model] model to update
+  /// * [close] flag to close the database
+  Future<void> updateBondModel(BondModel model, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''UPDATE BondModel SET description = :description, taxRate = :taxRate,
+      duration = :duration, payoutFrequency = :payoutFrequency, interestType = :interestType''',
+      parameters: model.toMap());
+    
+    /* to update the step interests
+    delete the previous ones and add them again */
+    await appDatabase.query(sql: 'DELETE FROM BondModel WHERE name = ?', arguments: [model.name]);
+    for(StepInterest singleInterest in model.interests){
+      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterest (position, bond, interestRate, duration)
+        VALUES (:position, :bond, :interestRate, :duration)''',
+        parameters: {'bond': model.id, ...singleInterest.toMap()});
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

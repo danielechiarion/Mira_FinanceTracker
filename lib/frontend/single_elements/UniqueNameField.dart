@@ -80,7 +80,7 @@ class _UniqueNameFieldState extends State<UniqueNameField> {
         available = await widget.checkAvailability(value);
       } catch (e) {
         if (!mounted || requestId != _requestId) return;
-        print(e);
+        // print(e);
         setState(() {
           _isChecking = false;
           _isAvailable = false;

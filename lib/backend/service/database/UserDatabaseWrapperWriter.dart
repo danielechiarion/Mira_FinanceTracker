@@ -243,4 +243,70 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to delete a time deposit model
+  /// from database, without the control of related entities,
+  /// which exists and has to be done before.
+  /// * [model] model to delete
+  /// * [close] flag to close the database
+  Future<void> deleteTimeDepositModel(TimeDepositModel model, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM TimeDepositModel WHERE name = ?', arguments: [model.name]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete a bond model
+  /// from database, without the control of related entities,
+  /// which exists and has to be done before.
+  /// * [model] model to delete
+  /// * [close] flag to close the database
+  Future<void> deleteBondModel(BondModel model, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM BondModel WHERE name = ?', arguments: [model.name]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to save time deposit model 
+  /// inside the database
+  /// * [model] model to save
+  /// * [close] flag to close database
+  Future<void> saveTimeDepositModel(TimeDepositModel model, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO TimeDepositModel (name, provider, providerType, 
+      payoutFrequency, description, duration, taxRate, interestRate, earlyWithdrawalInterestRate, isCashable)
+      VALUES (:name, :provider, :providerType, :payoutFrequency, :description, :duration, :taxRate, :interestRate,
+      :earlyWithdrawalInterestRate, :isCashable)''',
+      parameters: model.toMap());
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to save bond model 
+  /// inside the database and
+  /// its related step interests
+  /// * [model] model to save
+  /// * [close] flag to close database
+  Future<void> saveBondModel(BondModel model, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO BondModel (name, provider, providerType, 
+      payoutFrequency, description, duration, taxRate, :interestType)
+      VALUES (:name, :provider, :providerType, :payoutFrequency, :description, :duration, :taxRate, :interestType)''',
+      parameters: model.toMap());
+
+    /* for each step interest
+    save them into the database */
+    for(StepInterest singleInterest in model.interests){
+      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterest (position, bond, interestRate, duration)
+        VALUES (:position, :bond, :interestRate, :duration)''',
+        parameters: {'bond': model.id, ...singleInterest.toMap()});
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

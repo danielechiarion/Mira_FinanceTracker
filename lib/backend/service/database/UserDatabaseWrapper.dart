@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +20,9 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart'
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicIncome.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/model/TimeDepositModel.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/model/BondModel.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/elements/StepInterest.dart';
 
 import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';

@@ -185,7 +185,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
     
     if(close){
-      appDatabase.close();
+      await appDatabase.close();
     }
     
     transactions.sort(); // sort the transactions before sending them
@@ -252,7 +252,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
 
     if(close){
-      appDatabase.close();
+      await appDatabase.close();
     }
 
     return results;
@@ -558,5 +558,151 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
 
     return domiciliations;
+  }
+
+  /// Function to get time deposit models saved inside the database
+  /// * [close] flag to close the database
+  Future<List<TimeDepositModel>> getTimeDepositModels({bool close = false}) async {
+    /* get the elements using database query */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDepositModel.id, TimeDeposit.name,
+      provider, providerType, payoutFrequency, description, duration, taxRate, interestRate, earlyWithdrawalInterestRate, isCashable,
+      FinancialInstitute.name AS institute_name, email, phoneNumber, site
+      FROM TimeDepositModel LEFT JOIN FinancialInstitute ON TimeDepositModel.provider = FinancialInstitute.id''');
+
+    List<TimeDepositModel> timeDepositModels = [];
+    for(Map<String, dynamic> singleResult in result){
+      /* create the map for the financial
+      institute object only if there is a connection */
+      FinancialInstitute? provider;
+      if(singleResult['provider'] == null){
+        Map<String, dynamic> financialInstituteRaw = {
+          'id': singleResult['provider'],
+          'name': singleResult['institute_name'],
+          'email': singleResult['email'],
+          'phoneNumber': singleResult['phoneNumber'],
+          'site': singleResult['site']
+        };
+        provider = FinancialInstitute.fromMap(financialInstituteRaw);
+      }
+
+      timeDepositModels.add(TimeDepositModel.fromMap(singleResult, provider));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return timeDepositModels;
+  }
+
+  /// Function to get bond models saved inside the database
+  /// * [close] flag to close the database
+  Future<List<BondModel>> getBondModels({bool close = false}) async {
+    /* database query to get only the bond model object */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDepositModel.id, TimeDeposit.name,
+      provider, providerType, payoutFrequency, description, duration, taxRate, interestType,
+      FinancialInstitute.name AS institute_name, email, phoneNumber, site
+      FROM BondModel LEFT JOIN FinancialInstitute ON BondModel.provider = FinancialInstitute.id''');
+
+    List<BondModel> bondModels = [];
+
+    for(Map<String, dynamic> singleResult in result){
+      /* create the map for the financial
+      institute object only if there is a connection */
+      FinancialInstitute? provider;
+      if(singleResult['provider'] == null){
+        Map<String, dynamic> financialInstituteRaw = {
+          'id': singleResult['provider'],
+          'name': singleResult['institute_name'],
+          'email': singleResult['email'],
+          'phoneNumber': singleResult['phoneNumber'],
+          'site': singleResult['site']
+        };
+        provider = FinancialInstitute.fromMap(financialInstituteRaw);
+      }
+
+      /* now for each bond model
+      gets its interests */
+      List<StepInterest> interests = [];
+      List<Map<String, dynamic>> rawInterests = await appDatabase.query(sql: '''SELECT position, interestRate, duration
+        FROM StepInterestModel WHERE bond = ?''', arguments: [singleResult['id']]);
+      for(Map<String, dynamic> singleInterest in rawInterests){
+        interests.add(StepInterest.fromMap(singleInterest));
+      }
+
+      /* now, with all the required elements
+      it's possible to finally add the bond model
+      to the corresponding list */
+      interests.sort();
+      bondModels.add(BondModel.fromMap(singleResult, provider, interests.toSet()));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return bondModels;
+  }
+
+  /// Function to check if the name is available
+  /// inside the list of time deposit models
+  /// saved inside the database
+  /// * [name] name to check
+  Future<bool> checkTimeDepositModelNameAvailability(String name) async{
+    /* get the query from the database */
+    List<Map<String, dynamic>> result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM TimeDepositModel WHERE name = ?) AS model_exists',
+      arguments: [name],
+    );
+
+    if(result.isNotEmpty){
+      return result.first['model_exists'] != 1;
+    }
+
+    return false;
+  }
+
+  /// Function to check if the name is available
+  /// inside the list of bond models
+  /// saved inside the database
+  /// * [name] name to check
+  Future<bool> checkBondModelNameAvailability(String name) async{
+    /* get the query from the database */
+    List<Map<String, dynamic>> result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM BondModel WHERE name = ?) AS model_exists',
+      arguments: [name],
+    );
+
+    if(result.isNotEmpty){
+      return result.first['model_exists'] != 1;
+    }
+
+    return false;
+  }
+
+  /// Function to check if a time deposit model can be deleted,
+  /// which means that has no entities connected to it
+  /// * [model] model to control
+  Future<bool> checkTimeDepositModelDeletion(TimeDepositModel model) async {
+    /* make the query to count how many entities are
+    connected to the model */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT COUNT(id) AS counter
+      FROM TimeDeposit WHERE instrumentUsed = ?''',
+      arguments: [model.name]);
+
+    return !_checkCounterField(result, 'counter');
+  }
+
+  /// Function to check if a bond model can be deleted,
+  /// which means that has no entities connected to it
+  /// * [model] model to control
+  Future<bool> checkBondModelDeletion(BondModel model) async {
+    /* make the query to count how many entities are
+    connected to the model */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT COUNT(id) AS counter
+      FROM BondModel WHERE instrumentUsed = ?''',
+      arguments: [model.name]);
+
+    return !_checkCounterField(result, 'counter');
   }
 }
