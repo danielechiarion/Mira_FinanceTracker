@@ -37,10 +37,10 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
   /// There also some other variables used to build the time information attribute, 
   /// which is an instance of the [LimitedAccountDuration] class helping on understanding whether it's time
   /// to calculate the interests and the fees.
-  TimeDeposit(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, String instrumentUsed, this._interestRate,
+  TimeDeposit(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, this._interestRate,
     DateTime startingDate, DurationType frequency, int dayOfMonth, 
     {int? monthOfYear, bool? includeStart, DateTime? lastDateActivity, bool? includeEnd, DateTime ?endingDate, LongDuration? duration,
-    int id = -1, FinancialInstitute? provider, double? currentValue, FinancialInstrumentStatus? status, 
+    int id = -1, FinancialInstitute? provider, double? currentValue, FinancialInstrumentStatus? status, String? instrumentUsed,
     this._isCashable = true, this._earlyWithdrawalInterestRate = 0.0}) :
     super(name, providerType, initialValue, taxRate, 
     id: id, provider: provider, instrumentUsed: instrumentUsed, currentValue: currentValue, financialInstrumentStatus: status) {
@@ -72,6 +72,14 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
                                 {DateTime? startingDate, int? id, int? day, int? month, bool includeStart = false, bool includeEnd = false, double? currentValue}){
     /* define missing attributes */
     DateTime firstDate = startingDate ?? DateTime.now();
+    
+    /* calculate ending date by adding the model's duration to the starting date */
+    DateTime endingDate = DateTime(
+      firstDate.year + model.duration.years,
+      firstDate.month + model.duration.months,
+      firstDate.day,
+    ).add(Duration(days: model.duration.days));
+    
     /* for day of month and month year, pickup the 
     one of the starting date */
     int dayOfMonth = day ?? firstDate.day;
@@ -86,7 +94,6 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       model.providerType,
       initialValue,
       model.taxRate,
-      model.name,
       model.interestRate,
       firstDate,
       model.payoutFrequency,
@@ -94,10 +101,12 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       monthOfYear: monthOfYear,
       includeStart: includeStart,
       includeEnd: includeEnd,
+      endingDate: endingDate,
       id: id ?? -1,
       currentValue: currentValue,
       duration: model.duration.clone(),
-      provider: model.provider?.clone()
+      provider: model.provider?.clone(),
+      instrumentUsed: model.name
     );
   }
 
@@ -285,7 +294,6 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       super.providerType,
       super.initialValue,
       super.taxRate,
-      super.instrumentModelName!,
       _interestRate,
       _timeInfo.startingDate,
       _timeInfo.timeFrequency,
@@ -299,7 +307,8 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       provider: super.provider?.clone(),
       currentValue: super.currentValue,
       isCashable: _isCashable,
-      earlyWithdrawalInterestRate: _earlyWithdrawalInterestRate
+      earlyWithdrawalInterestRate: _earlyWithdrawalInterestRate,
+      instrumentUsed: super.instrumentModelName!
     );
   }
 
@@ -310,7 +319,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
     return {
       ...super.toMap(),
       'interestRate': _interestRate,
-      'isCashable': _isCashable,
+      'isCashable': _isCashable ? 1 : 0,
       'earlyWithdrawalInterestRate': _earlyWithdrawalInterestRate,
       ..._timeInfo.toMap()
     };

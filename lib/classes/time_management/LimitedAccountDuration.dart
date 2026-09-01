@@ -112,7 +112,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
   Map<String, dynamic> toMap(){
     Map<String, dynamic> additionalMap = {
       'endingDate': _endingDate.toIso8601String(),
-      'includeEnd': _includeEnd
+      'includeEnd': _includeEnd ? 1 : 0
     };
     return {...super.toMap(), ...additionalMap};
   }

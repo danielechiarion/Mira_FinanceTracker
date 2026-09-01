@@ -24,6 +24,7 @@ import 'package:mira_finance_tracker/frontend/actions/NewAccountMovementPage.dar
 import 'package:mira_finance_tracker/frontend/actions/NewInternalTransferPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewPeriodicTransactionPage.dart';
 import 'package:mira_finance_tracker/frontend/actions/FinancialInstrumentModelManagementPage.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewTimeDepositPage.dart';
 
 /// ACTION PAGES from the functional analysis: entry point to add bank
 /// accounts, financial institutes, operations and financial instruments,
@@ -146,6 +147,11 @@ class _ActionsPageState extends State<ActionsPage> {
           label: 'Gestisci modelli servizi finanziari',
           icon: Icons.miscellaneous_services,
           pageBuilder: (context, database) => FinancialInstrumentModelManagementPage(database: database)
+        ),
+        _ActionItem(
+          label: 'Nuovo deposito a tempo',
+          icon: Icons.savings,
+          pageBuilder: (context, database) => NewTimeDepositPage(database: database,)
         ),
       ],
     ),

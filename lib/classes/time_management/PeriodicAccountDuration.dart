@@ -35,9 +35,6 @@ class PeriodicAccountDuration {
     if(_monthOfYear != null && (_monthOfYear! <0 || _monthOfYear! >12)){
       throw Exception("Month of year value expressed is not valid");
     }
-    if(_timeFrequency == DurationType.atMaturity){
-      throw Exception("Period account duration doesn't have an expiration date, so the signal cannot be sent at maturity");
-    }
   }
 
   /* *** GETTER METHODS *** */

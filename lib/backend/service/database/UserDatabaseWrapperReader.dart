@@ -705,4 +705,43 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return !_checkCounterField(result, 'counter');
   }
+
+  /// Function to get the list of time deposits 
+  /// connected to the specified savings account
+  /// * [account] savings account selected
+  /// * [close] flag to close the database
+  Future<List<TimeDeposit>> getAccountTimeDeposits(SavingsAccount account, {bool close = false}) async {
+    List<TimeDeposit> timeDeposits = [];
+    /* get the list of time deposits 
+    from the database connected to their 
+    financial institutes */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDeposit.id, TimeDeposit.name,
+      provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, interestRate, earlyWithdrawalInterestRate, isCashable,
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
+      FinancialInstitute.name AS institute_name, email, phoneNumber, site
+      FROM TimeDeposit LEFT JOIN FinancialInstitute ON TimeDeposit.provider = FinancialInstitute.id
+      WHERE bankAccount = ?''', arguments: [account.id]);
+
+    /* cycle all the queries found and 
+    get the corresponding time deposit */
+    for(Map<String, dynamic> deposit in result){
+      /* create the map for the financial
+      institute object only if there is a connection */
+      FinancialInstitute? provider;
+      if(deposit['provider'] != null){
+        Map<String, dynamic> financialInstituteRaw = {
+          'id': deposit['provider'],
+          'name': deposit['institute_name'],
+          'email': deposit['email'],
+          'phoneNumber': deposit['phoneNumber'],
+          'site': deposit['site']
+        };
+        provider = FinancialInstitute.fromMap(financialInstituteRaw);
+      }
+
+      timeDeposits.add(TimeDeposit.fromMap(deposit, provider));
+    }
+
+    return timeDeposits;
+  }
 }

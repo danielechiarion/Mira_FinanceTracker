@@ -41,11 +41,11 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
   /// There also some other variables used to build the time information attribute, 
   /// which is an instance of the [LimitedAccountDuration] class helping on understanding whether it's time
   /// to calculate the interests and the fees.
-  Bond(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, String instrumentUsed,
+  Bond(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, 
     DateTime startingDate, DurationType frequency, int dayOfMonth, 
     this._purchasePrice, this._interestType,
     {int? monthOfYear, bool? includeStart, DateTime? lastDateActivity, bool? includeEnd, DateTime ?endingDate, LongDuration? duration,
-    int id = -1, FinancialInstitute? provider, double? currentValue, FinancialInstrumentStatus? status,
+    int id = -1, FinancialInstitute? provider, double? currentValue, FinancialInstrumentStatus? status, String? instrumentUsed,
     this._minimumDenomination = 1000, List<StepInterest>? couponSchedule}) : 
     super(name, providerType, initialValue, taxRate, 
     id: id, provider: provider, instrumentUsed: instrumentUsed, currentValue: currentValue, financialInstrumentStatus: status) {
@@ -103,7 +103,6 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       model.providerType,
       initialValue,
       model.taxRate,
-      model.name,
       firstDate,
       model.payoutFrequency,
       dayOfMonth,
@@ -117,7 +116,8 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       duration: model.duration.clone(),
       provider: model.provider?.clone(),
       minimumDenomination: minimumDenomination,
-      couponSchedule: model.interests
+      couponSchedule: model.interests,
+      instrumentUsed: model.name,
     );
   }
 
@@ -452,7 +452,6 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       super.providerType,
       super.initialValue,
       super.taxRate,
-      super.instrumentModelName!,
       _timeInfo.startingDate,
       _timeInfo.timeFrequency,
       _timeInfo.dayOfMonth,
@@ -467,7 +466,8 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       provider: super.provider?.clone(),
       currentValue: super.currentValue,
       couponSchedule: couponSchedule,
-      minimumDenomination: _minimumDenomination
+      minimumDenomination: _minimumDenomination,
+      instrumentUsed: super.instrumentModelName!,
     );
   }
 

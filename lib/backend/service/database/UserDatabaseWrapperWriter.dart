@@ -310,4 +310,23 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save a time deposit related to the
+  /// savings account selected inside the database
+  /// * [account] savings account connected to the time deposit
+  /// * [timeDeposit] service to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountTimeDeposit(SavingsAccount account, TimeDeposit timeDeposit, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO TimeDeposit (name, provider, providerType, instrumentUsed,
+      currentValue, initialValue, taxRate, status, interestRate, earlyWithdrawalInterestRate, isCashable, 
+      startingDate, timeFrequency, includeStart, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
+      bankAccount) VALUES (:name, :provider, :providerType, :instrumentUsed,
+      :currentValue, :initialValue, :taxRate, :status, :interestRate, :earlyWithdrawalInterestRate, :isCashable, 
+      :startingDate, :timeFrequency, :includeStart, :dayOfMonth, :monthOfYear, :lastDateActivity, :endingDate, :includeEnd,
+      :bankAccount)''', parameters: {...timeDeposit.toMap(), 'bankAccount': account.id});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }
