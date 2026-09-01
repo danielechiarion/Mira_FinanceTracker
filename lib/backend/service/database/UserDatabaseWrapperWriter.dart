@@ -292,15 +292,16 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [model] model to save
   /// * [close] flag to close database
   Future<void> saveBondModel(BondModel model, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO BondModel (name, provider, providerType, 
-      payoutFrequency, description, duration, taxRate, :interestType)
+    final int insertedId = await appDatabase.executeWithMap(sql: '''INSERT INTO BondModel (name, provider, providerType, 
+      payoutFrequency, description, duration, taxRate, interestType)
       VALUES (:name, :provider, :providerType, :payoutFrequency, :description, :duration, :taxRate, :interestType)''',
       parameters: model.toMap());
+    model.id = insertedId;
 
     /* for each step interest
     save them into the database */
     for(StepInterest singleInterest in model.interests){
-      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterest (position, bond, interestRate, duration)
+      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterestModel (position, bond, interestRate, duration)
         VALUES (:position, :bond, :interestRate, :duration)''',
         parameters: {'bond': model.id, ...singleInterest.toMap()});
     }

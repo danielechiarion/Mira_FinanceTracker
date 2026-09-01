@@ -44,3 +44,39 @@ class DollarAmountField extends StatelessWidget {
     );
   }
 }
+
+class InterestAmountField extends DollarAmountField {
+  const InterestAmountField({
+    super.key,
+    required super.controller,
+    required super.label,
+    super.isRequired = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        // only digits and a single decimal point are allowed
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        prefixText: '% ',
+      ),
+      validator: (value) {
+        if (!isRequired) return null;
+        if (value == null || value.trim().isEmpty) {
+          return 'Campo obbligatorio';
+        }
+        final double? parsed = double.tryParse(value);
+        if (parsed == null || parsed <= 0) {
+          return 'Inserisci un valore valido';
+        }
+        return null;
+      },
+    );
+  }
+}

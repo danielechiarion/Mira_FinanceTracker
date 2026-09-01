@@ -59,7 +59,7 @@ class TimeDepositModel extends FinancialInstrumentModel{
   Map<String, dynamic> toMap(){
     return {
       ...super.toMap(),
-      'isCashable': _isCashable,
+      'isCashable': _isCashable ? 1 : 0,
       'interestRate': _interestRate,
       'earlyWithdrawalInterestRate': _earlyWithdrawalInterestRate
     };
@@ -73,7 +73,7 @@ class TimeDepositModel extends FinancialInstrumentModel{
     return TimeDepositModel(
       map['name'],
       FinancialInstrumentProvider.values[map['providerType']],
-      LongDuration.fromString('duration'),
+      LongDuration.fromString(map['duration']),
       DurationType.values[map['payoutFrequency']],
       map['interestRate'],
       id: map['id'],

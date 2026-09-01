@@ -70,7 +70,7 @@ class _StepInterestEditorState extends State<StepInterestEditor> {
               onChanged: (value) => duration = value,
             ),
             const SizedBox(height: 16),
-            DollarAmountField(
+            InterestAmountField(
               controller: rateController,
               label: 'Tasso di interesse',
               isRequired: true,
@@ -133,7 +133,7 @@ class _StepInterestEditorState extends State<StepInterestEditor> {
             child: ListTile(
               dense: true,
               title: Text('Step ${interest.position + 1}: ${interest.duration}'),
-              subtitle: Text('Tasso: \$${interest.interestRate}'),
+              subtitle: Text('Tasso: ${interest.interestRate}%'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

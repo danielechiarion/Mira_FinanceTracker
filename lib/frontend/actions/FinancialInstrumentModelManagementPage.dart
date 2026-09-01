@@ -72,16 +72,24 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
 
   Future<void> _reloadTimeDeposits() async {
     final future = _loadTimeDeposits();
+    final data = await future;
+
     if (!mounted) return;
-    setState(() => _timeDepositsFuture = future);
-    await future;
+
+    setState(() {
+      _timeDepositsFuture = Future.value(data);
+    });
   }
 
   Future<void> _reloadBonds() async {
     final future = _loadBonds();
+    final data = await future;
+
     if (!mounted) return;
-    setState(() => _bondsFuture = future);
-    await future;
+
+    setState(() {
+      _bondsFuture = Future.value(data);
+    });
   }
 
   /// Checks, among the time deposits already saved, whether [name] is
@@ -267,9 +275,9 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
               maxLines: 2,
             ),
             const SizedBox(height: 16),
-            DollarAmountField(controller: taxRateController, label: 'Aliquota fiscale'),
+            InterestAmountField(controller: taxRateController, label: 'Aliquota fiscale'),
             const SizedBox(height: 16),
-            DollarAmountField(controller: interestRateController, label: 'Tasso di interesse annuo', isRequired: true),
+            InterestAmountField(controller: interestRateController, label: 'Tasso di interesse annuo', isRequired: true),
             const SizedBox(height: 16),
             _CashableSection(
               initialIsCashable: isCashable,
@@ -326,6 +334,11 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
     final nameController = TextEditingController(text: existing?.name ?? '');
     final descriptionController = TextEditingController(text: existing?.description ?? '');
     final taxRateController = TextEditingController(text: existing != null ? existing.taxRate.toString() : '0');
+    final fixedRateController = TextEditingController(
+      text: existing != null && existing.interestType == BondType.fixed && existing.interests.isNotEmpty
+          ? existing.interests.first.interestRate.toString()
+          : '',
+    );
     final formKey = GlobalKey<FormState>();
 
     bool nameAvailable = existing != null;
@@ -386,16 +399,39 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
               maxLines: 2,
             ),
             const SizedBox(height: 16),
-            DollarAmountField(controller: taxRateController, label: 'Aliquota fiscale'),
+            InterestAmountField(controller: taxRateController, label: 'Aliquota fiscale'),
             const SizedBox(height: 16),
-            _InterestTypeSection(
-              initialInterestType: interestType,
-              initialInterests: interests,
-              onChanged: (newType, newInterests) {
-                interestType = newType;
-                interests = newInterests;
+            DropdownButtonFormField<BondType>(
+              value: interestType,
+              decoration: const InputDecoration(labelText: 'Tipo di tasso'),
+              items: BondType.values.map((value) => DropdownMenuItem(value: value, child: Text(value.name))).toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  interestType = value;
+                  if (value != BondType.fixed && interests.isEmpty) {
+                    interests = [];
+                  }
+                });
               },
             ),
+            const SizedBox(height: 16),
+            if (interestType == BondType.fixed) ...[
+              InterestAmountField(
+                controller: fixedRateController,
+                label: 'Tasso di interesse annuo',
+                isRequired: true,
+              ),
+            ] else ...[
+              _InterestTypeSection(
+                initialInterestType: interestType,
+                initialInterests: interests,
+                onChanged: (newType, newInterests) {
+                  interestType = newType;
+                  interests = newInterests;
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -403,6 +439,16 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
         if (existing == null && !nameAvailable) return;
 
         final double taxRate = double.tryParse(taxRateController.text) ?? 0.0;
+        final List<StepInterest> finalInterests = interestType == BondType.fixed
+            ? [
+                StepInterest(
+                  0,
+                  duration,
+                  double.tryParse(fixedRateController.text) ??
+                      (existing != null && existing.interests.isNotEmpty ? existing.interests.first.interestRate : 0.0),
+                ),
+              ]
+            : interests;
 
         if (existing == null) {
           final newBond = BondModel(
@@ -414,7 +460,7 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
             description: descriptionController.text.trim(),
             provider: provider,
             taxRate: taxRate,
-            interests: interests.toSet(),
+            interests: finalInterests.toSet(),
           );
 
           await widget.database.saveBondModel(newBond);
@@ -424,7 +470,7 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
           existing.duration = duration;
           existing.payoutFrequency = payoutFrequency;
           existing.interestType = interestType;
-          existing.interests = interests;
+          existing.interests = finalInterests;
 
           await widget.database.updateBondModel(existing);
         }
@@ -555,7 +601,7 @@ class _FinancialInstrumentModelManagementPageState extends State<FinancialInstru
         child: const Icon(Icons.savings_outlined, color: Colors.teal, size: 18),
       ),
       title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text('Tasso: \$${item.interestRate} • Durata: ${item.duration}'),
+      subtitle: Text('Tasso: ${item.interestRate}% • Durata: ${item.duration}'),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -714,6 +760,12 @@ class _ProviderSectionState extends State<_ProviderSection> {
                 value: selectedValue,
                 decoration: const InputDecoration(labelText: 'Istituto finanziario'),
                 items: institutes.map((institute) => DropdownMenuItem(value: institute, child: Text(institute.name))).toList(),
+                validator: (value) {
+                  if (_providerType == FinancialInstrumentProvider.financialInstitution && value == null) {
+                    return 'Seleziona un istituto finanziario';
+                  }
+                  return null;
+                },
                 onChanged: (value) {
                   setState(() => _provider = value);
                   widget.onChanged(_providerType, _provider);
@@ -812,7 +864,7 @@ class _CashableSectionState extends State<_CashableSection> {
         ),
         if (_isCashable) ...[
           const SizedBox(height: 8),
-          DollarAmountField(
+          InterestAmountField(
             controller: widget.earlyWithdrawalController,
             label: 'Tasso di interesse per riscatto anticipato',
           ),

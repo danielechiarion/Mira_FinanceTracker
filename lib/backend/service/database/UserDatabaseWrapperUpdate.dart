@@ -71,9 +71,9 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
     
     /* to update the step interests
     delete the previous ones and add them again */
-    await appDatabase.query(sql: 'DELETE FROM BondModel WHERE name = ?', arguments: [model.name]);
+    await appDatabase.query(sql: 'DELETE FROM StepInterestModel WHERE bond = ?', arguments: [model.id]);
     for(StepInterest singleInterest in model.interests){
-      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterest (position, bond, interestRate, duration)
+      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterestModel (position, bond, interestRate, duration)
         VALUES (:position, :bond, :interestRate, :duration)''',
         parameters: {'bond': model.id, ...singleInterest.toMap()});
     }

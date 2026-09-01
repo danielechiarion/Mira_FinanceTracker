@@ -178,7 +178,7 @@ class BondModel extends FinancialInstrumentModel implements InterestList{
     return BondModel(
       map['name'],
       FinancialInstrumentProvider.values[map['providerType']],
-      LongDuration.fromString('duration'),
+      LongDuration.fromString(map['duration']),
       DurationType.values[map['payoutFrequency']],
       BondType.values[map['interestType']],
       id: map['id'],

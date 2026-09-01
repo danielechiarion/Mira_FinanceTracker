@@ -140,7 +140,7 @@ class _ActionsPageState extends State<ActionsPage> {
     ),
     _ActionCategory(
       title: 'Operazioni - conto deposito',
-      color: Colors.yellowAccent,
+      color: Colors.purpleAccent,
       actions: [
         _ActionItem(
           label: 'Gestisci modelli servizi finanziari',

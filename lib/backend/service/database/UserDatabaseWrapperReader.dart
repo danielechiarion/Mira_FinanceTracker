@@ -564,7 +564,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   /// * [close] flag to close the database
   Future<List<TimeDepositModel>> getTimeDepositModels({bool close = false}) async {
     /* get the elements using database query */
-    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDepositModel.id, TimeDeposit.name,
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDepositModel.id, TimeDepositModel.name,
       provider, providerType, payoutFrequency, description, duration, taxRate, interestRate, earlyWithdrawalInterestRate, isCashable,
       FinancialInstitute.name AS institute_name, email, phoneNumber, site
       FROM TimeDepositModel LEFT JOIN FinancialInstitute ON TimeDepositModel.provider = FinancialInstitute.id''');
@@ -574,7 +574,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       /* create the map for the financial
       institute object only if there is a connection */
       FinancialInstitute? provider;
-      if(singleResult['provider'] == null){
+      if(singleResult['provider'] != null){
         Map<String, dynamic> financialInstituteRaw = {
           'id': singleResult['provider'],
           'name': singleResult['institute_name'],
@@ -599,7 +599,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   /// * [close] flag to close the database
   Future<List<BondModel>> getBondModels({bool close = false}) async {
     /* database query to get only the bond model object */
-    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDepositModel.id, TimeDeposit.name,
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT BondModel.id, BondModel.name,
       provider, providerType, payoutFrequency, description, duration, taxRate, interestType,
       FinancialInstitute.name AS institute_name, email, phoneNumber, site
       FROM BondModel LEFT JOIN FinancialInstitute ON BondModel.provider = FinancialInstitute.id''');
@@ -610,7 +610,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       /* create the map for the financial
       institute object only if there is a connection */
       FinancialInstitute? provider;
-      if(singleResult['provider'] == null){
+      if(singleResult['provider'] != null){
         Map<String, dynamic> financialInstituteRaw = {
           'id': singleResult['provider'],
           'name': singleResult['institute_name'],
@@ -700,7 +700,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     /* make the query to count how many entities are
     connected to the model */
     List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT COUNT(id) AS counter
-      FROM BondModel WHERE instrumentUsed = ?''',
+      FROM Bond WHERE instrumentUsed = ?''',
       arguments: [model.name]);
 
     return !_checkCounterField(result, 'counter');
