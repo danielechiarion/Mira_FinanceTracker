@@ -680,6 +680,22 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     return false;
   }
 
+  /// Function to check if the name is available
+  /// inside the list of time deposits saved in the database
+  /// * [name] name to check
+  Future<bool> checkTimeDepositNameAvailability(String name) async{
+    List<Map<String, dynamic>> result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM TimeDeposit WHERE LOWER(name) = LOWER(?)) AS deposit_exists',
+      arguments: [name],
+    );
+
+    if(result.isNotEmpty){
+      return result.first['deposit_exists'] != 1;
+    }
+
+    return false;
+  }
+
   /// Function to check if a time deposit model can be deleted,
   /// which means that has no entities connected to it
   /// * [model] model to control

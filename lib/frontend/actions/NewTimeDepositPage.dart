@@ -13,6 +13,7 @@ import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/LongDurationField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/DollarAmountField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
 
 /// Page to actually subscribe a [TimeDeposit] on a savings account
 /// ("conto deposito"), built on top of [ActionOperationPage] just like
@@ -95,11 +96,8 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
     return widget.database.getFinancialInstitutes();
   }
 
-  /// Checks, among the time deposits already opened on [account],
-  /// whether [name] is still available.
-  Future<bool> _isNameAvailable(String name, SavingsAccount account) async {
-    final timeDeposits = await widget.database.getAccountTimeDeposits(account);
-    return !timeDeposits.any((deposit) => deposit.name.toLowerCase() == name.toLowerCase());
+  Future<bool> _isNameAvailable(String name) async {
+    return widget.database.checkTimeDepositNameAvailability(name);
   }
 
   /// Validates if the financial instrument provider is compatible with the savings account.
@@ -225,6 +223,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
     final dateFormat = DateFormat('dd/MM/yyyy');
 
     SavingsAccount? selectedAccount;
+    bool nameAvailable = false;
     bool useModel = false; // false = from scratch, true = from a saved model
     TimeDepositModel? selectedModel;
 
@@ -444,18 +443,11 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
                   const SizedBox(height: 16),
 
                   // --- INSTANCE-SPECIFIC DATA (always editable, model or not) ---
-                  TextFormField(
+                  UniqueNameField(
                     controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nome deposito',
-                      prefixIcon: Icon(Icons.label, color: Colors.teal),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Inserisci un nome';
-                      }
-                      return null;
-                    },
+                    label: 'Nome deposito',
+                    checkAvailability: _isNameAvailable,
+                    onAvailabilityChanged: (available) => nameAvailable = available,
                   ),
                   const SizedBox(height: 16),
 
@@ -504,36 +496,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
       onConfirm: (context) async {
         if (selectedAccount == null) return;
         if (useModel && selectedModel == null) return;
-
-        // Verify that the name is available before proceeding
         final name = nameController.text.trim();
-        if (name.isEmpty) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Inserisci un nome per il deposito')),
-            );
-          }
-          return;
-        }
-
-        try {
-          final isNameAvailable = await _isNameAvailable(name, selectedAccount!);
-          if (!isNameAvailable) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Il nome è già in uso')),
-              );
-            }
-            return;
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Errore nella verifica del nome: $e')),
-            );
-          }
-          return;
-        }
 
         final DurationType effectiveFrequency = useModel ? (selectedModel?.payoutFrequency ?? DurationType.monthly) : frequency;
         final int effectiveDayOfMonth = startingDate.day;
