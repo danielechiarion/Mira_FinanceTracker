@@ -329,4 +329,31 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save a bond related to the
+  /// savings account selected inside the database
+  /// * [account] savings account connected to the bond
+  /// * [bond] bond to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountBond(SavingsAccount account, Bond bond, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO Bond (name, provider, providerType, instrumentUsed,
+      currentValue, initialValue, taxRate, status, purchasePrice, interestType, minimumDenomination, 
+      startingDate, timeFrequency, includeStart, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
+      bankAccount) VALUES (:name, :provider, :providerType, :instrumentUsed,
+      :currentValue, :initialValue, :taxRate, :status, :purchasePrice, :interestType, :minimumDenomination, 
+      :startingDate, :timeFrequency, :includeStart, :dayOfMonth, :monthOfYear, :lastDateActivity, :endingDate, :includeEnd,
+      :bankAccount)''', parameters: {...bond.toMap(), 'bankAccount': account.id});
+
+    /* then save all the step interests inside 
+    the corresponding table */
+    for(StepInterest singleInterest in bond.couponSchedule){
+      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterest (position, bond, interestRate, duration)
+        VALUES (:position, :bond, :interestRate, :duration)''',
+        parameters: {'bond': bond.id, ...singleInterest.toMap()});
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

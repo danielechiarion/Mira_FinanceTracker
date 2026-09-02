@@ -24,6 +24,7 @@ import 'package:mira_finance_tracker/classes/financial_instruments/model/TimeDep
 import 'package:mira_finance_tracker/classes/financial_instruments/model/BondModel.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/StepInterest.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/TimeDeposit.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/service/Bond.dart';
 
 import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';

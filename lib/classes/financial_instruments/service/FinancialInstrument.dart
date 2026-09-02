@@ -54,7 +54,6 @@ abstract class FinancialInstrument {
     }
 
   /* *** GETTER METHODS *** */
-  @protected
   int get id => _id;
   String get name => _name;
   String? get instrumentModelName => _instrumentUsed;

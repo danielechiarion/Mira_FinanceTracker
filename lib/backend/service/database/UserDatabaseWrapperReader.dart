@@ -696,6 +696,22 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     return false;
   }
 
+  /// Function to check if the name is available
+  /// inside the list of bonds saved in the database
+  /// * [name] name to check
+  Future<bool> checkBondNameAvailability(String name) async{
+    List<Map<String, dynamic>> result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM Bond WHERE LOWER(name) = LOWER(?)) AS bond_exists',
+      arguments: [name],
+    );
+
+    if(result.isNotEmpty){
+      return result.first['bond_exists'] != 1;
+    }
+
+    return false;
+  }
+
   /// Function to check if a time deposit model can be deleted,
   /// which means that has no entities connected to it
   /// * [model] model to control
