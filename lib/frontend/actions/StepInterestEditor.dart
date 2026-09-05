@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/StepInterest.dart';
 import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/LongDurationField.dart';
-import 'package:mira_finance_tracker/frontend/single_elements/DollarAmountField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/NumericAmountField.dart';
 
 /// Reusable widget to manage the list of [StepInterest] entries of a
 /// bond model: it shows every step already configured and lets the

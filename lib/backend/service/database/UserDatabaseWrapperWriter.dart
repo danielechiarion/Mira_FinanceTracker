@@ -380,4 +380,22 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save the stock related to the savings account
+  /// inside the database
+  /// * [account] savings account connected to the stock
+  /// * [stock] stock to save
+  /// * [close] flag to close the database
+  Future<void> saveAccountStock(SavingsAccount account, Stock stock, {bool close = false}) async {
+    await appDatabase.executeWithMap(sql: '''INSERT INTO STOCK (name, bankAccount, provider, providerType,
+      instrumentUsed, initialValue, currentValue, taxRate, status, totalShares, averagePurchasePrice, currency,
+      totalDividends, startingDate, endingDate, ticker)
+      VALUES (:name, :bankAccount, :provider, :providerType, :instrumentUsed, :initialValue, :currentValue, 
+      :taxRate, :status, :totalShares, :averagePurchasePrice, :currency, :totalDividends, :startingDate, :endingDate, :ticker)''',
+      parameters: {...stock.toMap(), 'bankAccount': account.id});
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

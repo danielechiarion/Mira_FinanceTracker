@@ -776,4 +776,20 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return timeDeposits;
   }
+
+  /// Function to check if the name is available
+  /// inside the list of stocks saved in the database
+  /// * [name] name to check
+  Future<bool> checkStockNameAvailability(String name) async{
+    List<Map<String, dynamic>> result = await appDatabase.query(
+      sql: 'SELECT EXISTS(SELECT 1 FROM Stock WHERE LOWER(name) = LOWER(?)) AS stock_exists',
+      arguments: [name],
+    );
+
+    if(result.isNotEmpty){
+      return result.first['stock_exists'] != 1;
+    }
+
+    return false;
+  }
 }

@@ -12,7 +12,7 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/LongDurationField.dart';
-import 'package:mira_finance_tracker/frontend/single_elements/DollarAmountField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/NumericAmountField.dart';
 import 'package:mira_finance_tracker/frontend/actions/StepInterestEditor.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';

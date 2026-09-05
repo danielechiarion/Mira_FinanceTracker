@@ -34,12 +34,12 @@ class Stock extends FinancialInstrument{
   /// * [_totalDividends] counter of possible dividends distributed by the company
   /// * [_startingDate] date of the start of the shares purchasing
   /// * [_endingDate] date of the end of the stock use, when everything has been sold
-  Stock(String name, double initialValue, double taxRate, String instrumentUsed, FinancialInstitute provider,
+  Stock(String name, double initialValue, double taxRate, FinancialInstitute provider,
     this._ticker, this._currency, this._startingDate, 
     {int id = -1, double? currentValue, FinancialInstrumentStatus? status,
     this._totalShares = 0, this._averagePurchasePrice = 0, this._totalDividends = 0, this._endingDate}) :
     super(name, FinancialInstrumentProvider.financialInstitution, initialValue, taxRate, 
-    id: id, provider: provider, instrumentUsed: instrumentUsed, currentValue: currentValue, financialInstrumentStatus: status){
+    id: id, provider: provider, instrumentUsed: null, currentValue: currentValue, financialInstrumentStatus: status){
       /* check the validity of the attributes */
       if(_totalShares < 0){
         throw Exception("In a stock the total shares acquired can't be less than 0");
@@ -179,7 +179,6 @@ class Stock extends FinancialInstrument{
       super.name,
       super.initialValue,
       super.taxRate,
-      super.instrumentModelName!,
       super.provider!.clone(),
       _ticker,
       _currency,
@@ -229,7 +228,6 @@ class Stock extends FinancialInstrument{
       map['name'],
       map['initialValue'],
       map['taxRate'],
-      map['instrumentUsed'],
       provider,
       map['ticker'],
       Currency.values[map['currency']],
