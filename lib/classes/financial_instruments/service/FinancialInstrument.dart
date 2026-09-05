@@ -159,7 +159,7 @@ abstract class FinancialInstrument {
       'name': _name,
       'instrumentUsed': _instrumentUsed,
       'providerType': _providerType.index,
-      if (_provider != null) 'provider': _provider!.id,
+      'provider': _provider?.id,
       'initialValue': _initialValue,
       'currentValue': _currentValue,
       'status': _status.index,

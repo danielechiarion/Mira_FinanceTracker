@@ -542,6 +542,16 @@ class _NewBondPageState extends State<NewBondPage> {
         if (useModel && selectedModel == null) return;
         if (!useModel && interestType == BondType.step && interests.isEmpty) return;
 
+        final name = nameController.text.trim();
+        if (!await _isNameAvailable(name)) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Esiste già un’obbligazione con questo nome.')),
+            );
+          }
+          return;
+        }
+
         if (useModel &&
             selectedModel!.providerType == FinancialInstrumentProvider.financialInstitution &&
             selectedModel!.provider == null) {
@@ -553,7 +563,6 @@ class _NewBondPageState extends State<NewBondPage> {
           return;
         }
 
-        final name = nameController.text.trim();
         final DurationType effectiveFrequency = useModel ? (selectedModel?.payoutFrequency ?? DurationType.monthly) : frequency;
         final int effectiveDayOfMonth = startingDate.day;
         final int? effectiveMonthOfYear = effectiveFrequency.index >= DurationType.annual.index ? startingDate.month : null;
@@ -591,6 +600,7 @@ class _NewBondPageState extends State<NewBondPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Impossibile salvare l\'obbligazione: $error')),
             );
+            print('Error saving bond: $error');
           }
           return;
         }

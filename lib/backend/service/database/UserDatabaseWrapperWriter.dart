@@ -336,21 +336,45 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [bond] bond to save
   /// * [close] flag to close the database
   Future<void> saveAccountBond(SavingsAccount account, Bond bond, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO Bond (name, provider, providerType, instrumentUsed,
-      currentValue, initialValue, taxRate, status, purchasePrice, interestType, minimumDenomination, 
-      startingDate, timeFrequency, includeStart, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
-      bankAccount) VALUES (:name, :provider, :providerType, :instrumentUsed,
-      :currentValue, :initialValue, :taxRate, :status, :purchasePrice, :interestType, :minimumDenomination, 
-      :startingDate, :timeFrequency, :includeStart, :dayOfMonth, :monthOfYear, :lastDateActivity, :endingDate, :includeEnd,
-      :bankAccount)''', parameters: {...bond.toMap(), 'bankAccount': account.id});
+    await appDatabase.transaction((transaction) async {
+      final bondMap = bond.toMap();
+      final insertedId = await transaction.rawInsert('''INSERT INTO Bond (name, provider, providerType, instrumentUsed,
+        currentValue, initialValue, taxRate, status, purchasePrice, interestType, minimumDenomination,
+        startingDate, timeFrequency, includeStart, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
+        bankAccount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [
+        bondMap['name'],
+        bondMap['provider'],
+        bondMap['providerType'],
+        bondMap['instrumentUsed'],
+        bondMap['currentValue'],
+        bondMap['initialValue'],
+        bondMap['taxRate'],
+        bondMap['status'],
+        bondMap['purchasePrice'],
+        bondMap['interestType'],
+        bondMap['minimumDenomination'],
+        bondMap['startingDate'],
+        bondMap['timeFrequency'],
+        bondMap['includeStart'],
+        bondMap['dayOfMonth'],
+        bondMap['monthOfYear'],
+        bondMap['lastDateActivity'],
+        bondMap['endingDate'],
+        bondMap['includeEnd'],
+        account.id,
+      ]);
+      bond.id = insertedId;
 
-    /* then save all the step interests inside 
-    the corresponding table */
-    for(StepInterest singleInterest in bond.couponSchedule){
-      await appDatabase.executeWithMap(sql: '''INSERT INTO StepInterest (position, bond, interestRate, duration)
-        VALUES (:position, :bond, :interestRate, :duration)''',
-        parameters: {'bond': bond.id, ...singleInterest.toMap()});
-    }
+      for (final singleInterest in bond.couponSchedule) {
+        await transaction.rawInsert('''INSERT INTO StepInterest (position, bond, interestRate, duration)
+          VALUES (?, ?, ?, ?)''', [
+          singleInterest.position,
+          bond.id,
+          singleInterest.interestRate,
+          singleInterest.duration.toString(),
+        ]);
+      }
+    });
 
     if(close){
       await appDatabase.close();
