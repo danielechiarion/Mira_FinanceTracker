@@ -15,6 +15,7 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 import 'package:mira_finance_tracker/frontend/single_elements/LongDurationField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/DollarAmountField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 import 'package:mira_finance_tracker/frontend/actions/StepInterestEditor.dart';
 
 /// Page to actually subscribe a [Bond] on a savings account ("conto
@@ -545,9 +546,7 @@ class _NewBondPageState extends State<NewBondPage> {
         final name = nameController.text.trim();
         if (!await _isNameAvailable(name)) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Esiste già un’obbligazione con questo nome.')),
-            );
+            AppToast.show(context, 'Esiste già un’obbligazione con questo nome.', ToastType.error);
           }
           return;
         }
@@ -555,12 +554,8 @@ class _NewBondPageState extends State<NewBondPage> {
         if (useModel &&
             selectedModel!.providerType == FinancialInstrumentProvider.financialInstitution &&
             selectedModel!.provider == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Il modello selezionato non ha un istituto finanziario associato.'),
-            ),
-          );
-          return;
+              AppToast.show(context, 'Il modello selezionato non ha un istituto finanziario associato.', ToastType.error);
+              return;
         }
 
         final DurationType effectiveFrequency = useModel ? (selectedModel?.payoutFrequency ?? DurationType.monthly) : frequency;
@@ -597,10 +592,7 @@ class _NewBondPageState extends State<NewBondPage> {
           );
         } catch (error) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Impossibile salvare l\'obbligazione: $error')),
-            );
-            print('Error saving bond: $error');
+            AppToast.show(context, 'Errore durante il salvataggio dell’obbligazione: $error', ToastType.fatal);
           }
           return;
         }
