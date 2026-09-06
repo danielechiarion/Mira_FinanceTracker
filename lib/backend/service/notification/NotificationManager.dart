@@ -210,4 +210,10 @@ class NotificationManager {
   void dispose() {
     _onNotificationClick.close();
   }
+
+  /// Function to generate a random notification
+  /// ID for the application
+  static int generateNotificationID(){
+    return DateTime.now().millisecondsSinceEpoch % 100000;
+  }
 }

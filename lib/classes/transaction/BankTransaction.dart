@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
 
 /// Abstract class to define a simple bank
 /// transaction inside whatever bank account created
@@ -103,4 +104,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
 
   /// Method to get a deep clone of the instance
   BankTransaction clone();
+
+  /// Method to convert a transaction to notification
+  NotificationData toNotification();
 }

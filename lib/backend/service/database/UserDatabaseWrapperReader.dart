@@ -72,7 +72,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
 
     if(close){
-      appDatabase.close();
+      await appDatabase.close();
     }
 
     return currentAccounts;
@@ -791,5 +791,40 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
 
     return false;
+  }
+
+  /* function to get periodic account billings
+  coming from a bank account, and adding it to
+  its list */
+  Future<void> _searchAccountPeriodicBillings(BankAccount account) async {
+    /* call the method to get account cashbacks
+    and add them to the list */
+    List<Cashback> cashbacks = await getAccountCashbacks(account);
+    for(Cashback singleCashback in cashbacks){
+      account.addCashback(singleCashback);
+    }
+
+    /* do the same for the bank fees */
+    List<BankFee> bankFees = await getAccountFees(account);
+    for(BankFee singleFee in bankFees){
+      account.addFee(singleFee);
+    }
+  }
+
+  /* function to search all the periodic transactions registered
+  connected to a bank account */
+  Future<void> _searchCurrentAccountPeriodicTransactions(CurrentAccount account) async {
+    /* use the function already provided from the database
+    to search for the periodic transactions connected 
+    to a bank accound and update the dedicated lists */
+    List<PeriodicIncome> periodicIncomes = await getAccountPeriodicIncomes(account);
+    for(PeriodicIncome singlePeriodicIncome in periodicIncomes){
+      account.addPeriodicIncome(singlePeriodicIncome);
+    }
+
+    List<Domiciliation> domiciliations = await getAccountDomiciliations(account);
+    for(Domiciliation singleDomiciliation in domiciliations){
+      account.addDomiciliation(singleDomiciliation);
+    }
   }
 }

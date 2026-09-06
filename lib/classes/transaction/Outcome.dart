@@ -1,6 +1,8 @@
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Enumerator used to classify
 /// different categories of an outcome for the application
 /// made by the user or by the automatic calculation of the software
@@ -124,5 +126,41 @@ class Outcome extends BankTransaction{
   Outcome clone(){
     return Outcome(_category, super.reference, super.amount, super.executionDate, 
             id: super.id, counterParty: super.counterParty, accountingDate: super.accountingDate);
+  }
+
+  /// Override method to convert Outcome to notification
+  /// from [BankTransaction] class
+  @override
+  NotificationData toNotification() {
+    String title = ""; // define title to be changed
+
+    if(_category == OutcomeCategory.bank_fee){
+      title = "Commissione conto";
+    } else if(_category == OutcomeCategory.financial_tax){
+      title = "Tassa d'investimento";
+    } else if(_category == OutcomeCategory.domiciliation){
+      title = "Domiciliazione";
+    } else if(_category == OutcomeCategory.general_outcome){
+      title = "Addebito generico";
+    } else if(_category == OutcomeCategory.internal_transfer){
+      title = "Addebito da girofondo";
+    } else if(_category == OutcomeCategory.internal_transfer_fee){
+      title = "Commissione da girofondo";
+    } else if(_category == OutcomeCategory.financial_investment){
+      title = "Investimento";
+    } else if(_category == OutcomeCategory.stock_fee){
+      title = "Tassazione azioni";
+    } else if(_category == OutcomeCategory.stock_loss){
+      title = "Perdita azioni";
+    } else {
+      title = "Altro addebito";
+    }
+
+    title += ": ${super.amount}€"; // then add the amount paid
+
+    return NotificationData(
+      title,
+      super.reference
+    );
   }
 }

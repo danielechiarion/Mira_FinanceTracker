@@ -1,6 +1,8 @@
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Enumeration to define the different categories of
 /// income used by the application to identify the different types
 /// of income that can be registered by the user and the application
@@ -121,5 +123,41 @@ class Income extends BankTransaction{
   Income clone(){
     return Income(_category, super.reference, super.amount, super.executionDate, 
             id: super.id, counterParty: super.counterParty?.clone(), accountingDate: super.accountingDate);
+  }
+
+  /// Override method to convert Income to notification
+  /// from [BankTransaction] class
+  @override
+  NotificationData toNotification() {
+    String title = ""; // define title to be changed
+
+    if(_category == IncomeCategory.bank_interest){
+      title = "Interesse conto";
+    } else if(_category == IncomeCategory.bank_cashback){
+      title = "Cashback conto";
+    } else if(_category == IncomeCategory.financial_interest){
+      title = "Interesse finanziario";
+    } else if(_category == IncomeCategory.financial_dividend){
+      title = "Dividendo da azione";
+    } else if(_category == IncomeCategory.financial_cashing){
+      title = "Riscossione capitale investimento";
+    } else if(_category == IncomeCategory.stock_return){
+      title = "Ricavo vendita azione";
+    } else if(_category == IncomeCategory.periodic_income){
+      title = "Incasso periodico";
+    } else if(_category == IncomeCategory.general_income){
+      title = "Accredito generico";
+    } else if(_category == IncomeCategory.internal_transfer){
+      title = "Accredito da girofondo";
+    } else {
+      title = "Altro accredito";
+    }
+
+    title += ": ${super.amount}€"; // then add the amount received
+
+    return NotificationData(
+      title,
+      super.reference
+    );
   }
 }
