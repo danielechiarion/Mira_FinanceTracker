@@ -827,4 +827,180 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       account.addDomiciliation(singleDomiciliation);
     }
   }
+
+  /* function to get the financial instruments
+  related to a savings account */
+  Future<void> _searchSavingsAccountInstruments(SavingsAccount account) async {
+    /* get time deposits, bonds and stocks from
+    the database and add them to the list of services
+    provided by the savings account */
+    List<TimeDeposit> deposits = await getAccountTimeDeposits(account);
+    for(TimeDeposit deposit in deposits){
+      account.addService(deposit);
+    }
+
+    List<Bond> bonds = await getAccountBonds(account);
+    for(Bond bond in bonds){
+      account.addService(bond);
+    }    
+
+    List<Stock> stocks = await getAccountStocks(account);
+    for(Stock stock in stocks){
+      account.addService(stock);
+    }
+  }
+
+  /// Function to get the bonds related to 
+  /// a [account] type savings provided
+  /// * [close] flag to close the database
+  Future<List<Bond>> getAccountBonds(SavingsAccount account, {bool close = false}) async {
+    /* database query to get only the bond model object */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Bond.id, Bond.name,
+      provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, purchasePrice, interestType, minimumDenomination,
+      startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
+      FinancialInstitute.name AS institute_name, email, phoneNumber, site
+      FROM BondModel LEFT JOIN FinancialInstitute ON BondModel.provider = FinancialInstitute.id
+      WHERE bankAccount = ?''', arguments: [account.id]);
+
+    List<Bond> bonds = [];
+
+    for(Map<String, dynamic> singleResult in result){
+      /* create the map for the financial
+      institute object only if there is a connection */
+      FinancialInstitute? provider;
+      if(singleResult['provider'] != null){
+        Map<String, dynamic> financialInstituteRaw = {
+          'id': singleResult['provider'],
+          'name': singleResult['institute_name'],
+          'email': singleResult['email'],
+          'phoneNumber': singleResult['phoneNumber'],
+          'site': singleResult['site']
+        };
+        provider = FinancialInstitute.fromMap(financialInstituteRaw);
+      }
+
+      /* now for each bond model
+      gets its interests */
+      List<StepInterest> interests = [];
+      List<Map<String, dynamic>> rawInterests = await appDatabase.query(sql: '''SELECT position, interestRate, duration
+        FROM StepInterest WHERE bond = ?''', arguments: [singleResult['id']]);
+      for(Map<String, dynamic> singleInterest in rawInterests){
+        interests.add(StepInterest.fromMap(singleInterest));
+      }
+
+      /* now, with all the required elements
+      it's possible to finally add the bond model
+      to the corresponding list */
+      interests.sort();
+      bonds.add(Bond.fromMap(singleResult, provider, interests));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return bonds;
+  }
+
+  /// Function to get stocks from a savings [account] provided
+  /// * [close] flag to close the database
+  Future<List<Stock>> getAccountStocks(SavingsAccount account, {bool close = false}) async {
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Stock.id, Stock.name,
+      provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, ticker, totalShares, 
+      averagePurchasePrice, currency, totalDividends, startingDate, endingDate 
+      FinancialInstitute.name AS institute_name, email, phoneNumber, site
+      FROM Stock LEFT JOIN FinancialInstitute ON Stock.provider = FinancialInstitute.id
+      WHERE bankAccount = ?''', arguments: [account.id]);
+
+    List<Stock> stocks = [];
+    for(Map<String, dynamic> singleResult in result){
+      /* create the map for the financial
+      institute object only if there is a connection */
+      FinancialInstitute? provider;
+      if(singleResult['provider'] != null){
+        Map<String, dynamic> financialInstituteRaw = {
+          'id': singleResult['provider'],
+          'name': singleResult['institute_name'],
+          'email': singleResult['email'],
+          'phoneNumber': singleResult['phoneNumber'],
+          'site': singleResult['site']
+        };
+        provider = FinancialInstitute.fromMap(financialInstituteRaw);
+      }
+
+      stocks.add(Stock.fromMap(singleResult, provider!));
+    }
+
+    return stocks;
+  } 
+
+  /// Function to get a complete list of current accounts
+  /// excluding the list of transactions from the database
+  /// * [close] flag to close the database
+  Future<List<CurrentAccount>> getCompleteCurrentAccounts({bool close = false}) async {
+    List<CurrentAccount> accounts = await getCurrentAccounts();
+    for(CurrentAccount singleAccount in accounts){
+      await _searchAccountPeriodicBillings(singleAccount);
+      await _searchCurrentAccountPeriodicTransactions(singleAccount);
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return accounts;
+  }
+
+  /// Function to get a complete list of savings accounts
+  /// excluding the list of transactions from the database
+  /// * [close] flag to close the database
+  Future<List<SavingsAccount>> getCompleteSavingsAccounts({bool close = false}) async {
+    List<SavingsAccount> accounts = await getSavingsAccounts();
+    for(SavingsAccount singleAccount in accounts){
+      await _searchAccountPeriodicBillings(singleAccount);
+      await _searchSavingsAccountInstruments(singleAccount);
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return accounts;
+  }
+
+  /// Function to get a complete list of card accounts
+  /// excluding the list of transactions from the database
+  /// * [close] flag to close the database
+  Future<List<Card>> getCompleteCardAccounts({bool close = false}) async {
+    List<Card> accounts = await getCardAccounts();
+    for(Card singleAccount in accounts){
+      await _searchAccountPeriodicBillings(singleAccount);
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return accounts;
+  }
+
+  /// Function to get the complete list of bank accounts
+  /// a part from the list of transactions for each one,
+  /// which have to be recovered with specific functions
+  /// * [close] flag to close the database
+  Future<List<BankAccount>> getCompleteBankAccounts({bool close = false}) async {
+    List<BankAccount> accounts = [];
+
+    /* add the various bank accounts
+    related to the user */
+    accounts.addAll(await getCompleteCurrentAccounts());
+    accounts.addAll(await getCompleteSavingsAccounts());
+    accounts.addAll(await getCompleteCardAccounts());
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    return accounts;
+  }
 }

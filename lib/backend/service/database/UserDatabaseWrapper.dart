@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:intl/intl.dart';
 

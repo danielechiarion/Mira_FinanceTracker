@@ -52,7 +52,7 @@ class UserBackgroundCheck {
     /* then get the list of the 
     bank accounts and check for each one
     if something has to be done */
-    List<BankAccount> accounts = await _database.getBankAccounts();
+    List<BankAccount> accounts = await _database.getCompleteBankAccounts();
     for(BankAccount singleBankAccount in accounts) {
       singleBankAccount.check();
       /* if notification is enabled
@@ -60,8 +60,10 @@ class UserBackgroundCheck {
       if(notificationEnabled) await _sendNotifications(singleBankAccount);
       /* then save the changes inside the database
       to keep it permanent */
-
+      await _saveChanges(singleBankAccount);
     }
+
+    await _disposeResources(); // then dispose all the resouces at the end of the operation
   }
 
   /* function to dispose resources
@@ -93,5 +95,6 @@ class UserBackgroundCheck {
     /* first save the available balance and,
     if it's a savings account, the ledger balance */
     await _database.updateBankAccountBalance(account);
+    await _database.updateAccountServices(account);
   }
 }
