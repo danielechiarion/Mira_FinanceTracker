@@ -68,5 +68,19 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- add background modes configuration -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<!-- reply or add the unique IDs customized in flutter -->
+		<string>com.example.mira.backgroundControl</string>
+		<string>background-control</string>
+	</array>
 </dict>
 </plist>

@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
+import 'package:mira_finance_tracker/background/BackgroundManager.dart';
 
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
 import 'package:mira_finance_tracker/frontend/HomePage.dart';
@@ -24,6 +25,10 @@ void main() async {
 
   /* understand if the user is logged */
   bool userLogged = (await CurrentSession.getFromMemory()) != null;
+
+  /* enable background manager daily task
+  throughout all platforms */
+  await BackgroundManager.instance.enableDailyBackgroundCheck();
 
   runApp(MainApp(isLogged: userLogged));
 }
