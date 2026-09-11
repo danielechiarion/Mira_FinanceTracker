@@ -1003,4 +1003,36 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return accounts;
   }
+
+  /// Function to get all the transactions (both incomes and outcomes)
+  /// coming from the same bank [account]
+  /// * [close] flag to close the database
+  Future<List<BankTransaction>> getTransactionsOfAccount(BankAccount account, {bool close = false}) async {
+    List<BankTransaction> transactions = []; // list for the transactions
+
+    /* first search inside the incomes, than
+    do the same with the outcomes */
+    List<Map<String, dynamic>> incomeResults = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
+          Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
+          FROM Income LEFT JOIN CounterParty ON Income.counterParty = CounterParty.id
+          WHERE bankAccount = ?''', arguments: [account.id]);
+    for(Map<String, dynamic> singleIncome in incomeResults){
+      transactions.add(Income.fromMap(singleIncome, counterParty: _getCounterPartyFromMap(singleIncome)));
+    }
+
+    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+          Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
+          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+          WHERE bankAccount = ?''', arguments: [account.id]);
+    for(Map<String, dynamic> singleOutcome in outcomeResults){
+      transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+
+    transactions.sort();
+    return transactions;
+  }
 }

@@ -2,33 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 
+import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
+import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
+import 'package:mira_finance_tracker/classes/transaction/Income.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/SummaryCard.dart';
-
-/// Reusable presentation model for a movement returned by a custom check.
-/// It can later be mapped directly from BankTransaction, Income, and Outcome.
-class CustomCheckOperation {
-  final String name;
-  final String accountName;
-  final String? financialService;
-  final DateTime date;
-  final double amount;
-  final bool isIncome;
-  final String category;
-  final String details;
-
-  const CustomCheckOperation({
-    required this.name,
-    required this.accountName,
-    this.financialService,
-    required this.date,
-    required this.amount,
-    required this.isIncome,
-    required this.category,
-    required this.details,
-  });
-}
+import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 
 enum _ComparisonMode { sameDuration, lastYear }
 
@@ -45,21 +28,11 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
   late DateTime _startDate;
   late DateTime _endDate;
   _ComparisonMode _comparisonMode = _ComparisonMode.sameDuration;
-  final Set<String> _selectedAccounts = {'Conto principale', 'Risparmio'};
+  final Set<String> _selectedAccounts = {};
   final Set<String> _selectedServices = {};
   int _page = 0;
-
-  final List<String> _accounts = const [
-    'Conto principale',
-    'Risparmio',
-    'Carta quotidiana',
-  ];
-  final List<String> _services = const [
-    'Obbligazioni',
-    'Azioni',
-    'Deposito vincolato',
-  ];
-  late final List<CustomCheckOperation> _demoOperations;
+  late final Future<List<TransactionOperatioOutput>> _operationsFuture;
+  List<TransactionOperatioOutput> _operations = [];
 
   @override
   void initState() {
@@ -67,8 +40,52 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     final today = _dateOnly(DateTime.now());
     _endDate = today;
     _startDate = today.subtract(const Duration(days: 30));
-    _demoOperations = _buildDemoOperations(today);
+    _operationsFuture = _loadOperations();
     _searchController.addListener(_resetPage);
+  }
+
+  Future<List<TransactionOperatioOutput>> _loadOperations() async {
+    final session = await CurrentSession.getFromMemory();
+    if (session == null) {
+      throw StateError('Nessuna sessione attiva.');
+    }
+
+    final database = UserDatabaseWrapper(session.user);
+    await database.init();
+    try {
+      final accounts = await database.getBankAccounts();
+      final outputs = <TransactionOperatioOutput>[];
+      for (final account in accounts) {
+        final transactions = await database.getTransactionsOfAccount(account);
+        outputs.addAll(
+          transactions.map((transaction) => _toOutput(account, transaction)),
+        );
+      }
+      _operations = outputs;
+      return outputs;
+    } finally {
+      await database.closeDatabase();
+    }
+  }
+
+  TransactionOperatioOutput _toOutput(
+    BankAccount account,
+    BankTransaction transaction,
+  ) {
+    final isIncome = transaction is Income;
+    final category = isIncome
+        ? transaction.category.name
+        : (transaction as Outcome).category.name;
+    return TransactionOperatioOutput(
+      reference: transaction.reference,
+      accountName: account.name,
+      counterParty: transaction.counterParty?.name,
+      amount: transaction.amount,
+      isIncome: isIncome,
+      category: category,
+      executionDate: transaction.executionDate,
+      accountingDate: transaction.accountingDate,
+    );
   }
 
   @override
@@ -81,35 +98,52 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
 
   @override
   Widget build(BuildContext context) {
-    final operations = _filteredOperations;
     final isWide = MediaQuery.sizeOf(context).width > 850;
-    final income = _sum(operations, true);
-    final outcome = _sum(operations, false);
 
     return ResponsiveScaffold(
       currentRoute: AppRoutes.check,
       title: 'Verifica conti',
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildIntro(),
-                const SizedBox(height: 20),
-                _buildFilters(isWide),
-                const SizedBox(height: 20),
-                _buildPeriodSummary(income, outcome, isWide),
-                const SizedBox(height: 20),
-                _buildTrendCard(operations),
-                const SizedBox(height: 20),
-                _buildOperationsCard(operations),
-              ],
+      body: FutureBuilder<List<TransactionOperatioOutput>>(
+        future: _operationsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.teal),
+            );
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Errore nel caricamento dei movimenti: ${snapshot.error}',
+              ),
+            );
+          }
+          final operations = _filteredOperations;
+          final income = _sum(operations, true);
+          final outcome = _sum(operations, false);
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildIntro(),
+                    const SizedBox(height: 20),
+                    _buildFilters(isWide),
+                    const SizedBox(height: 20),
+                    _buildPeriodSummary(income, outcome, isWide),
+                    const SizedBox(height: 20),
+                    _buildCharts(operations, isWide),
+                    const SizedBox(height: 20),
+                    _buildOperationsCard(operations),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -127,6 +161,14 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
           'Confronta movimenti, entrate e uscite tra due periodi.',
           style: TextStyle(color: Colors.grey.shade600),
         ),
+        const SizedBox(height: 8),
+        Text(
+          'Periodo di riferimento: ${_formatPeriod(_startDate, _endDate)}',
+          style: const TextStyle(
+            color: Colors.teal,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -141,16 +183,18 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     );
     final accountChips = _buildChoiceChips(
       'Conti',
-      _accounts,
-      _selectedAccounts,
+      _accountNames,
+      _effectiveSelectedAccounts,
       Icons.account_balance_outlined,
+      true,
     );
-    final serviceChips = _selectedAccounts.contains('Risparmio')
+    final serviceChips = _serviceNames.isNotEmpty
         ? _buildChoiceChips(
             'Servizi finanziari',
-            _services,
-            _selectedServices,
+            _serviceNames,
+            _effectiveSelectedServices,
             Icons.auto_graph_outlined,
+            false,
           )
         : const SizedBox.shrink();
 
@@ -175,7 +219,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
           ],
           const SizedBox(height: 18),
           accountChips,
-          if (_selectedAccounts.contains('Risparmio')) ...[
+          if (_serviceNames.isNotEmpty) ...[
             const SizedBox(height: 14),
             serviceChips,
           ],
@@ -243,6 +287,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     List<String> choices,
     Set<String> selected,
     IconData icon,
+    bool isAccount,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +308,10 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
               label: Text(choice),
               selected: selected.contains(choice),
               onSelected: (checked) => setState(() {
-                checked ? selected.add(choice) : selected.remove(choice);
+                final target = isAccount
+                    ? _selectedAccounts
+                    : _selectedServices;
+                checked ? target.add(choice) : target.remove(choice);
                 _page = 0;
               }),
             );
@@ -313,7 +361,23 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
           );
   }
 
-  Widget _buildTrendCard(List<CustomCheckOperation> operations) {
+  Widget _buildCharts(List<TransactionOperatioOutput> operations, bool isWide) {
+    final trend = _buildTrendCard(operations);
+    final distribution = _buildDistributionCard(operations);
+    if (isWide) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: trend),
+          const SizedBox(width: 16),
+          Expanded(child: distribution),
+        ],
+      );
+    }
+    return Column(children: [trend, const SizedBox(height: 16), distribution]);
+  }
+
+  Widget _buildTrendCard(List<TransactionOperatioOutput> operations) {
     final comparison = _comparisonOperations;
     final selectedIncome = _sum(operations, true);
     final selectedOutcome = _sum(operations, false);
@@ -382,6 +446,90 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     );
   }
 
+  Widget _buildDistributionCard(List<TransactionOperatioOutput> operations) {
+    final totals = <String, double>{};
+    for (final operation in operations) {
+      totals.update(
+        operation.accountName,
+        (value) => value + operation.amount,
+        ifAbsent: () => operation.amount,
+      );
+    }
+    final entries = totals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final total = entries.fold<double>(0, (sum, entry) => sum + entry.value);
+    return _panel(
+      title: 'Distribuzione per conto',
+      icon: Icons.pie_chart_outline_rounded,
+      child: entries.isEmpty
+          ? Text(
+              'Nessun movimento da rappresentare.',
+              style: TextStyle(color: Colors.grey.shade600),
+            )
+          : Column(
+              children: [
+                SizedBox(
+                  height: 210,
+                  child: PieChart(
+                    PieChartData(
+                      centerSpaceRadius: 42,
+                      sectionsSpace: 2,
+                      sections: [
+                        for (var index = 0; index < entries.length; index++)
+                          PieChartSectionData(
+                            value: entries[index].value,
+                            color: _distributionColor(index),
+                            radius: 58,
+                            title: total == 0
+                                ? '0%'
+                                : '${(entries[index].value / total * 100).toStringAsFixed(0)}%',
+                            titleStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...entries.asMap().entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 7),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: _distributionColor(entry.key),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${entry.key + 1}. ${entry.value.key}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          _formatter.format(entry.value.value),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Color _distributionColor(int index) =>
+      Colors.primaries[index % Colors.primaries.length];
+
   BarChartGroupData _barGroup(int x, double selected, double comparison) {
     return BarChartGroupData(
       x: x,
@@ -409,8 +557,10 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     double comparison,
     Color color,
   ) {
-    final delta = comparison == 0
+    final delta = comparison == 0 && selected == 0
         ? 0
+        : comparison == 0
+        ? 100
         : ((selected - comparison) / comparison) * 100;
     return Column(
       children: [
@@ -431,7 +581,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     );
   }
 
-  Widget _buildOperationsCard(List<CustomCheckOperation> operations) {
+  Widget _buildOperationsCard(List<TransactionOperatioOutput> operations) {
     const pageSize = 5;
     final pageCount = operations.isEmpty
         ? 1
@@ -485,7 +635,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     );
   }
 
-  Widget _operationTile(CustomCheckOperation operation) {
+  Widget _operationTile(TransactionOperatioOutput operation) {
     final color = operation.isIncome ? Colors.green : Colors.red;
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -498,11 +648,14 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
         ),
       ),
       title: Text(
-        operation.name,
+        operation.reference,
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
-        '${operation.accountName} • ${operation.category} • ${DateFormat('dd/MM/yyyy').format(operation.date)}\n${operation.details}',
+        '${operation.accountName} • ${operation.category}\n'
+        'Controparte: ${operation.counterParty ?? '-'}\n'
+        'Esecuzione: ${DateFormat('dd/MM/yyyy').format(operation.executionDate)} • '
+        'Contabile: ${DateFormat('dd/MM/yyyy').format(operation.accountingDate)}',
       ),
       isThreeLine: true,
       trailing: Text(
@@ -585,136 +738,81 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     if (mounted) setState(() => _page = 0);
   }
 
-  List<CustomCheckOperation> get _filteredOperations {
+  List<TransactionOperatioOutput> get _filteredOperations {
     final query = _searchController.text.trim().toLowerCase();
-    return _demoOperations.where((operation) {
+    return _operations.where((operation) {
       final inDateRange =
-          !operation.date.isBefore(_startDate) &&
-          !operation.date.isAfter(_endDate);
-      final accountMatches = _selectedAccounts.contains(operation.accountName);
+          !operation.executionDate.isBefore(_startDate) &&
+          !operation.executionDate.isAfter(_endOfDay(_endDate));
+      final accountMatches = _effectiveSelectedAccounts.contains(
+        operation.accountName,
+      );
       final serviceMatches =
           operation.financialService == null ||
-          _selectedServices.isEmpty ||
-          _selectedServices.contains(operation.financialService);
+          _effectiveSelectedServices.contains(operation.financialService);
       final nameMatches =
           query.isEmpty ||
-          operation.name.toLowerCase().contains(query) ||
-          operation.details.toLowerCase().contains(query);
+          operation.reference.toLowerCase().contains(query) ||
+          (operation.counterParty?.toLowerCase().contains(query) ?? false);
       return inDateRange && accountMatches && serviceMatches && nameMatches;
-    }).toList()..sort((a, b) => b.date.compareTo(a.date));
+    }).toList()..sort((a, b) => b.executionDate.compareTo(a.executionDate));
   }
 
-  List<CustomCheckOperation> get _comparisonOperations {
+  List<TransactionOperatioOutput> get _comparisonOperations {
     final duration = _endDate.difference(_startDate).inDays + 1;
     final comparisonEnd = _comparisonMode == _ComparisonMode.sameDuration
-        ? _dateOnly(DateTime.now())
-        : _endDate.subtract(const Duration(days: 365));
+        ? _endOfDay(DateTime.now())
+        : _endOfDay(_endDate.subtract(const Duration(days: 365)));
     final comparisonStart = comparisonEnd.subtract(
       Duration(days: duration - 1),
     );
     final query = _searchController.text.trim().toLowerCase();
-    return _demoOperations.where((operation) {
+    return _operations.where((operation) {
       final inDateRange =
-          !operation.date.isBefore(comparisonStart) &&
-          !operation.date.isAfter(comparisonEnd);
-      final accountMatches = _selectedAccounts.contains(operation.accountName);
+          !operation.executionDate.isBefore(comparisonStart) &&
+          !operation.executionDate.isAfter(comparisonEnd);
+      final accountMatches = _effectiveSelectedAccounts.contains(
+        operation.accountName,
+      );
       final serviceMatches =
           operation.financialService == null ||
-          _selectedServices.isEmpty ||
-          _selectedServices.contains(operation.financialService);
+          _effectiveSelectedServices.contains(operation.financialService);
       final nameMatches =
           query.isEmpty ||
-          operation.name.toLowerCase().contains(query) ||
-          operation.details.toLowerCase().contains(query);
+          operation.reference.toLowerCase().contains(query) ||
+          (operation.counterParty?.toLowerCase().contains(query) ?? false);
       return inDateRange && accountMatches && serviceMatches && nameMatches;
     }).toList();
   }
 
-  double _sum(List<CustomCheckOperation> operations, bool income) => operations
-      .where((operation) => operation.isIncome == income)
-      .fold(0, (total, operation) => total + operation.amount);
+  double _sum(List<TransactionOperatioOutput> operations, bool income) =>
+      operations
+          .where((operation) => operation.isIncome == income)
+          .fold(0, (total, operation) => total + operation.amount);
 
   DateTime _dateOnly(DateTime value) =>
       DateTime(value.year, value.month, value.day);
 
-  List<CustomCheckOperation> _buildDemoOperations(DateTime today) {
-    // Replace this demo source with the backend query once the data contract is available.
-    // The query should apply the selected dates, accounts, services, and name similarity server-side.
-    return [
-      CustomCheckOperation(
-        name: 'Stipendio',
-        accountName: 'Conto principale',
-        date: today.subtract(const Duration(days: 2)),
-        amount: 1850,
-        isIncome: true,
-        category: 'Entrata',
-        details: 'Accredito mensile',
-      ),
-      CustomCheckOperation(
-        name: 'Spesa supermercato',
-        accountName: 'Carta quotidiana',
-        date: today.subtract(const Duration(days: 4)),
-        amount: 74.50,
-        isIncome: false,
-        category: 'Alimentari',
-        details: 'Pagamento con carta',
-      ),
-      CustomCheckOperation(
-        name: 'Cedola obbligazionaria',
-        accountName: 'Risparmio',
-        financialService: 'Obbligazioni',
-        date: today.subtract(const Duration(days: 8)),
-        amount: 126.80,
-        isIncome: true,
-        category: 'Investimenti',
-        details: 'Cedola trimestrale',
-      ),
-      CustomCheckOperation(
-        name: 'Affitto',
-        accountName: 'Conto principale',
-        date: today.subtract(const Duration(days: 12)),
-        amount: 720,
-        isIncome: false,
-        category: 'Casa',
-        details: 'Addebito automatico',
-      ),
-      CustomCheckOperation(
-        name: 'Interessi deposito',
-        accountName: 'Risparmio',
-        financialService: 'Deposito vincolato',
-        date: today.subtract(const Duration(days: 17)),
-        amount: 42.30,
-        isIncome: true,
-        category: 'Investimenti',
-        details: 'Interessi maturati',
-      ),
-      CustomCheckOperation(
-        name: 'Trasporti',
-        accountName: 'Conto principale',
-        date: today.subtract(const Duration(days: 21)),
-        amount: 58.20,
-        isIncome: false,
-        category: 'Mobilità',
-        details: 'Abbonamento mensile',
-      ),
-      CustomCheckOperation(
-        name: 'Rimborso acquisto',
-        accountName: 'Carta quotidiana',
-        date: today.subtract(const Duration(days: 25)),
-        amount: 36,
-        isIncome: true,
-        category: 'Rimborso',
-        details: 'Riaccredito esercente',
-      ),
-      CustomCheckOperation(
-        name: 'Commissione banca',
-        accountName: 'Risparmio',
-        date: today.subtract(const Duration(days: 29)),
-        amount: 3.50,
-        isIncome: false,
-        category: 'Commissioni',
-        details: 'Canone servizio',
-      ),
-    ];
+  DateTime _endOfDay(DateTime value) =>
+      DateTime(value.year, value.month, value.day, 23, 59, 59, 999);
+
+  String _formatPeriod(DateTime start, DateTime end) {
+    final formatter = DateFormat('dd/MM/yyyy');
+    return '${formatter.format(start)} - ${formatter.format(end)}';
   }
+
+  List<String> get _accountNames =>
+      _operations.map((operation) => operation.accountName).toSet().toList();
+
+  List<String> get _serviceNames => _operations
+      .where((operation) => operation.financialService != null)
+      .map((operation) => operation.financialService!)
+      .toSet()
+      .toList();
+
+  Set<String> get _effectiveSelectedAccounts =>
+      _selectedAccounts.isEmpty ? _accountNames.toSet() : _selectedAccounts;
+
+  Set<String> get _effectiveSelectedServices =>
+      _selectedServices.isEmpty ? _serviceNames.toSet() : _selectedServices;
 }
