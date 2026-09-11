@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/background/BackgroundManager.dart';
+import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
 
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
 import 'package:mira_finance_tracker/frontend/HomePage.dart';
@@ -13,7 +14,7 @@ import 'package:mira_finance_tracker/frontend/ActionsPage.dart';
 import 'package:mira_finance_tracker/frontend/CustomCheckPage.dart';
 import 'package:mira_finance_tracker/frontend/SettingsPage.dart';
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized(); // ensure all libraries have been loaded
   await initializeDateFormatting('it_IT', null); // define the language for dates
 
@@ -21,6 +22,20 @@ void main() async {
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+  }
+
+  /* --- CATCH BACKGROUND TASK ---
+  when it's called from the backend */
+  if(args.contains("--background-check")){
+    /* call the service to execute
+    in background */
+    print("=== Avvio controllo automatico Desktop (App Chiusa) ===");
+    final service = BackgroundControl();
+    await service.init();
+    await service.execute();
+    print("=== Controllo completato ===");
+
+    exit(0); // exit the proces
   }
 
   /* understand if the user is logged */

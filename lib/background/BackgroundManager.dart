@@ -52,7 +52,7 @@ class BackgroundManager {
 
   /* function to disable linux crontab */
   Future<void> _disableLinuxCrontab() async {
-    final exePath = await _getOrCreateDesktopExe('background_check');
+    final exePath = Platform.resolvedExecutable;
 
     /* read actual crontab of the application */
     final process = await Process.start('crontab', ['-l']);
@@ -85,14 +85,14 @@ class BackgroundManager {
 
   /* --- WINDOWS CONFIGURATION --- */
   Future<void> _configureWindows() async {
-    final exePath = await _getOrCreateDesktopExe('background_check.exe');
+    final exePath = Platform.resolvedExecutable; // call the same executable of the function
     
     /* register a task which operates 
     on the computer daily */
     await Process.run('schtasks', [
       '/Create',
       '/TN', 'Mira_BackgroundCheck',
-      '/TR', '"$exePath"',
+      '/TR', '"$exePath" --background-check',
       '/SC', 'DAILY',
       '/ST', '09:00',
       '/F' // override if already existing
@@ -101,8 +101,9 @@ class BackgroundManager {
 
   /* --- CONFIGURE Linux / MacOS (crontab) --- */
   Future<void> _configureUnix() async {
-    final exePath = await _getOrCreateDesktopExe('background_check');
-    final cronJob = "0 9 * * * $exePath\n";
+    final exePath = Platform.resolvedExecutable;
+    final command = '"$exePath" --background-check';
+    final cronJob = "0 9 * * * $command > /dev/null 2>&1\n";
 
     final process = await Process.start('crontab', ['-l']);
     final currentCron = await process.stdout.transform(const SystemEncoding().decoder).join();
@@ -113,32 +114,5 @@ class BackgroundManager {
       updateProcess.stdin.write(newCron);
       await updateProcess.stdin.close();
     }
-  }
-
-  /// Compile executable file to 
-  /// run when the application is closed
-  Future<String> _getOrCreateDesktopExe(String nomeExe) async {
-    final currentDir = Directory.current.path;
-    final exeFile = File('$currentDir/build/$nomeExe');
-
-    if (!await exeFile.exists()) {
-      /* find integrate sdk inside flutter */
-      final String dartCommand = Platform.isWindows ? 'dart.bat' : 'dart';
-
-      final result = await Process.run(dartCommand, [
-        'compile',
-        'exe',
-        'bin/background_check.dart',
-        '-o',
-        exeFile.path,
-      ]);
-
-      if (result.exitCode != 0) {
-        print('Errore di compilazione: ${result.stderr}');
-        throw Exception('Compilazione fallita: assicurati che bin/background_check.dart non importi package:flutter');
-      }
-    }
-    
-    return exeFile.path;
   }
 }
