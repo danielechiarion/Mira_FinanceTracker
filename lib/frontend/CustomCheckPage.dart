@@ -31,8 +31,8 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
   final Set<String> _selectedAccounts = {};
   final Set<String> _selectedServices = {};
   int _page = 0;
-  late final Future<List<TransactionOperatioOutput>> _operationsFuture;
-  List<TransactionOperatioOutput> _operations = [];
+  late final Future<List<TransactionOperationOutput>> _operationsFuture;
+  List<TransactionOperationOutput> _operations = [];
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     _searchController.addListener(_resetPage);
   }
 
-  Future<List<TransactionOperatioOutput>> _loadOperations() async {
+  Future<List<TransactionOperationOutput>> _loadOperations() async {
     final session = await CurrentSession.getFromMemory();
     if (session == null) {
       throw StateError('Nessuna sessione attiva.');
@@ -54,7 +54,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     await database.init();
     try {
       final accounts = await database.getBankAccounts();
-      final outputs = <TransactionOperatioOutput>[];
+      final outputs = <TransactionOperationOutput>[];
       for (final account in accounts) {
         final transactions = await database.getTransactionsOfAccount(account);
         outputs.addAll(
@@ -68,7 +68,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     }
   }
 
-  TransactionOperatioOutput _toOutput(
+  TransactionOperationOutput _toOutput(
     BankAccount account,
     BankTransaction transaction,
   ) {
@@ -76,7 +76,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     final category = isIncome
         ? transaction.category.name
         : (transaction as Outcome).category.name;
-    return TransactionOperatioOutput(
+    return TransactionOperationOutput(
       reference: transaction.reference,
       accountName: account.name,
       counterParty: transaction.counterParty?.name,
@@ -103,7 +103,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     return ResponsiveScaffold(
       currentRoute: AppRoutes.check,
       title: 'Verifica conti',
-      body: FutureBuilder<List<TransactionOperatioOutput>>(
+      body: FutureBuilder<List<TransactionOperationOutput>>(
         future: _operationsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
@@ -361,7 +361,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
           );
   }
 
-  Widget _buildCharts(List<TransactionOperatioOutput> operations, bool isWide) {
+  Widget _buildCharts(List<TransactionOperationOutput> operations, bool isWide) {
     final trend = _buildTrendCard(operations);
     final distribution = _buildDistributionCard(operations);
     if (isWide) {
@@ -377,7 +377,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     return Column(children: [trend, const SizedBox(height: 16), distribution]);
   }
 
-  Widget _buildTrendCard(List<TransactionOperatioOutput> operations) {
+  Widget _buildTrendCard(List<TransactionOperationOutput> operations) {
     final comparison = _comparisonOperations;
     final selectedIncome = _sum(operations, true);
     final selectedOutcome = _sum(operations, false);
@@ -446,7 +446,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     );
   }
 
-  Widget _buildDistributionCard(List<TransactionOperatioOutput> operations) {
+  Widget _buildDistributionCard(List<TransactionOperationOutput> operations) {
     final totals = <String, double>{};
     for (final operation in operations) {
       totals.update(
@@ -581,7 +581,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     );
   }
 
-  Widget _buildOperationsCard(List<TransactionOperatioOutput> operations) {
+  Widget _buildOperationsCard(List<TransactionOperationOutput> operations) {
     const pageSize = 5;
     final pageCount = operations.isEmpty
         ? 1
@@ -606,7 +606,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
               ),
             )
           else
-            ...pageItems.map(_operationTile),
+            ...pageItems.map((item) => item.build()),
           if (pageCount > 1) ...[
             const Divider(height: 24),
             Row(
@@ -631,36 +631,6 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _operationTile(TransactionOperatioOutput operation) {
-    final color = operation.isIncome ? Colors.green : Colors.red;
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: color.withValues(alpha: 0.12),
-        child: Icon(
-          operation.isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-          color: color,
-          size: 18,
-        ),
-      ),
-      title: Text(
-        operation.reference,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        '${operation.accountName} • ${operation.category}\n'
-        'Controparte: ${operation.counterParty ?? '-'}\n'
-        'Esecuzione: ${DateFormat('dd/MM/yyyy').format(operation.executionDate)} • '
-        'Contabile: ${DateFormat('dd/MM/yyyy').format(operation.accountingDate)}',
-      ),
-      isThreeLine: true,
-      trailing: Text(
-        '${operation.isIncome ? '+' : '-'}${_formatter.format(operation.amount)}',
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -738,7 +708,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     if (mounted) setState(() => _page = 0);
   }
 
-  List<TransactionOperatioOutput> get _filteredOperations {
+  List<TransactionOperationOutput> get _filteredOperations {
     final query = _searchController.text.trim().toLowerCase();
     return _operations.where((operation) {
       final inDateRange =
@@ -758,7 +728,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     }).toList()..sort((a, b) => b.executionDate.compareTo(a.executionDate));
   }
 
-  List<TransactionOperatioOutput> get _comparisonOperations {
+  List<TransactionOperationOutput> get _comparisonOperations {
     final duration = _endDate.difference(_startDate).inDays + 1;
     final comparisonEnd = _comparisonMode == _ComparisonMode.sameDuration
         ? _endOfDay(DateTime.now())
@@ -785,7 +755,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     }).toList();
   }
 
-  double _sum(List<TransactionOperatioOutput> operations, bool income) =>
+  double _sum(List<TransactionOperationOutput> operations, bool income) =>
       operations
           .where((operation) => operation.isIncome == income)
           .fold(0, (total, operation) => total + operation.amount);

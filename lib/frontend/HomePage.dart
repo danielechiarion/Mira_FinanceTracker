@@ -4,11 +4,13 @@ import 'package:intl/intl.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/SummaryCard.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 import 'package:mira_finance_tracker/frontend/charts/MonthlyTrendChart.dart';
 import 'package:mira_finance_tracker/frontend/charts/PatrimonyPieChart.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/HomePageData.dart';
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
 /// REVIEW page from the functional analysis: summary of income, expenses,
 /// and charts (asset distribution pie chart + monthly trend).
@@ -183,28 +185,18 @@ class _HomePageState extends State<HomePage> {
     if (data.recentOperations.isEmpty) {
       return const Text('Nessun movimento recente');
     }
-    final formatter = NumberFormat.currency(locale: 'it_IT', symbol: '€');
 
     return Column(
       children: data.recentOperations.map((op) {
-        final isIncome = op is Income;
-        return ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(
-            backgroundColor: (isIncome ? Colors.green : Colors.red).withOpacity(0.12),
-            child: Icon(
-              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isIncome ? Colors.green : Colors.red,
-              size: 18,
-            ),
-          ),
-          title: Text(op.reference),
-          subtitle: Text(DateFormat('dd/MM/yyyy').format(op.executionDate)),
-          trailing: Text(
-            '${isIncome ? '+' : '-'}${formatter.format(op.amount)}',
-            style: TextStyle(fontWeight: FontWeight.bold, color: isIncome ? Colors.green : Colors.red),
-          ),
-        );
+        return TransactionOperationOutput(
+          reference: op.reference, 
+          accountName: '', 
+          amount: op.amount, 
+          isIncome: op is Income, 
+          category: op is Income ? op.category.name : (op as Outcome).category.name, 
+          executionDate: op.executionDate, 
+          accountingDate: op.accountingDate
+        ).build();
       }).toList(),
     );
   }

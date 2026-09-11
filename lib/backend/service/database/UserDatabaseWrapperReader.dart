@@ -171,7 +171,8 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Map<String, dynamic>> incomeResults = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
           FROM Income LEFT JOIN CounterParty ON Income.counterParty = CounterParty.id
-          WHERE accountingDate >= ? AND executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
+          WHERE accountingDate >= ? AND executionDate <= ?
+          ORDER BY executionDate DESC, accountingDate DESC LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
     for(Map<String, dynamic> singleIncome in incomeResults){
       transactions.add(Income.fromMap(singleIncome, counterParty: _getCounterPartyFromMap(singleIncome)));
     }
@@ -179,7 +180,8 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
           FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
-          WHERE accountingDate >= ? AND executionDate <= ? LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
+          WHERE accountingDate >= ? AND executionDate <= ?
+          ORDER BY executionDate DESC, accountingDate DESC LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
     for(Map<String, dynamic> singleOutcome in outcomeResults){
       transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
@@ -189,7 +191,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
     
     transactions.sort(); // sort the transactions before sending them
-    return transactions;
+      return transactions.take(limit).toList();  // return the limit elements
   }
 
   /* function to get a counterparty which inside of other 
