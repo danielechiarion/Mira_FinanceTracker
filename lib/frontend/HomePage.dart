@@ -21,6 +21,11 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+/// Identifies which account-type card was tapped in the accounts overview
+/// section, so navigation can be routed accordingly once the target pages
+/// exist.
+enum _AccountSection { checking, deposit, cards }
+
 class _HomePageState extends State<HomePage> {
   late Future<HomePageData> _summaryFuture;
 
@@ -82,6 +87,8 @@ class _HomePageState extends State<HomePage> {
                           _buildIncomeOutcomeCards(data, isWide),
                           const SizedBox(height: 32),
                           _buildCharts(data, isWide),
+                          const SizedBox(height: 32),
+                          _buildAccountsOverview(data, isWide),
                           const SizedBox(height: 32),
                           _sectionCard('Ultimi movimenti', _buildRecentOperations(data)),
                         ],
@@ -159,6 +166,107 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [pie, const SizedBox(height: 16), trend],
     );
+  }
+
+  /// Accounts overview section: one card per account type (checking,
+  /// deposit, cards), each showing the total available balance for that
+  /// type. Row layout on wide screens, column on narrow/mobile screens.
+  Widget _buildAccountsOverview(HomePageData data, bool isWide) {
+    final checkingCard = _accountTypeCard(
+      label: 'Conti correnti',
+      amount: data.currentAccountsBalance,
+      currency: data.currency,
+      icon: Icons.account_balance,
+      color: Colors.blue,
+      onTap: () => _openAccountsOfType(_AccountSection.checking),
+    );
+    final depositCard = _accountTypeCard(
+      label: 'Conti deposito',
+      amount: data.savingsAccountsBalance,
+      currency: data.currency,
+      icon: Icons.savings,
+      color: Colors.orange,
+      onTap: () => _openAccountsOfType(_AccountSection.deposit),
+    );
+    final cardsCard = _accountTypeCard(
+      label: 'Carte',
+      amount: data.cardAccountsBalance,
+      currency: data.currency,
+      icon: Icons.credit_card,
+      color: Colors.purple,
+      onTap: () => _openAccountsOfType(_AccountSection.cards),
+    );
+
+    final cardsRow = isWide
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: checkingCard),
+              const SizedBox(width: 16),
+              Expanded(child: depositCard),
+              const SizedBox(width: 16),
+              Expanded(child: cardsCard),
+            ],
+          )
+        : Column(
+            children: [
+              checkingCard,
+              const SizedBox(height: 12),
+              depositCard,
+              const SizedBox(height: 12),
+              cardsCard,
+            ],
+          );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('I tuoi conti', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        cardsRow,
+      ],
+    );
+  }
+
+  /// Single tappable account-type card. Reuses SummaryCard to stay
+  /// consistent with the income/outcome cards, wrapped in an InkWell so it
+  /// can navigate to the dedicated account-type page (page to be added).
+  Widget _accountTypeCard({
+    required String label,
+    required double amount,
+    required String currency,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: SummaryCard(
+        label: label,
+        amount: amount,
+        currency: currency,
+        icon: icon,
+        color: color,
+      ),
+    );
+  }
+
+  /// TODO(navigation): the target pages don't exist yet. Once they're
+  /// created, route to them here (e.g. via AppRoutes + Navigator.pushNamed,
+  /// following the same pattern used by ResponsiveScaffold/AppRoutes).
+  void _openAccountsOfType(_AccountSection section) {
+    switch (section) {
+      case _AccountSection.checking:
+        // Navigator.pushNamed(context, AppRoutes.checkingAccounts);
+        break;
+      case _AccountSection.deposit:
+        // Navigator.pushNamed(context, AppRoutes.depositAccounts);
+        break;
+      case _AccountSection.cards:
+        // Navigator.pushNamed(context, AppRoutes.cards);
+        break;
+    }
   }
 
   Widget _sectionCard(String title, Widget child) {

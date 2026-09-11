@@ -1,3 +1,6 @@
+import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
+import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
+import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
@@ -15,12 +18,16 @@ class HomePageData{
   late List<AccountShare> _patrimonyDistribution;
   late List<MonthlyFlow> _monthlyTrend;
   late List<BankTransaction> _recentOperations;
+  double _currentAccountsBalance;
+  double _savingsAccountsBalance;
+  double _cardsBalance;
 
   /// define constructor for the home page
   /// summary data 
   /// * [_user] user whose data have to be displayed
   /// * [_currency] currency used to express the financial data, automatically set to euros
-  HomePageData(this._user, {this._currency = 'EUR'}) : _totalBalance = 0.0;
+  HomePageData(this._user, {this._currency = 'EUR'}) : _totalBalance = 0.0,
+    _currentAccountsBalance = 0.0, _savingsAccountsBalance = 0.0, _cardsBalance = 0.0;
 
   /// Function to init the environment and the other
   /// attributes inside the class
@@ -44,6 +51,19 @@ class HomePageData{
     for(AccountShare singleShare in _patrimonyDistribution){
       _totalBalance += singleShare.amount;
     }
+
+    /* get the bank accounts with their balances
+    aggregating them per type */
+    List<BankAccount> accounts = await database.getBankAccounts();
+    for(BankAccount account in accounts){
+      if(account is CurrentAccount){
+        _currentAccountsBalance += account.availableBalance;
+      }else if(account is SavingsAccount){
+        _savingsAccountsBalance += account.availableBalance;
+      }else{
+        _cardsBalance += account.availableBalance;
+      }
+    }
   }
 
   /* *** GETTER METHODS *** */
@@ -54,4 +74,7 @@ class HomePageData{
   List<AccountShare> get patrimonyDistribution => _patrimonyDistribution;
   List<MonthlyFlow> get monthlyTrend => _monthlyTrend;
   List<BankTransaction> get recentOperations => _recentOperations;
+  double get currentAccountsBalance => _currentAccountsBalance;
+  double get savingsAccountsBalance => _savingsAccountsBalance;
+  double get cardAccountsBalance => _cardsBalance;
 }
