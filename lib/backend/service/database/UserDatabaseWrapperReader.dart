@@ -1037,4 +1037,38 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     transactions.sort();
     return transactions;
   }
+
+  /// Return for each bank [account] a slot of transactions (both incomes and 
+  /// outcomes) specifing the lenght using the [limit] and the position of the slot
+  /// with the [offset]
+  Future<List<BankTransaction>> getAccountTransactionSlot(BankAccount account, int limit, int offset) async {
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
+      Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN, 'income' as type
+      FROM Income LEFT JOIN CounterParty ON Income.counterParty = CounterParty.id
+      WHERE bankAccount = ?
+      
+      UNION ALL
+      
+      SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+      Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN, 'outcome' as type
+      FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+      WHERE bankAccount = ?
+      
+      ORDER BY accountingDate DESC LIMIT ? OFFSET ?''',
+      arguments: [account.id, account.id, limit, offset]
+    );
+    
+    /* after the result
+    convert the map objects into income and outcome */
+    List<BankTransaction> transactions = [];
+    for(Map<String, dynamic> map in result){
+      if(map['type'] == 'income'){
+        transactions.add(Income.fromMap(map, counterParty: _getCounterPartyFromMap(map)));
+      }else{
+        transactions.add(Outcome.fromMap(map, counterParty: _getCounterPartyFromMap(map)));
+      }
+    }
+
+    return transactions;
+  }
 }

@@ -78,12 +78,13 @@ class Domiciliation extends PeriodicTransaction{
   /// * [counterParty] correspondent counterparty of the periodic income already converted
   factory Domiciliation.fromMap(Map<String, dynamic> map, CounterParty counterParty){
     /* first get the various parameters */
-    int id = map.remove('id');
-    String name = map.remove('name');
-    double amount = map.remove('amount');
-    double fee = map.remove('fee');
-    String description = map.remove('description');
-    PeriodicAccountDuration cadence = PeriodicAccountDuration.fromMap(map);
+      final mutableMap = Map<String, dynamic>.from(map);
+      int id = mutableMap.remove('id');
+      String name = mutableMap.remove('name');
+      double amount = (mutableMap.remove('amount') as num).toDouble();
+      double fee = (mutableMap.remove('fee') as num).toDouble();
+      String? description = mutableMap.remove('description') as String?;
+      PeriodicAccountDuration cadence = PeriodicAccountDuration.fromMap(mutableMap);
 
     /* return the object of the cashback class
     with the attributes provided */

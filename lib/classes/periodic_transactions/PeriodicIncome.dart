@@ -48,11 +48,12 @@ class PeriodicIncome extends PeriodicTransaction{
   /// * [counterParty] correspondent counterparty of the periodic income already converted
   factory PeriodicIncome.fromMap(Map<String, dynamic> map, CounterParty counterParty){
     /* first get the various parameters */
-    int id = map.remove('id');
-    String name = map.remove('name');
-    double amount = map.remove('amount');
-    String description = map.remove('description');
-    PeriodicAccountDuration cadence = PeriodicAccountDuration.fromMap(map);
+      final mutableMap = Map<String, dynamic>.from(map);
+      int id = mutableMap.remove('id');
+      String name = mutableMap.remove('name');
+      double amount = (mutableMap.remove('amount') as num).toDouble();
+      String? description = mutableMap.remove('description') as String?;
+      PeriodicAccountDuration cadence = PeriodicAccountDuration.fromMap(mutableMap);
 
     /* return the object of the cashback class
     with the attributes provided */

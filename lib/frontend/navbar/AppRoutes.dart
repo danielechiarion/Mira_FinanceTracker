@@ -9,4 +9,8 @@ class AppRoutes {
   static const String check = '/check';     // CUSTOM CHECK
   static const String actions = '/actions'; // ACTION PAGES
   static const String settings = '/settings';
+
+  /* routes for pages not included
+  inside the main menu */
+  static const String currentAccounts = '/current-accounts';
 }

@@ -48,8 +48,8 @@ class Cashback extends PeriodicAccountBillings{
     /* first get the various parameters */
     int id = map.remove('id');
     String name = map.remove('name');
-    double amount = map.remove('amount');
-    String description = map.remove('description');
+    double amount = (map.remove('amount') as num).toDouble();
+    String? description = map.remove('description') as String?;
     PeriodicAccountDuration cadence = PeriodicAccountDuration.fromMap(map);
 
     /* return the object of the cashback class

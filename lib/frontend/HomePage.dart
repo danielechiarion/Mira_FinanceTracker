@@ -3,12 +3,14 @@ import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
+import 'package:mira_finance_tracker/frontend/bank_account/CurrentAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/SummaryCard.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 import 'package:mira_finance_tracker/frontend/charts/MonthlyTrendChart.dart';
 import 'package:mira_finance_tracker/frontend/charts/PatrimonyPieChart.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/HomePageData.dart';
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
@@ -28,6 +30,7 @@ enum _AccountSection { checking, deposit, cards }
 
 class _HomePageState extends State<HomePage> {
   late Future<HomePageData> _summaryFuture;
+  late final UserDatabaseWrapper _database;
 
   @override
   void initState() {
@@ -35,13 +38,25 @@ class _HomePageState extends State<HomePage> {
     _summaryFuture = _loadSession();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _database.closeCompletelyDatabase();
+  }
+
   Future<HomePageData> _loadSession() async {
     final session = await CurrentSession.getFromMemory();
     if (session == null) {
       throw StateError('Nessuna sessione attiva.');
     }
+
+    /* create and initialize the database */
+    _database = UserDatabaseWrapper(session.user);
+    await _database.init();
+
     final data = HomePageData(session.user);
     await data.init();
+    
     return data;
   }
 
@@ -230,7 +245,7 @@ class _HomePageState extends State<HomePage> {
 
   /// Single tappable account-type card. Reuses SummaryCard to stay
   /// consistent with the income/outcome cards, wrapped in an InkWell so it
-  /// can navigate to the dedicated account-type page (page to be added).
+  /// can navigate to the dedicated account-type page.
   Widget _accountTypeCard({
     required String label,
     required double amount,
@@ -252,19 +267,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// TODO(navigation): the target pages don't exist yet. Once they're
-  /// created, route to them here (e.g. via AppRoutes + Navigator.pushNamed,
-  /// following the same pattern used by ResponsiveScaffold/AppRoutes).
+  /// Navigates to the dedicated page for the tapped account type.
   void _openAccountsOfType(_AccountSection section) {
     switch (section) {
       case _AccountSection.checking:
-        // Navigator.pushNamed(context, AppRoutes.checkingAccounts);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CurrentAccountPage(database: _database)));
         break;
       case _AccountSection.deposit:
-        // Navigator.pushNamed(context, AppRoutes.depositAccounts);
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => const DepositAccountPage()));
         break;
       case _AccountSection.cards:
-        // Navigator.pushNamed(context, AppRoutes.cards);
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => const CardAccountPage()));
         break;
     }
   }
