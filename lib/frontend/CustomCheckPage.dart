@@ -33,6 +33,9 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
   int _page = 0;
   late final Future<List<TransactionOperationOutput>> _operationsFuture;
   List<TransactionOperationOutput> _operations = [];
+  
+  // Added flag to manage initial chip selection state
+  bool _isFirstLoad = true;
 
   @override
   void initState() {
@@ -62,6 +65,15 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
         );
       }
       _operations = outputs;
+
+      // Initialize selected filters with all available options on first load
+      // so they can be properly deselected without falling back to an empty set.
+      if (_isFirstLoad) {
+        _selectedAccounts.addAll(_accountNames);
+        _selectedServices.addAll(_serviceNames);
+        _isFirstLoad = false;
+      }
+
       return outputs;
     } finally {
       await database.closeDatabase();
@@ -149,6 +161,11 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
   }
 
   Widget _buildIntro() {
+    // Determine the label based on the selected comparison mode
+    final modeLabel = _comparisonMode == _ComparisonMode.sameDuration 
+        ? 'Mese corrente' 
+        : 'Anno scorso';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -162,8 +179,10 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
           style: TextStyle(color: Colors.grey.shade600),
         ),
         const SizedBox(height: 8),
+        // Update the green text to show the dynamic comparison period 
+        // with its corresponding dates.
         Text(
-          'Periodo di riferimento: ${_formatPeriod(_startDate, _endDate)}',
+          'Confronto di riferimento: $modeLabel (${_formatPeriod(_comparisonStart, _comparisonEnd)})',
           style: const TextStyle(
             color: Colors.teal,
             fontWeight: FontWeight.w600,
@@ -728,19 +747,27 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     }).toList()..sort((a, b) => b.executionDate.compareTo(a.executionDate));
   }
 
-  List<TransactionOperationOutput> get _comparisonOperations {
+  // Refactored comparison dates into getters so they can be reused for the UI label
+  DateTime get _comparisonStart {
     final duration = _endDate.difference(_startDate).inDays + 1;
-    final comparisonEnd = _comparisonMode == _ComparisonMode.sameDuration
-        ? _endOfDay(DateTime.now())
-        : _endOfDay(_endDate.subtract(const Duration(days: 365)));
-    final comparisonStart = comparisonEnd.subtract(
-      Duration(days: duration - 1),
-    );
+    return _comparisonMode == _ComparisonMode.sameDuration
+        ? _dateOnly(DateTime.now()).subtract(const Duration(days: 30))
+        : _dateOnly(_endDate.subtract(const Duration(days: 365))).subtract(Duration(days: duration - 1));
+  }
+
+  DateTime get _comparisonEnd => _comparisonMode == _ComparisonMode.sameDuration
+      ? _endOfDay(DateTime.now())
+      : _endOfDay(_endDate.subtract(const Duration(days: 365)));
+
+  List<TransactionOperationOutput> get _comparisonOperations {
     final query = _searchController.text.trim().toLowerCase();
+    final start = _comparisonStart;
+    final end = _comparisonEnd;
+
     return _operations.where((operation) {
       final inDateRange =
-          !operation.executionDate.isBefore(comparisonStart) &&
-          !operation.executionDate.isAfter(comparisonEnd);
+          !operation.executionDate.isBefore(start) &&
+          !operation.executionDate.isAfter(end);
       final accountMatches = _effectiveSelectedAccounts.contains(
         operation.accountName,
       );
@@ -780,9 +807,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
       .toSet()
       .toList();
 
-  Set<String> get _effectiveSelectedAccounts =>
-      _selectedAccounts.isEmpty ? _accountNames.toSet() : _selectedAccounts;
+  Set<String> get _effectiveSelectedAccounts => _selectedAccounts;
 
-  Set<String> get _effectiveSelectedServices =>
-      _selectedServices.isEmpty ? _serviceNames.toSet() : _selectedServices;
+  Set<String> get _effectiveSelectedServices => _selectedServices;
 }
