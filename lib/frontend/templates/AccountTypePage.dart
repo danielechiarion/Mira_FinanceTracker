@@ -5,7 +5,6 @@ import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/FlippableBalanceCard.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/EntityListSection.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/PaginatedTransactionsSection.dart';
-import 'package:mira_finance_tracker/frontend/single_elements/PlaceholderFormPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
@@ -13,6 +12,10 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+
+import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingPage.dart';
+import 'package:mira_finance_tracker/frontend/updates/EditPeriodicBillingPage.dart';
 
 /// Generic template for a "type of account" page (checking accounts,
 /// deposit accounts, cards, ...). It shows the app navbar, one section per
@@ -60,6 +63,10 @@ class AccountTypePage<T extends BankAccount> extends StatefulWidget {
   /// slicing it in memory.
   final Future<List<BankTransaction>> Function(T account, int page, int pageSize) loadTransactionsPage;
 
+  /// Import the user database to use functions
+  /// to delete and update elements
+  final UserDatabaseWrapper database;
+
   const AccountTypePage({
     super.key,
     required this.currentRoute,
@@ -75,6 +82,7 @@ class AccountTypePage<T extends BankAccount> extends StatefulWidget {
     this.specificSectionTitle = 'Operazioni specifiche',
     this.buildSpecificSection,
     required this.loadTransactionsPage,
+    required this.database
   });
 
   @override
@@ -273,9 +281,6 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
   /// "Movimenti comuni" section: fees and cashback management, embedded via
   /// two EntityListSection instances that reuse BankAccount's own
   /// fee/cashback CRUD methods (addFee/removeFee, addCashback/removeCashback).
-  /// TODO: the add/edit pages are still placeholders - building the real
-  /// forms needs PeriodicAccountDuration/DurationType's public API (to pick
-  /// a cadence), which hasn't been shared yet.
   Widget _buildCommonOperations(T account) {
     final formatter = NumberFormat.currency(locale: 'it_IT', symbol: '€');
 
@@ -293,9 +298,22 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
           matchesQuery: (fee, query) => _matchesBilling(fee.name, fee.description, query),
           titleOf: (fee) => fee.name,
           subtitleOf: (fee) => _billingSubtitle(formatter, fee.amount, fee.description),
-          buildAddPage: (context) => const PlaceholderFormPage(title: 'Nuova commissione'),
-          buildEditPage: (context, fee) => const PlaceholderFormPage(title: 'Modifica commissione'),
-          deleteItem: (fee) async => account.removeFee(fee),
+          buildAddPage: (context) => PeriodicBillingFormPage(title: 'Aggiungi commissione', nameLabel: 'Commissione', database: widget.database, classRequested: BankFee),
+          buildEditPage: (context, fee) => EditPeriodicBillingPage(title: 'Modifica commissione', item: fee, classRequested: BankFee, database: widget.database),
+          deleteItem: (fee) async {
+            account.removeFee(fee);
+            await widget.database.deleteAccountFee(fee);
+          },
+          addItem: (fee) async {
+            setState(() {
+              account.addFee(fee);
+            });
+          },
+          updateItem: (fee) async {
+            setState(() {
+              account.replaceFee(fee);
+            });
+          },
         ),
         const SizedBox(height: 24),
         const Text('Cashback', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -309,9 +327,22 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
           matchesQuery: (cashback, query) => _matchesBilling(cashback.name, cashback.description, query),
           titleOf: (cashback) => cashback.name,
           subtitleOf: (cashback) => _billingSubtitle(formatter, cashback.amount, cashback.description),
-          buildAddPage: (context) => const PlaceholderFormPage(title: 'Nuovo cashback'),
-          buildEditPage: (context, cashback) => const PlaceholderFormPage(title: 'Modifica cashback'),
-          deleteItem: (cashback) async => account.removeCashback(cashback),
+          buildAddPage: (context) => PeriodicBillingFormPage(title: 'Aggiungi cashback', nameLabel: 'Cashback', database: widget.database, classRequested: Cashback),
+          buildEditPage: (context, cashback) => EditPeriodicBillingPage(title: 'Modifica cashback', item: cashback, classRequested: Cashback, database: widget.database),
+          deleteItem: (cashback) async {
+            account.removeCashback(cashback);
+            await widget.database.deleteAccountCashback(cashback);
+          },
+          addItem: (cashback) async {
+            setState(() {
+              account.addCashback(cashback);
+            });
+          },
+          updateItem: (cashback) async {
+            setState(() {
+              account.replaceCashback(cashback);
+            });
+          },
         ),
       ],
     );

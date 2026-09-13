@@ -59,7 +59,7 @@ class PeriodicTransactionFormPage extends StatelessWidget {
     );
   }
 
-  Future<void> _saveTransaction(
+  Future<PeriodicTransaction> _saveTransaction(
     BuildContext context,
     CurrentAccount account,
     String name,
@@ -72,8 +72,7 @@ class PeriodicTransactionFormPage extends StatelessWidget {
     DateTime startingDate,
     double fee,
   ) async {
-    PeriodicTransaction
-    transaction; // declare variable for the future object
+    PeriodicTransaction transaction; // declare variable for the future object
     if (classRequested == PeriodicIncome) {
       transaction = PeriodicIncome(
         name,
@@ -107,13 +106,14 @@ class PeriodicTransactionFormPage extends StatelessWidget {
         description: description,
         fee: fee,
       );
-      // NOTE: adjust the method name below to match your
-      // UserDatabaseWrapper API.
+      
       await database.saveAccountDomiciliation(
         account,
         transaction as Domiciliation,
       );
     }
+
+    return transaction;
   }
 
   @override
@@ -386,7 +386,7 @@ class PeriodicTransactionFormPage extends StatelessWidget {
             selectedCounterParty == null)
           return;
 
-        await _saveTransaction(
+        PeriodicTransaction periodicTransaction = await _saveTransaction(
           context,
           selectedAccount!,
           nameController.text.trim(),
@@ -408,7 +408,7 @@ class PeriodicTransactionFormPage extends StatelessWidget {
         );
 
         if (context.mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, periodicTransaction);
         }
       },
     );

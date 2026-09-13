@@ -18,6 +18,8 @@ class EntityListSection<T> extends StatefulWidget {
   final WidgetBuilder buildAddPage;
   final Widget Function(BuildContext context, T item) buildEditPage;
   final Future<void> Function(T item) deleteItem;
+  final Future<void> Function(T item)? addItem;
+  final Future<void> Function(T item)? updateItem;
 
   const EntityListSection({
     super.key,
@@ -32,6 +34,8 @@ class EntityListSection<T> extends StatefulWidget {
     required this.buildAddPage,
     required this.buildEditPage,
     required this.deleteItem,
+    this.addItem,
+    this.updateItem
   });
 
   @override
@@ -58,12 +62,14 @@ class _EntityListSectionState<T> extends State<EntityListSection<T>> {
   }
 
   Future<void> _openAddPage() async {
-    await Navigator.push(context, MaterialPageRoute(builder: widget.buildAddPage));
+    T item = await Navigator.push(context, MaterialPageRoute(builder: widget.buildAddPage));
+    await widget.addItem!(item);
     await _reload();
   }
 
   Future<void> _openEditPage(T item) async {
-    await Navigator.push(context, MaterialPageRoute(builder: (context) => widget.buildEditPage(context, item)));
+    T newItem = await Navigator.push(context, MaterialPageRoute(builder: (context) => widget.buildEditPage(context, item)));
+    await widget.updateItem!(newItem);
     await _reload();
   }
 

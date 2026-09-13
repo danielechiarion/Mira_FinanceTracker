@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 
@@ -25,7 +23,6 @@ abstract class PeriodicAccountBillings{
   PeriodicAccountBillings(this._name, this._amount, this._cadence, {this._description, this._id = -1});
 
   /* *** GETTER METHODS *** */
-  @protected
   int get id => _id;
   String get name => _name;
   String? get description => _description;

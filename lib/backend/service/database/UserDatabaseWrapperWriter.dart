@@ -398,4 +398,44 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to delete a [cashback] related to a specific account
+  /// * [close] flag to close the database
+  Future<void> deleteAccountCashback(Cashback cashback, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM Cashback WHERE name = ?', arguments: [cashback.name]);
+    
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete a [fee] related to a specific account
+  /// * [close] flag to close the database
+  Future<void> deleteAccountFee(BankFee fee, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM BankFee WHERE name = ?', arguments: [fee.name]);
+    
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete a [domiciliation] related to a specific current account
+  /// * [close] flag to close the database
+  Future<void> deleteAccountDomiciliation(Domiciliation domiciliation, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM Domiciliation WHERE name = ?', arguments: [domiciliation.name]);
+    
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete a periodic [income] related to a specific current account
+  /// * [close] flag to close the database
+  Future<void> deleteAccountPeriodicIncome(PeriodicIncome income, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM PeriodicIncome WHERE name = ?', arguments: [income.name]);
+    
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

@@ -5,24 +5,29 @@ import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrappe
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/templates/AccountTypePage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/EntityListSection.dart';
-import 'package:mira_finance_tracker/frontend/single_elements/PlaceholderFormPage.dart';
 
 import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicIncome.dart';
 
 import 'package:mira_finance_tracker/frontend/actions/NewPeriodicTransactionPage.dart';
+import 'package:mira_finance_tracker/frontend/updates/EditPeriodicTransactionPage.dart';
 
 /// Checking-accounts page ("Conti correnti"), built on top of the generic
 /// AccountTypePage template. Adds the sections specific to checking
 /// accounts: direct debits ("domiciliazioni") and periodic credits
 /// ("accrediti periodici"), backed by the Domiciliation and PeriodicIncome
 /// classes.
-class CurrentAccountPage extends StatelessWidget {
+class CurrentAccountPage extends StatefulWidget {
   final UserDatabaseWrapper _database; // use database as an attribute
 
   const CurrentAccountPage({super.key, required this._database});
 
+  @override
+  State<CurrentAccountPage> createState() => _CurrentAccountPageState();
+}
+
+class _CurrentAccountPageState extends State<CurrentAccountPage> {
   @override
   Widget build(BuildContext context) {
     return AccountTypePage<CurrentAccount>(
@@ -31,7 +36,7 @@ class CurrentAccountPage extends StatelessWidget {
       icon: Icons.account_balance,
       color: Colors.blue,
 
-      loadAccounts: () async => await _database.getCompleteCurrentAccounts(),
+      loadAccounts: () async => await widget._database.getCompleteCurrentAccounts(),
 
       // A checking account only has one meaningful balance, so the
       // secondary ("saldo disponibile") slot is left unset.
@@ -39,24 +44,16 @@ class CurrentAccountPage extends StatelessWidget {
       primaryBalanceLabel: 'Saldo',
 
       loadTransactionsPage: (account, page, pageSize) async {
-        return await _database.getAccountTransactionSlot(account, pageSize, page * pageSize);
+        return await widget._database.getAccountTransactionSlot(account, pageSize, page * pageSize);
       },
 
       hasSpecificSection: true,
       specificSectionTitle: 'Domiciliazioni e accrediti periodici',
       buildSpecificSection: (context, account) => _buildCheckingSpecificSection(account),
+      database: widget._database
     );
   }
 
-  /// TODO: the add/edit pages are still placeholders - building the real
-  /// forms needs PeriodicAccountDuration/DurationType's public API (to
-  /// pick a cadence) and a way to pick/create a CounterParty, neither of
-  /// which has been shared yet.
-  /// TODO: confirm the getter/method names on CheckingAccount
-  /// (`domiciliations`/`addDomiciliation`/`removeDomiciliation` and
-  /// `periodicIncomes`/`addPeriodicIncome`/`removePeriodicIncome`) - these
-  /// are assumed to follow the same pattern as `fees`/`cashbacks` on
-  /// BankAccount, since CheckingAccount wasn't shared yet either.
   Widget _buildCheckingSpecificSection(CurrentAccount account) {
     final formatter = NumberFormat.currency(locale: 'it_IT', symbol: '€');
 
@@ -74,9 +71,22 @@ class CurrentAccountPage extends StatelessWidget {
           matchesQuery: (debit, query) => _matchesPeriodicTransaction(debit.name, debit.description, debit.counterParty.name, query),
           titleOf: (debit) => debit.name,
           subtitleOf: (debit) => _periodicTransactionSubtitle(formatter, debit.amount, debit.counterParty.name, debit.description, extraFee: debit.fee),
-          buildAddPage: (context) => PeriodicTransactionFormPage(title: 'Aggiungi domiciliazione', nameLabel: 'Domiciliazione', database: _database, classRequested: Domiciliation),
-          buildEditPage: (context, debit) => const PlaceholderFormPage(title: 'Modifica domiciliazione'),
-          deleteItem: (debit) async => account.removeDomiciliation(debit),
+          buildAddPage: (context) => PeriodicTransactionFormPage(title: 'Aggiungi domiciliazione', nameLabel: 'Domiciliazione', database: widget._database, classRequested: Domiciliation),
+          buildEditPage: (context, debit) => EditPeriodicTransactionPage(title: 'Modifica domiciliazione', item: debit, classRequested: Domiciliation, database: widget._database),
+          deleteItem: (debit) async {
+            account.removeDomiciliation(debit);
+            await widget._database.deleteAccountDomiciliation(debit);
+          },
+          addItem: (debit) async {
+            setState(() {
+              account.addDomiciliation(debit);
+            });
+          },
+          updateItem: (debit) async {
+            setState(() {
+              account.replaceDomiciliation(debit);
+            });
+          }
         ),
         const SizedBox(height: 24),
         const Text('Accrediti periodici', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -90,9 +100,22 @@ class CurrentAccountPage extends StatelessWidget {
           matchesQuery: (credit, query) => _matchesPeriodicTransaction(credit.name, credit.description, credit.counterParty.name, query),
           titleOf: (credit) => credit.name,
           subtitleOf: (credit) => _periodicTransactionSubtitle(formatter, credit.amount, credit.counterParty.name, credit.description),
-          buildAddPage: (context) => PeriodicTransactionFormPage(title: 'Aggiungi accredito periodico', nameLabel: 'Accredito periodico', database: _database, classRequested: PeriodicIncome),
-          buildEditPage: (context, credit) => const PlaceholderFormPage(title: 'Modifica accredito periodico'),
-          deleteItem: (credit) async => account.removePeriodicIncome(credit),
+          buildAddPage: (context) => PeriodicTransactionFormPage(title: 'Aggiungi accredito periodico', nameLabel: 'Accredito periodico', database: widget._database, classRequested: PeriodicIncome),
+          buildEditPage: (context, credit) => EditPeriodicTransactionPage(title: 'Modifica accredito periodico', item: credit, classRequested: PeriodicIncome, database: widget._database),
+          deleteItem: (credit) async {
+            account.removePeriodicIncome(credit);
+            await widget._database.deleteAccountPeriodicIncome(credit);
+          },
+          addItem: (credit) async {
+            setState(() {
+              account.addPeriodicIncome(credit);
+            });
+          },
+          updateItem: (credit) async {
+            setState(() {
+              account.replacePeriodicIncome(credit);
+            });
+          },
         ),
       ],
     );
