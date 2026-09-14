@@ -85,7 +85,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
 
   /// Only savings accounts ("conto deposito") can host a time deposit.
   Future<List<SavingsAccount>> _loadAccounts() async {
-    return await widget.database.getSavingsAccounts();
+    return (await widget.database.getSavingsAccounts()).where((account) => account.isActive).toList();
   }
 
   Future<List<TimeDepositModel>> _loadModels() async {

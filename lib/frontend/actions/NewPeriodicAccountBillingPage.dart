@@ -36,7 +36,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
   });
 
   Future<List<BankAccount>> _loadAccounts() async {
-    return await database.getBankAccounts();
+    return (await database.getBankAccounts()).where((account) => account.isActive).toList();
   }
 
   Future<bool> _isNameAvailable(String name, BankAccount account) async {

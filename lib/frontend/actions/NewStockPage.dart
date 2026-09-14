@@ -85,7 +85,7 @@ class _NewStockPageState extends State<NewStockPage> {
   /// Stocks are assumed to be registered on the same account type used
   /// for time deposits and bonds (see class-level NOTE above).
   Future<List<SavingsAccount>> _loadAccounts() async {
-    return await widget.database.getSavingsAccounts();
+    return (await widget.database.getSavingsAccounts()).where((account) => account.isActive).toList();
   }
 
   Future<List<FinancialInstitute>> _loadInstitutes() async {

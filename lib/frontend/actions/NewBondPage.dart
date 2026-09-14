@@ -90,7 +90,7 @@ class _NewBondPageState extends State<NewBondPage> {
   /// Bonds are assumed to be subscribed on the same account type used
   /// for time deposits (see class-level NOTE above).
   Future<List<SavingsAccount>> _loadAccounts() async {
-    return await widget.database.getSavingsAccounts();
+    return (await widget.database.getSavingsAccounts()).where((account) => account.isActive).toList();
   }
 
   Future<List<BondModel>> _loadModels() async {

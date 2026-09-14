@@ -37,7 +37,7 @@ class PeriodicTransactionFormPage extends StatelessWidget {
 
   // these operations only apply to current accounts
   Future<List<CurrentAccount>> _loadAccounts() async {
-    return await database.getCurrentAccounts();
+    return (await database.getCurrentAccounts()).where((account) => account.isActive).toList();
   }
 
   Future<List<CounterParty>> _loadCounterParties() async {

@@ -36,7 +36,7 @@ class MovementFormPage extends StatelessWidget {
   });
 
   Future<List<BankAccount>> _loadAccounts() async {
-    return await database.getBankAccounts();
+    return (await database.getBankAccounts()).where((account) => account.isActive).toList();
   }
 
   /// Method to load the counterparties list from the database

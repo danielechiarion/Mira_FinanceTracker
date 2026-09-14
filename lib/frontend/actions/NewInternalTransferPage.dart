@@ -24,7 +24,9 @@ class NewInternalTransferPage extends StatelessWidget {
   NewInternalTransferPage({
     super.key,
     required this.database
-  }) : _accountsFuture = database.getBankAccounts();
+  }) : _accountsFuture = database
+          .getBankAccounts()
+          .then((accounts) => accounts.where((account) => account.isActive).toList());
 
   String _accountTypeName(BankAccount account) {
     if (account is CurrentAccount) return 'conto corrente';
