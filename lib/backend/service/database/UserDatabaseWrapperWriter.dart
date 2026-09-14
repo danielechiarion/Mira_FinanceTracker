@@ -438,4 +438,17 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to delete permanently a bank [account],
+  /// removing also the related entities
+  /// * [close] flag to close the database
+  Future<void> deleteBankAccount(BankAccount account, {bool close = false}) async {
+    /* by the references made between the tables of the database,
+    every record connected to the account should erase automatically */
+    await appDatabase.execute(sql: 'DELETE FROM BankAccount WHERE id = ?', arguments: [account.id]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

@@ -7,6 +7,7 @@ import 'package:mira_finance_tracker/frontend/single_elements/EntityListSection.
 import 'package:mira_finance_tracker/frontend/single_elements/PaginatedTransactionsSection.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
+import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
@@ -18,53 +19,27 @@ import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingP
 import 'package:mira_finance_tracker/frontend/updates/EditPeriodicBillingPage.dart';
 
 /// Generic template for a "type of account" page (checking accounts,
-/// deposit accounts, cards, ...). It shows the app navbar, one section per
-/// account of that type owned by the user (labelled with the account
-/// name), a flippable balance card, a "movimenti comuni" section for
-/// fees/cashback, an optional free-form section for operations specific
-/// to that account type, and a paginated list of the account's
-/// transactions.
+/// deposit accounts, cards, ...). Rebuilt to use a Tabbed layout so multiple
+/// accounts of the same type are displayed in separated, clickable tabs.
 ///
-/// Concrete pages are built by instantiating this widget with the right
-/// callbacks/flags - see CheckingAccountPage.dart for an example.
+/// It shows a flippable balance card, a "movimenti comuni" section for
+/// fees/cashback, an optional free-form section for operations specific
+/// to that account type, and a paginated list of the account's transactions.
+/// It also supports editing and deleting the account.
 class AccountTypePage<T extends BankAccount> extends StatefulWidget {
-  /// Route of this page, used by ResponsiveScaffold to highlight the right
-  /// navbar entry.
   final String currentRoute;
-
-  /// Page/app-bar title (e.g. "Conti correnti").
   final String title;
-
   final IconData icon;
   final Color color;
-
-  /// Loads the accounts of this type owned by the current user.
   final Future<List<T>> Function() loadAccounts;
-
-  /// "Saldo contabile": always shown, front and center on the card.
   final double Function(T account) primaryBalanceOf;
   final String primaryBalanceLabel;
-
-  /// "Saldo disponibile": only meaningful for some account types (e.g.
-  /// deposit accounts, where part of the accounted balance may not be
-  /// immediately withdrawable). Leave null to hide it.
   final double Function(T account)? secondaryBalanceOf;
   final String secondaryBalanceLabel;
-
-  /// Free section for operations specific to this account type (e.g.
-  /// direct debits and periodic credits for checking accounts). Shown only
-  /// when [hasSpecificSection] is true.
   final bool hasSpecificSection;
   final String specificSectionTitle;
   final Widget Function(BuildContext context, T account)? buildSpecificSection;
-
-  /// Loads one page of transactions for [account]; should ideally query
-  /// the backend directly for that page instead of loading the whole history and
-  /// slicing it in memory.
   final Future<List<BankTransaction>> Function(T account, int page, int pageSize) loadTransactionsPage;
-
-  /// Import the user database to use functions
-  /// to delete and update elements
   final UserDatabaseWrapper database;
 
   const AccountTypePage({
@@ -82,7 +57,7 @@ class AccountTypePage<T extends BankAccount> extends StatefulWidget {
     this.specificSectionTitle = 'Operazioni specifiche',
     this.buildSpecificSection,
     required this.loadTransactionsPage,
-    required this.database
+    required this.database,
   });
 
   @override
@@ -100,7 +75,9 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
 
   Future<void> _reload() async {
     final future = widget.loadAccounts();
-    setState(() => _accountsFuture = future);
+    setState(() {
+      _accountsFuture = future;
+    });
     await future;
   }
 
@@ -120,18 +97,31 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
           }
 
           final accounts = snapshot.data!;
-          return RefreshIndicator(
-            onRefresh: _reload,
-            color: Colors.teal,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1100),
-                  child: accounts.isEmpty ? _buildEmptyState() : _buildAccountsList(accounts),
+          if (accounts.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          // Use DefaultTabController to separate accounts into individual clickable tabs
+          return DefaultTabController(
+            length: accounts.length,
+            child: Column(
+              children: [
+                Container(
+                  color: Colors.white,
+                  child: TabBar(
+                    isScrollable: true,
+                    indicatorColor: widget.color,
+                    labelColor: widget.color,
+                    unselectedLabelColor: Colors.grey.shade600,
+                    tabs: accounts.map((account) => Tab(text: account.name)).toList(),
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: TabBarView(
+                    children: accounts.map((account) => _buildTabContent(account)).toList(),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -154,49 +144,240 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
     );
   }
 
-  Widget _buildAccountsList(List<T> accounts) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (int i = 0; i < accounts.length; i++) ...[
-          _buildAccountSection(accounts[i]),
-          if (i != accounts.length - 1) ...[
-            const SizedBox(height: 32),
-            const Divider(height: 1, color: Color(0xFFE0E0E0)),
-            const SizedBox(height: 32),
-          ],
-        ],
-      ],
+  Widget _buildTabContent(T account) {
+    return RefreshIndicator(
+      onRefresh: _reload,
+      color: Colors.teal,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: _buildAccountSection(account),
+          ),
+        ),
+      ),
     );
   }
 
-  /// Builds one full section (label + card + sub-sections) for a single
-  /// account, labelled with the account name as requested. Keyed by
-  /// account id so each account keeps its own paginated transactions state
-  /// across rebuilds/reorders.
   Widget _buildAccountSection(T account) {
     return Column(
       key: ValueKey('account-${account.id}-${account.name}'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Action Header (Name, Toggle Active Status, Edit, Delete)
         Row(
           children: [
-            Icon(widget.icon, color: widget.color, size: 20),
+            Icon(widget.icon, color: widget.color, size: 24),
             const SizedBox(width: 8),
-            Text(account.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(account.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            ),
+            // Switch to toggle the active/archived state of the account
+            Tooltip(
+              message: account.isActive ? 'Disattiva conto' : 'Attiva conto',
+              child: Switch(
+                value: account.isActive,
+                activeColor: widget.color,
+                onChanged: (bool value) async {
+                  // If deactivating the account, show a confirmation dialog first
+                  if (!value) {
+                    final bool? confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Disattiva conto'),
+                          content: const Text(
+                            'Attenzione: a conto disattivato non sarà più possibile registrare alcune operazioni su di esso. Confermi di voler procedere?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Annulla'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.amber.shade800),
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Disattiva', style: TextStyle(color: Colors.white)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    // If user cancelled the action or dismissed the dialog, abort the switch toggle
+                    if (confirm != true) return;
+                  }
+
+                  // 1. Update the local UI state
+                  setState(() {
+                    account.isActive = value;
+                  });
+
+                  // 2. BACKEND DATABASE CALL:
+                  // Persist the updated status on the database
+                  await widget.database.updateAccountInformation(account);
+                },
+              ),
+            ),
+            IconButton(
+              tooltip: 'Modifica conto',
+              icon: Icon(Icons.edit_outlined, color: widget.color),
+              onPressed: () => _showEditAccountDialog(account),
+            ),
+            IconButton(
+              tooltip: 'Elimina conto',
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _confirmDeleteAccount(account),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         _buildBalanceCard(account),
-        const SizedBox(height: 16),
-        _sectionCard('Movimenti comuni', _buildCommonOperations(account)),
-        if (widget.hasSpecificSection && widget.buildSpecificSection != null) ...[
+        if(account.isActive) ... [
           const SizedBox(height: 16),
-          _sectionCard(widget.specificSectionTitle, widget.buildSpecificSection!(context, account)),
+          _sectionCard('Movimenti comuni', _buildCommonOperations(account)),
+          if (widget.hasSpecificSection && widget.buildSpecificSection != null) ...[
+            const SizedBox(height: 16),
+            _sectionCard(widget.specificSectionTitle, widget.buildSpecificSection!(context, account)),
+          ],
         ],
         const SizedBox(height: 16),
         _sectionCard('Movimenti', _buildTransactionsSection(account)),
       ],
+    );
+  }
+
+  Future<void> _showEditAccountDialog(T account) async {
+    // Note: Adjust the fields logic as necessary depending on your BankAccount class setters
+    final ibanController = TextEditingController(text: account.IBAN ?? '');
+    final interestController = TextEditingController(text: (account.interest * 100).toStringAsFixed(2));
+    final balanceController = TextEditingController(text: widget.primaryBalanceOf(account).toString());
+    final double? initialSecondaryBalance = account is SavingsAccount 
+        ? (account as SavingsAccount).ledgerBalance
+        : widget.secondaryBalanceOf?.call(account);
+
+    final ledgerController = TextEditingController(
+      text: initialSecondaryBalance?.toString() ?? '',
+    );
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Modifica conto'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'I campi "Nome conto" e "Banca" non sono modificabili.',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontStyle: FontStyle.italic),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: TextEditingController(text: account.name),
+                  readOnly: true, // Prevents editing the account name
+                  decoration: const InputDecoration(
+                    labelText: 'Nome conto',
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: TextEditingController(text: account.bank.name),
+                  readOnly: true, // Prevents editing the bank name
+                  decoration: const InputDecoration(
+                    labelText: 'Banca',
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: balanceController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(labelText: widget.primaryBalanceLabel),
+                ),
+                /* display ledger balance to change
+                only if we're talking about a savings account */
+                if(account is SavingsAccount) ... [
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: ledgerController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(labelText: widget.secondaryBalanceLabel),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: ibanController,
+                  decoration: const InputDecoration(labelText: 'IBAN'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: interestController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Tasso di interesse (%)'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                setState(() {
+                  account.IBAN = ibanController.text.trim();
+                  account.interest = (double.tryParse(interestController.text) ?? 0) / 100;
+                  account.availableBalance = double.tryParse(balanceController.text) ?? account.availableBalance;
+                  if(account is SavingsAccount) (account as SavingsAccount).ledgerBalance = double.tryParse(ledgerController.text) ?? account.ledgerBalance;
+                }); // Refresh local UI
+
+                await widget.database.updateAccountInformation(account); // then update information on database
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: const Text('Salva'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmDeleteAccount(T account) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Elimina conto'),
+          content: const Text(
+            'Sei sicuro di voler cancellare questo account e tutti i servizi correlati? Questa azione è irreversibile.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                await widget.database.deleteBankAccount(account);
+                
+                if (context.mounted) Navigator.pop(context);
+                await _reload(); // Reload the whole list to show the updated tabs
+              },
+              child: const Text('Elimina', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -253,10 +434,8 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
           ],
         ),
         const SizedBox(height: 12),
-        // NOTE: assumes FinancialInstitute exposes a `name` getter.
         _detailRow('Istituto', account.bank.name),
         _detailRow('IBAN', account.IBAN ?? '-'),
-        // NOTE: assumes interest is stored as a fraction (e.g. 0.015 = 1.5%).
         _detailRow('Tasso di interesse', '${(account.interest * 100).toStringAsFixed(2)}%'),
         _detailRow('Data di sottoscrizione', dateFormatter.format(account.subscriptionDate)),
         if (account.endingDate != null) _detailRow('Data di chiusura', dateFormatter.format(account.endingDate!)),
@@ -278,9 +457,6 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
     );
   }
 
-  /// "Movimenti comuni" section: fees and cashback management, embedded via
-  /// two EntityListSection instances that reuse BankAccount's own
-  /// fee/cashback CRUD methods (addFee/removeFee, addCashback/removeCashback).
   Widget _buildCommonOperations(T account) {
     final formatter = NumberFormat.currency(locale: 'it_IT', symbol: '€');
 
@@ -348,24 +524,17 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
     );
   }
 
-  /// Shared search predicate for the periodic-billing types (BankFee,
-  /// Cashback): matches on name and, if present, description.
   bool _matchesBilling(String name, String? description, String query) {
     final q = query.toLowerCase();
     return name.toLowerCase().contains(q) || (description?.toLowerCase().contains(q) ?? false);
   }
 
-  /// Shared subtitle for the periodic-billing types: formatted amount,
-  /// plus the description when there is one.
   String _billingSubtitle(NumberFormat formatter, double amount, String? description) {
     final base = formatter.format(amount);
     if (description == null || description.isEmpty) return base;
     return '$base • $description';
   }
 
-  /// Paginated transactions list (10 at a time by default), loaded
-  /// gradually through [AccountTypePage.loadTransactionsPage] instead of
-  /// materializing the whole history at once.
   Widget _buildTransactionsSection(T account) {
     return PaginatedTransactionsSection<BankTransaction>(
       loadPage: (page, pageSize) => widget.loadTransactionsPage(account, page, pageSize),

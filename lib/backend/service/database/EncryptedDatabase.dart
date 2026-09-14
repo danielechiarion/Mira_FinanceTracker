@@ -274,7 +274,7 @@ class EncryptedDatabase {
       path: path,
       password: password,
       version: version,
-      onCreate: onCreate,
+      onCreate: onCreate
     );
     _pendingOpenings[path] = openingFuture;
 
@@ -303,6 +303,9 @@ class EncryptedDatabase {
         options: OpenDatabaseOptions(
           version: version,
           onCreate: onCreate,
+          onConfigure: (db) async {
+            await db.execute('PRAGMA foreign_keys = ON');
+          }
         ),
       );
     } else {
@@ -311,6 +314,9 @@ class EncryptedDatabase {
         password: password,
         version: version,
         onCreate: onCreate,
+        onConfigure: (db) async {
+          await db.execute('PRAGMA foreign_keys = ON');
+        }
       );
     }
   }

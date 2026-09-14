@@ -238,4 +238,20 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to save changes made to a bank [account]
+  /// permanently inside the database
+  /// * [close] flag to close the database
+  Future<void> updateAccountInformation(BankAccount account, {bool close = false}) async {
+    await updateBankAccountBalance(account); // first update the balance 
+
+    /* then update the other information 
+    related to the bank account */
+    await appDatabase.executeWithMap(sql: '''UPDATE BankAccount SET active = :active, IBAN = :IBAN, interest = :interest
+      WHERE id = :id''', parameters: account.toMap());
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }
