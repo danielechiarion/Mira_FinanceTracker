@@ -67,6 +67,12 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       if(_interestType == BondType.variable){
         _couponSchedule = {};
       }
+
+      /* if the purchase price is >100,
+      divide it with 100 */
+      if(_purchasePrice > 100){
+        _purchasePrice /= 100;
+      }
       
       /* initialize time info starting from the attributes given by the user */
       if(monthOfYear != null){
@@ -122,7 +128,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
   }
 
    /// Another version of the constructor with the duration expressed instead of the different parameters  
-  Bond.withTimeInfo(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, String instrumentUsed,
+  Bond.withTimeInfo(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, String? instrumentUsed,
     this._purchasePrice, this._interestType, LimitedAccountDuration timeInfo,
     {int id = -1, FinancialInstitute? provider, double? currentValue, FinancialInstrumentStatus? status, 
     this._minimumDenomination = 1000, List<StepInterest>? couponSchedule}) :
@@ -467,7 +473,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       currentValue: super.currentValue,
       couponSchedule: couponSchedule,
       minimumDenomination: _minimumDenomination,
-      instrumentUsed: super.instrumentModelName!,
+      instrumentUsed: super.instrumentModelName,
     );
   }
 
@@ -490,21 +496,23 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
   /// * [provider] optional provider of the bond service
   /// * [couponSchedule] schedule of coupons already converted from the database
   factory Bond.fromMap(Map<String, dynamic> map, FinancialInstitute? provider, List<StepInterest> couponSchedule){
+    Map<String, dynamic> inputMap = Map<String, dynamic>.from(map);
+    
     return Bond.withTimeInfo(
-      map.remove('name'),
-      FinancialInstrumentProvider.values[map.remove('providerType')],
-      map.remove('initialValue'),
-      map.remove('taxRate'),
-      map.remove('instrumentUsed'),
-      map.remove('purchasePrice'),
-      BondType.values[map.remove('interestType')],
-      id: map.remove('id'),
-      provider: map.remove('provider'),
-      currentValue: map.remove('currentValue'),
-      status: FinancialInstrumentStatus.values[map.remove('status')],
-      minimumDenomination: map.remove('minimumDenomination'),
+      inputMap.remove('name'),
+      FinancialInstrumentProvider.values[inputMap.remove('providerType')],
+      inputMap.remove('initialValue'),
+      inputMap.remove('taxRate'),
+      inputMap.remove('instrumentUsed'),
+      inputMap.remove('purchasePrice'),
+      BondType.values[inputMap.remove('interestType')],
+      id: inputMap.remove('id'),
+      provider: provider,
+      currentValue: inputMap.remove('currentValue'),
+      status: FinancialInstrumentStatus.values[inputMap.remove('status')],
+      minimumDenomination: inputMap.remove('minimumDenomination'),
       couponSchedule: couponSchedule,
-      LimitedAccountDuration.fromMap(map)
+      LimitedAccountDuration.fromMap(inputMap)
     );
   }
 }

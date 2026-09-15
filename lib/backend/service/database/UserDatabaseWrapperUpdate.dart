@@ -250,7 +250,7 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
   /// Function to update [stock] related to a savings account
   /// * [close] flag to close the database
   Future<void> updateSavingsAccountStock(Stock stock, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''UPDATE TimeDeposit SET providerType = :providerType, provider = :provider,
+    await appDatabase.executeWithMap(sql: '''UPDATE Stock SET providerType = :providerType, provider = :provider,
       initialValue = :initialValue, currentValue = :currentValue, taxRate = :taxRate, status = :status, 
       ticker = :ticker, totalShares = :totalShares, averagePurchasePrice = :averagePurchasePrice,
       currency = :currency, totalDividends = :totalDividends, startingDate = :startingDate, endingDate = :endingDate

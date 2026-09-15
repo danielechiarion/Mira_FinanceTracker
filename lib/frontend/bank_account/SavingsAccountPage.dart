@@ -239,6 +239,7 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
     // the resulting transactions (capital plus any early-withdrawal interest)
     await widget._database.updateSavingsAccountTimeDeposit(deposit);
     await widget._database.saveTransactions(account, transactions);
+    await widget._database.updateBankAccountBalance(account);
   }
 
   /// Cash in ("riscuoti") a stock by liquidating the whole position.
@@ -265,6 +266,7 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
     // resulting transactions (sale, profit/loss, taxes...) against the
     await widget._database.updateSavingsAccountStock(stock);
     await widget._database.saveTransactions(account, transactions);
+    await widget._database.updateBankAccountBalance(account);
   }
 
   /// Generic overlay confirmation popup, used before any destructive or

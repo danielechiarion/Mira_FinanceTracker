@@ -232,13 +232,15 @@ class Stock extends FinancialInstrument{
       map['ticker'],
       Currency.values[map['currency']],
       DateTime.parse(map['startingDate']),
-      id: map.remove('id'),
-      currentValue: map.remove('currentValue'),
-      status: FinancialInstrumentStatus.values[map.remove('status')],
+      id: map['id'],
+      currentValue: map['currentValue'],
+      status: FinancialInstrumentStatus.values[map['status']],
       totalShares: map['totalShares'],
       totalDividends: map['totalDividends'],
       averagePurchasePrice: map['averagePurchasePrice'],
-      endingDate: map['endingDate']
+      endingDate: map['endingDate'] == null
+        ? null
+        : DateTime.tryParse(map['endingDate'] as String)
     );
   }
 }

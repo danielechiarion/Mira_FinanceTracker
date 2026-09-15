@@ -861,7 +861,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, purchasePrice, interestType, minimumDenomination,
       startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
       FinancialInstitute.name AS institute_name, email, phoneNumber, site
-      FROM BondModel LEFT JOIN FinancialInstitute ON BondModel.provider = FinancialInstitute.id
+      FROM Bond LEFT JOIN FinancialInstitute ON Bond.provider = FinancialInstitute.id
       WHERE bankAccount = ?''', arguments: [account.id]);
 
     List<Bond> bonds = [];
@@ -909,7 +909,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   Future<List<Stock>> getAccountStocks(SavingsAccount account, {bool close = false}) async {
     List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Stock.id, Stock.name,
       provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, ticker, totalShares, 
-      averagePurchasePrice, currency, totalDividends, startingDate, endingDate 
+      averagePurchasePrice, currency, totalDividends, startingDate, endingDate,
       FinancialInstitute.name AS institute_name, email, phoneNumber, site
       FROM Stock LEFT JOIN FinancialInstitute ON Stock.provider = FinancialInstitute.id
       WHERE bankAccount = ?''', arguments: [account.id]);

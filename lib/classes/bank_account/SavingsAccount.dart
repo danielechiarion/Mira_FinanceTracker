@@ -83,12 +83,6 @@ class SavingsAccount extends BankAccount{
       throw Exception("Can't buy a service of another financial institute");
     }
 
-    /* then control if the available balance 
-    is enough to buy the service */
-    if(service.currentValue > super.availableBalance){
-      throw Exception("Can't buy a service which requires more than the money available in the balance");
-    }
-
     /* update the available balance removing
     what has been given to the financial service */
     if(_financialServices.add(service)){

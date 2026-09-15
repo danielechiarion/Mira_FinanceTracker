@@ -111,7 +111,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
   }
 
   /// Another version of the constructor with the duration expressed instead of the different parameters  
-  TimeDeposit.withTimeInfo(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, String instrumentUsed, this._interestRate,
+  TimeDeposit.withTimeInfo(String name, FinancialInstrumentProvider providerType, double initialValue, double taxRate, String? instrumentUsed, this._interestRate,
     LimitedAccountDuration timeInfo,
     {int id = -1, FinancialInstitute? provider, double? currentValue, FinancialInstrumentStatus? status, 
     this._isCashable = true, this._earlyWithdrawalInterestRate = 0.0}) :
@@ -308,7 +308,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       currentValue: super.currentValue,
       isCashable: _isCashable,
       earlyWithdrawalInterestRate: _earlyWithdrawalInterestRate,
-      instrumentUsed: super.instrumentModelName!
+      instrumentUsed: super.instrumentModelName
     );
   }
 
@@ -330,20 +330,22 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
   /// * [map] map object from the database
   /// * [provider] optional provider of the time deposit service
   factory TimeDeposit.fromMap(Map<String, dynamic> map, FinancialInstitute? provider){
+    Map<String, dynamic> inputMap = Map<String, dynamic>.from(map);
+
     return TimeDeposit.withTimeInfo(
-      map.remove('name'),
-      FinancialInstrumentProvider.values[map.remove('providerType')],
-      map.remove('initialValue'),
-      map.remove('taxRate'),
-      map.remove('instrumentUsed'),
-      map.remove('interestRate'),
-      id: map.remove('id'),
-      provider: map.remove('provider'),
-      currentValue: map.remove('currentValue'),
-      status: FinancialInstrumentStatus.values[map.remove('status')],
-      isCashable: map.remove('isCashable') == 1,
-      earlyWithdrawalInterestRate: map.remove('earlyWithdrawalInterestRate'),
-      LimitedAccountDuration.fromMap(map)
+      inputMap.remove('name'),
+      FinancialInstrumentProvider.values[inputMap.remove('providerType')],
+      inputMap.remove('initialValue'),
+      inputMap.remove('taxRate'),
+      inputMap.remove('instrumentUsed'),
+      inputMap.remove('interestRate'),
+      id: inputMap.remove('id'),
+      provider: provider,
+      currentValue: inputMap.remove('currentValue'),
+      status: FinancialInstrumentStatus.values[inputMap.remove('status')],
+      isCashable: inputMap.remove('isCashable') == 1,
+      earlyWithdrawalInterestRate: inputMap.remove('earlyWithdrawalInterestRate'),
+      LimitedAccountDuration.fromMap(inputMap)
     );
   }
 }

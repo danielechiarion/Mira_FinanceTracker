@@ -122,10 +122,10 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
   /// * [map] map object from the database
   factory LimitedAccountDuration.fromMap(Map<String, dynamic> map){
     return LimitedAccountDuration(
-      map['startingDate'],
+      DateTime.parse(map['startingDate']),
       DurationType.values[map['timeFrequency']],
       map['dayOfMonth'],
-      endingDate: map['endingDate'],
+      endingDate: DateTime.parse(map['endingDate']),
       monthOfYear: map['monthOfYear'],
       lastDateActivity: map['lastDateActivity'],
       includeEnd: map['includeEnd'] == 1,
