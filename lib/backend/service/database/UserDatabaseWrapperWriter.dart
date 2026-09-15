@@ -451,4 +451,37 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to delete time [deposit] related to a savings account
+  /// permanently in the database
+  /// * [close] flag to close the database
+  Future<void> deleteSavingsAccountTimeDeposit(TimeDeposit deposit, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM TimeDeposit WHERE id = ?', arguments: [deposit.id]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete [bond] related to a savings account
+  /// permanently in the database
+  /// * [close] flag to close the database
+  Future<void> deleteSavingsAccountBond(Bond bond, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM Bond WHERE id = ?', arguments: [bond.id]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
+
+  /// Function to delete [stock] related to a savings account
+  /// permanently in the database
+  /// * [close] flag to close the database
+  Future<void> deleteSavingsAccountStock(Stock stock, {bool close = false}) async {
+    await appDatabase.execute(sql: 'DELETE FROM Stock WHERE id = ?', arguments: [stock.id]);
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

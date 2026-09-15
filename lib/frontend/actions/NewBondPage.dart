@@ -153,7 +153,7 @@ class _NewBondPageState extends State<NewBondPage> {
     return _validateProviderCompatibility(account, model.providerType, model.provider);
   }
 
-  Future<void> _saveBond(
+  Future<Bond> _saveBond(
     BuildContext context,
     SavingsAccount account,
     BondModel? model,
@@ -204,6 +204,8 @@ class _NewBondPageState extends State<NewBondPage> {
       );
     }
     await widget.database.saveAccountBond(account, bond);
+
+    return bond;
   }
 
   /// Read-only summary of every field a chosen [BondModel] already
@@ -570,8 +572,9 @@ class _NewBondPageState extends State<NewBondPage> {
             ? [StepInterest(0, duration, double.tryParse(fixedRateController.text) ?? 0.0)]
             : interests;
 
+        Bond? savedBond;
         try {
-          await _saveBond(
+          savedBond = await _saveBond(
             context,
             selectedAccount!,
             useModel ? selectedModel : null,
@@ -598,7 +601,7 @@ class _NewBondPageState extends State<NewBondPage> {
         }
 
         if (context.mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, savedBond);
         }
       },
     );

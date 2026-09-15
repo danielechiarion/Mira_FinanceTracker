@@ -7,6 +7,9 @@ import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/model/FinancialInstrumentModel.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/service/TimeDeposit.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/service/Bond.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/service/Stock.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/CadenceCheck.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 
@@ -55,6 +58,15 @@ class SavingsAccount extends BankAccount{
       list.add(service.clone());
     }
     return list;
+  }
+  List<TimeDeposit> get timeDeposits {
+    return financialServices.whereType<TimeDeposit>().toList();
+  }
+  List<Bond> get bonds {
+    return financialServices.whereType<Bond>().toList();
+  }
+  List<Stock> get stocks {
+    return financialServices.whereType<Stock>().toList();
   }
 
   /* *** SETTER METHODS *** */

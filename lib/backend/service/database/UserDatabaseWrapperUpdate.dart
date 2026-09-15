@@ -225,6 +225,28 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
     }
   }
 
+  /// Function to update data related to a [bond] saved in a bank account
+  /// and the information related to it, such as the step interest
+  /// * [close] flag to close the database
+  Future<void> updateSavingsAccountBondComplete(Bond bond, {bool close = false}) async {
+    await updateSavingsAccountBondSimple(bond); // first save essential information of bonds
+
+    /* now update step interests. 
+    Because we don't know if the number has increased or reduce before,
+    or wheter the previous order of interests has changed, 
+    we erase all the step interests related to the bond and we rewrite it */
+    await appDatabase.execute(sql: 'DELETE FROM StepInterest WHERE bond = ?', arguments: [bond.id]);
+    for (final singleInterest in bond.couponSchedule) {
+      await appDatabase.execute(sql:'''INSERT INTO StepInterest (position, bond, interestRate, duration)
+        VALUES (?, ?, ?, ?)''', arguments: [
+        singleInterest.position,
+        bond.id,
+        singleInterest.interestRate,
+        singleInterest.duration.toString(),
+      ]);
+    }
+  }
+
   /// Function to update [stock] related to a savings account
   /// * [close] flag to close the database
   Future<void> updateSavingsAccountStock(Stock stock, {bool close = false}) async {

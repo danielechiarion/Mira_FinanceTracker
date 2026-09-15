@@ -106,7 +106,7 @@ class _NewStockPageState extends State<NewStockPage> {
     return '';
   }
 
-  Future<void> _saveStock(
+  Future<Stock> _saveStock(
     BuildContext context,
     SavingsAccount account,
     String name,
@@ -134,6 +134,7 @@ class _NewStockPageState extends State<NewStockPage> {
     );
 
     await widget.database.saveAccountStock(account, stock);
+    return stock;
   }
 
   @override
@@ -300,7 +301,7 @@ class _NewStockPageState extends State<NewStockPage> {
         if (selectedAccount == null) return;
         if (provider == null) return;
 
-        await _saveStock(
+        Stock savedStock = await _saveStock(
           context,
           selectedAccount!,
           nameController.text.trim(),
@@ -316,7 +317,7 @@ class _NewStockPageState extends State<NewStockPage> {
         );
 
         if (context.mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, savedStock);
         }
       },
     );

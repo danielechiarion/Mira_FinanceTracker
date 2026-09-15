@@ -131,7 +131,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
     return _validateProviderCompatibility(account, model.providerType, model.provider);
   }
 
-  Future<void> _saveTimeDeposit(
+  Future<TimeDeposit> _saveTimeDeposit(
     BuildContext context,
     SavingsAccount account,
     TimeDepositModel? model,
@@ -184,6 +184,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
     }
 
     await widget.database.saveAccountTimeDeposit(account, timeDeposit);
+    return timeDeposit;
   }
 
   /// Read-only summary of every field a chosen [TimeDepositModel]
@@ -502,7 +503,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
         final int effectiveDayOfMonth = startingDate.day;
         final int? effectiveMonthOfYear = effectiveFrequency.index >= DurationType.annual.index ? startingDate.month : null;
 
-        await _saveTimeDeposit(
+        TimeDeposit savedDeposit = await _saveTimeDeposit(
           context,
           selectedAccount!,
           useModel ? selectedModel : null,
@@ -522,7 +523,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
         );
 
         if (context.mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, savedDeposit);
         }
       },
     );

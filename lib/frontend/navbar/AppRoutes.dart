@@ -13,4 +13,5 @@ class AppRoutes {
   /* routes for pages not included
   inside the main menu */
   static const String currentAccounts = '/current-accounts';
+  static const String savingsAccounts = '/savings-accounts';
 }

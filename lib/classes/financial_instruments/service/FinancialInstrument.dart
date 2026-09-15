@@ -91,7 +91,6 @@ abstract class FinancialInstrument {
 
     _initialValue = initialValue;
   }
-  @protected
   set currentValue(double currentValue){
     if(currentValue < 0){
       throw Exception("In a financial instrument it's impossible to have a current value which is <0");
