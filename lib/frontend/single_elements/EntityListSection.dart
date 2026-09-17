@@ -63,7 +63,7 @@ class _EntityListSectionState<T> extends State<EntityListSection<T>> {
 
   Future<void> _openAddPage() async {
     T item = await Navigator.push(context, MaterialPageRoute(builder: widget.buildAddPage));
-    await widget.addItem!(item);
+    if(item != null) await widget.addItem!(item); // add the item only if it's not null
     await _reload();
   }
 

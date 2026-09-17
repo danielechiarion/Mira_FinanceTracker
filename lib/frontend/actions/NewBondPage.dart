@@ -153,7 +153,7 @@ class _NewBondPageState extends State<NewBondPage> {
     return _validateProviderCompatibility(account, model.providerType, model.provider);
   }
 
-  Future<Bond> _saveBond(
+  Future<Bond?> _saveBond(
     BuildContext context,
     SavingsAccount account,
     BondModel? model,
@@ -172,38 +172,42 @@ class _NewBondPageState extends State<NewBondPage> {
     int dayOfMonth,
     int? monthOfYear,
   ) async {
-    Bond bond; // declare variable for the instrument to save
+    Bond? bond; // declare variable for the instrument to save
 
-    if (model != null) {
-      bond = Bond.fromModel(
-        model,
-        name,
-        initialValue,
-        purchasePrice,
-        startingDate: startingDate,
-        day: dayOfMonth,
-        month: monthOfYear,
-        minimumDenomination: minimumDenomination,
-      );
-    } else {
-      bond = Bond(
-        name,
-        providerType,
-        initialValue,
-        taxRate,
-        startingDate,
-        frequency,
-        dayOfMonth,
-        purchasePrice,
-        interestType,
-        monthOfYear: monthOfYear,
-        provider: provider,
-        duration: duration,
-        minimumDenomination: minimumDenomination,
-        couponSchedule: couponSchedule,
-      );
+    try{
+      if (model != null) {
+        bond = Bond.fromModel(
+          model,
+          name,
+          initialValue,
+          purchasePrice,
+          startingDate: startingDate,
+          day: dayOfMonth,
+          month: monthOfYear,
+          minimumDenomination: minimumDenomination,
+        );
+      } else {
+        bond = Bond(
+          name,
+          providerType,
+          initialValue,
+          taxRate,
+          startingDate,
+          frequency,
+          dayOfMonth,
+          purchasePrice,
+          interestType,
+          monthOfYear: monthOfYear,
+          provider: provider,
+          duration: duration,
+          minimumDenomination: minimumDenomination,
+          couponSchedule: couponSchedule,
+        );
+      } 
+      await widget.database.saveAccountBond(account, bond);
+    }catch(e){
+      AppToast.show(context, "Errore nel salvataggio dell'obbligazione: $e", ToastType.error);
     }
-    await widget.database.saveAccountBond(account, bond);
 
     return bond;
   }

@@ -6,6 +6,7 @@ import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/Stock.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/Currency.dart';
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/NumericAmountField.dart';
@@ -103,7 +104,7 @@ class _NewStockPageState extends State<NewStockPage> {
     return '';
   }
 
-  Future<Stock> _saveStock(
+  Future<Stock?> _saveStock(
     BuildContext context,
     SavingsAccount account,
     String name,
@@ -117,7 +118,8 @@ class _NewStockPageState extends State<NewStockPage> {
     double totalDividends,
     DateTime startingDate,
   ) async {
-    final stock = Stock(
+    try{
+      final stock = Stock(
       name,
       initialValue,
       taxRate,
@@ -128,10 +130,14 @@ class _NewStockPageState extends State<NewStockPage> {
       totalShares: totalShares,
       averagePurchasePrice: averagePurchasePrice,
       totalDividends: totalDividends,
-    );
+      );
 
-    await widget.database.saveAccountStock(account, stock);
-    return stock;
+      await widget.database.saveAccountStock(account, stock);
+      return stock;
+    }catch(e){
+      AppToast.show(context, "Errore nel salvataggio dell'azione: $e", ToastType.error);
+      return null;
+    }
   }
 
   @override
@@ -295,7 +301,7 @@ class _NewStockPageState extends State<NewStockPage> {
         if (selectedAccount == null) return;
         if (provider == null) return;
 
-        Stock savedStock = await _saveStock(
+        Stock? savedStock = await _saveStock(
           context,
           selectedAccount!,
           nameController.text.trim(),

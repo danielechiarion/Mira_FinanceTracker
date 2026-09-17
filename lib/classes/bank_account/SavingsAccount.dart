@@ -76,7 +76,7 @@ class SavingsAccount extends BankAccount{
   for the list of financial instruments */
   void addService(FinancialInstrument service){
     if(service.currentValue > super.availableBalance){
-      throw Exception("BALANCE ERROR: Can't add a financial service when it requires more amount available than in the balance");
+      throw Exception("Can't add a financial service when it requires more amount available than in the balance");
     }
 
     /* control if the service offered was

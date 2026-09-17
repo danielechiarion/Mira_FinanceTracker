@@ -13,6 +13,7 @@ import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 /// Shared form to register a bank movement (income or outcome), built
 /// on top of [ActionOperationPage]. Incomes and outcomes share the same
@@ -91,31 +92,35 @@ class MovementFormPage extends StatelessWidget {
     CounterParty? counterParty,
   ) async {
     BankTransaction movement;
-    if (classRequested == Income) {
-      movement = Income(
-        category,
-        reference,
-        amount,
-        executionDate,
-        counterParty: counterParty,
-        accountingDate: accountingDate,
-      );
-    } else {
-      movement = Outcome(
-        category,
-        reference,
-        amount,
-        executionDate,
-        counterParty: counterParty,
-        accountingDate: accountingDate,
-      );
-    }
+    try{
+      if (classRequested == Income) {
+        movement = Income(
+          category,
+          reference,
+          amount,
+          executionDate,
+          counterParty: counterParty,
+          accountingDate: accountingDate,
+        );
+      } else {
+        movement = Outcome(
+          category,
+          reference,
+          amount,
+          executionDate,
+          counterParty: counterParty,
+          accountingDate: accountingDate,
+        );
+      }
 
-    /* then save the movement inside the 
-    account and update the available balance */
-    await database.saveTransactions(account, [movement]);
-    account.addTransaction(movement);
-    await database.updateBankAccountBalance(account);
+      /* then save the movement inside the 
+      account and update the available balance */
+      await database.saveTransactions(account, [movement]);
+      account.addTransaction(movement);
+      await database.updateBankAccountBalance(account);
+    }catch(e){
+      AppToast.show(context, "Errore durante l'inserimento del movimento: $e", ToastType.error);
+    }
   }
 
   @override

@@ -14,6 +14,7 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 import 'package:mira_finance_tracker/frontend/single_elements/LongDurationField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/NumericAmountField.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UniqueNameField.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 /// Page to actually subscribe a [TimeDeposit] on a savings account
 /// ("conto deposito"), built on top of [ActionOperationPage] just like
@@ -131,7 +132,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
     return _validateProviderCompatibility(account, model.providerType, model.provider);
   }
 
-  Future<TimeDeposit> _saveTimeDeposit(
+  Future<TimeDeposit?> _saveTimeDeposit(
     BuildContext context,
     SavingsAccount account,
     TimeDepositModel? model,
@@ -149,41 +150,46 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
     int dayOfMonth,
     int? monthOfYear,
   ) async {
-    TimeDeposit timeDeposit; // declare variable for the instrument to save
+    TimeDeposit? timeDeposit; // declare variable for the instrument to save
 
-    if (model != null) {
-      timeDeposit = TimeDeposit.fromModel(
-        model,
-        name,
-        initialValue,
-        startingDate: startingDate,
-        day: dayOfMonth,
-        month: monthOfYear,
-      );
+    try{
+      if (model != null) {
+        timeDeposit = TimeDeposit.fromModel(
+          model,
+          name,
+          initialValue,
+          startingDate: startingDate,
+          day: dayOfMonth,
+          month: monthOfYear,
+        );
 
-      /* TimeDeposit.fromModel doesn't forward cashability, so it's
-      applied right after creation to fully honor the model chosen */
-      timeDeposit.isCashable = model.isCashable;
-      timeDeposit.earlyWithdrawalInterestRate = model.earlyWithdrawalInterestRate;
-    } else {
-      timeDeposit = TimeDeposit(
-        name,
-        providerType,
-        initialValue,
-        taxRate,
-        interestRate,
-        startingDate,
-        frequency,
-        dayOfMonth,
-        monthOfYear: monthOfYear,
-        provider: provider,
-        duration: duration,
-        isCashable: isCashable,
-        earlyWithdrawalInterestRate: earlyWithdrawalInterestRate,
-      );
+        /* TimeDeposit.fromModel doesn't forward cashability, so it's
+        applied right after creation to fully honor the model chosen */
+        timeDeposit.isCashable = model.isCashable;
+        timeDeposit.earlyWithdrawalInterestRate = model.earlyWithdrawalInterestRate;
+      } else {
+        timeDeposit = TimeDeposit(
+          name,
+          providerType,
+          initialValue,
+          taxRate,
+          interestRate,
+          startingDate,
+          frequency,
+          dayOfMonth,
+          monthOfYear: monthOfYear,
+          provider: provider,
+          duration: duration,
+          isCashable: isCashable,
+          earlyWithdrawalInterestRate: earlyWithdrawalInterestRate,
+        );
+      }
+
+      await widget.database.saveAccountTimeDeposit(account, timeDeposit);
+    }catch(e){
+      AppToast.show(context, "Errore nel salvataggio del deposito a tempo: $e", ToastType.error);
     }
 
-    await widget.database.saveAccountTimeDeposit(account, timeDeposit);
     return timeDeposit;
   }
 
@@ -503,7 +509,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
         final int effectiveDayOfMonth = startingDate.day;
         final int? effectiveMonthOfYear = effectiveFrequency.index >= DurationType.annual.index ? startingDate.month : null;
 
-        TimeDeposit savedDeposit = await _saveTimeDeposit(
+        TimeDeposit? savedDeposit = await _saveTimeDeposit(
           context,
           selectedAccount!,
           useModel ? selectedModel : null,
