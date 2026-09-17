@@ -29,10 +29,10 @@ class PeriodicAccountDuration {
     if(_monthOfYear == null && _timeFrequency.index > 4){
       throw Exception("Duration of a year or longer must have the month of year specified");
     }
-    if(_dayOfMonth < 0 || _dayOfMonth > 31){
+    if(_dayOfMonth <= 0 || _dayOfMonth > 31){
       throw Exception("Day of month value expressed is not valid");
     }
-    if(_monthOfYear != null && (_monthOfYear! <0 || _monthOfYear! >12)){
+    if(_monthOfYear != null && (_monthOfYear! <=0 || _monthOfYear! >12)){
       throw Exception("Month of year value expressed is not valid");
     }
   }

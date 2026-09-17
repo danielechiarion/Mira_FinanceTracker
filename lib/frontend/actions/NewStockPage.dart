@@ -53,7 +53,6 @@ class _NewStockPageState extends State<NewStockPage> {
   late TextEditingController nameController;
   late TextEditingController tickerController;
   late TextEditingController taxRateController;
-  late TextEditingController initialValueController;
   late TextEditingController totalSharesController;
   late TextEditingController averagePurchasePriceController;
   late TextEditingController totalDividendsController;
@@ -64,7 +63,6 @@ class _NewStockPageState extends State<NewStockPage> {
     nameController = TextEditingController();
     tickerController = TextEditingController();
     taxRateController = TextEditingController(text: '0');
-    initialValueController = TextEditingController();
     totalSharesController = TextEditingController(text: '0');
     averagePurchasePriceController = TextEditingController(text: '0');
     totalDividendsController = TextEditingController(text: '0');
@@ -75,7 +73,6 @@ class _NewStockPageState extends State<NewStockPage> {
     nameController.dispose();
     tickerController.dispose();
     taxRateController.dispose();
-    initialValueController.dispose();
     totalSharesController.dispose();
     averagePurchasePriceController.dispose();
     totalDividendsController.dispose();
@@ -259,9 +256,6 @@ class _NewStockPageState extends State<NewStockPage> {
                   InterestAmountField(controller: taxRateController, label: 'Aliquota fiscale'),
                   const SizedBox(height: 16),
 
-                  DollarAmountField(controller: initialValueController, label: 'Valore iniziale', isRequired: true),
-                  const SizedBox(height: 24),
-
                   // --- EXISTING POSITION (optional, defaults to an empty one) ---
                   DoubleAmountField(controller: totalSharesController, label: 'Azioni acquistate'),
                   const SizedBox(height: 16),
@@ -309,7 +303,7 @@ class _NewStockPageState extends State<NewStockPage> {
           provider!,
           currency,
           double.tryParse(taxRateController.text) ?? 0.0,
-          double.tryParse(initialValueController.text) ?? 0.0,
+          double.tryParse(averagePurchasePriceController.text) ?? double.tryParse(totalSharesController.text) ?? 0.0,
           double.tryParse(totalSharesController.text) ?? 0.0,
           double.tryParse(averagePurchasePriceController.text) ?? 0.0,
           double.tryParse(totalDividendsController.text) ?? 0.0,

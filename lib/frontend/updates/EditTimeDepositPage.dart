@@ -107,8 +107,8 @@ class EditTimeDepositPage extends StatelessWidget {
       ),
       onConfirm: (context) async {
         final updatedCurrentValue = double.parse(currentValueController.text.trim().replaceAll(',', '.'));
-        final updatedInterestRate = double.parse(interestRateController.text.trim().replaceAll(',', '.')) / 100;
-        final updatedEarlyRate = double.parse(earlyWithdrawalController.text.trim().replaceAll(',', '.')) / 100;
+        final updatedInterestRate = double.parse(interestRateController.text.trim().replaceAll(',', '.'));
+        final updatedEarlyRate = double.parse(earlyWithdrawalController.text.trim().replaceAll(',', '.'));
 
         /* apply the changes through the entity's own setters, and only
         for the fields that actually changed: some of them refuse the

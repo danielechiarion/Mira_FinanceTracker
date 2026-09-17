@@ -75,6 +75,10 @@ class SavingsAccount extends BankAccount{
   /* *** CRUD METHODS *** 
   for the list of financial instruments */
   void addService(FinancialInstrument service){
+    if(service.currentValue > super.availableBalance){
+      throw Exception("BALANCE ERROR: Can't add a financial service when it requires more amount available than in the balance");
+    }
+
     /* control if the service offered was
     coming from the same financial institution or it's public, 
     otherwise it's not possible to save it */
@@ -99,7 +103,7 @@ class SavingsAccount extends BankAccount{
     }
 
     /* update the ledger balance and remove the service */
-    super.availableBalance += existingService.initialValue;
+    super.availableBalance += existingService.currentValue;
     _financialServices.remove(service);
   }
 

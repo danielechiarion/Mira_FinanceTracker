@@ -181,8 +181,8 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
     while(super.isActive && _timeInfo.isTime()){
       /* otherwise calculate the interest, 
       the tax applied and the current value of the time deposit */
-      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_interestRate);
-      double taxes = interests * super.taxRate;
+      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_interestRate) / 100;
+      double taxes = interests * super.taxRate / 100;
       super.currentValue += interests - taxes;
 
       /* create the transactions to be returned */
@@ -222,8 +222,8 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
 
     /* otherwise calculate a possible interest gained by 
     rate provided by the financial institute */
-    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_earlyWithdrawalInterestRate);
-    double taxes = interests * super.taxRate;
+    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_earlyWithdrawalInterestRate) / 100;
+    double taxes = interests * super.taxRate / 100;
     
     /* create the transactions */
     List<BankTransaction> transactions = [];
@@ -231,10 +231,14 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       Income(IncomeCategory.financial_cashing, "Incasso capitale deposito ${super.name} dopo liquidazione anticipata", super.initialValue, stopDate)
     );
     if(interests > 0){
-      Income(IncomeCategory.financial_interest, "Interessi liquidazione anticipata deposito: ${super.name}", interests, stopDate);
+      transactions.add(
+        Income(IncomeCategory.financial_interest, "Interessi liquidazione anticipata deposito: ${super.name}", interests, stopDate)
+      );
     }
     if(taxes > 0){
-      Outcome(OutcomeCategory.financial_tax, "Tasse applicate sulla liquidazione anticipata del deposito: ${super.name}", taxes, stopDate);
+      transactions.add(
+        Outcome(OutcomeCategory.financial_tax, "Tasse applicate sulla liquidazione anticipata del deposito: ${super.name}", taxes, stopDate)
+      );
     }
 
     super.stop(); // do the operation provided in the super stop method provided

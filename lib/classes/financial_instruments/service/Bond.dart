@@ -67,12 +67,6 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       if(_interestType == BondType.variable){
         _couponSchedule = {};
       }
-
-      /* if the purchase price is >100,
-      divide it with 100 */
-      if(_purchasePrice > 100){
-        _purchasePrice /= 100;
-      }
       
       /* initialize time info starting from the attributes given by the user */
       if(monthOfYear != null){
@@ -343,8 +337,8 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
 
       /* otherwise calculate the interest, 
       the tax applied and the current value of the bond */
-      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(interestRate);
-      double taxes = interests * super.taxRate;
+      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(interestRate) / 100;
+      double taxes = interests * super.taxRate / 100;
       super.currentValue += interests - taxes;
 
       /* create the transactions to be returned */
@@ -416,7 +410,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
     
     /* create the transactions */
     List<BankTransaction> transactions = [];
-    double endingCapital = sellingValue * super.initialValue; // establish the value of selling the bond with the value in percentage
+    double endingCapital = sellingValue * super.initialValue / 100; // establish the value of selling the bond with the value in percentage
     transactions.add(
       Income(IncomeCategory.financial_cashing, "Incasso capitale titolo ${super.name} dopo liquidazione anticipata con valore pari a ${sellingValue.toStringAsFixed(2)}%", endingCapital, stopDate)
     );
@@ -440,7 +434,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
 
     /* create the transactions */
     List<BankTransaction> transactions = [];
-    double endingCapital = sellingValue * super.initialValue; // establish the value of selling the bond with the value in percentage
+    double endingCapital = sellingValue * amount / 100; // establish the value of selling the bond with the value in percentage
     transactions.add(
       Income(IncomeCategory.financial_cashing, "Riduzione capitale titolo ${super.name} dopo liquidazione anticipata con valore ${sellingValue.toStringAsFixed(2)}%", endingCapital, reduceDate)
     );

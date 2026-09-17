@@ -96,7 +96,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
   /// with the expected signal date
   @override
   void acknowledgeSignal(){
-    if(super.lastDateActivity!.isAtSameMomentAs(_endingDate)){
+    if(super.lastDateActivity != null && super.lastDateActivity!.isAtSameMomentAs(_endingDate)){
       return;
     }
     else if(_includeEnd && super.returnNextSignalDate().isAfter(_endingDate)){

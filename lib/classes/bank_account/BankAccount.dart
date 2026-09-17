@@ -4,6 +4,7 @@ import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 
 /// Class used to manage general information
@@ -147,10 +148,15 @@ abstract class BankAccount{
   }
 
   dynamic addTransaction(BankTransaction transaction){
+    /* control if the transaction goes over than
+    the available balance provided */
+    if(transaction is Outcome && transaction.amount > availableBalance){
+      throw Exception("Cannot add a transaction when it requires more money than the ones available in the balance");
+    }
+
     /* in this case and in the following methods,
     the bank transaction will also change the 
     available balance */
-
     if(transaction is Income){
       _availableBalance += transaction.amount;
     }else{
@@ -173,6 +179,8 @@ abstract class BankAccount{
       availableBalance += existingTransaction.amount;
     }
 
+    _transactions.remove(existingTransaction);
+
     return existingTransaction;
   }
   dynamic replaceTransaction(BankTransaction transaction){
@@ -190,6 +198,10 @@ abstract class BankAccount{
       _availableBalance += existingTransaction.amount;
       _availableBalance -= transaction.amount;
     }
+
+    /* replace actually the transaction */
+    _transactions.remove(existingTransaction);
+    _transactions.add(transaction);
 
     return existingTransaction;
   }
@@ -226,8 +238,7 @@ abstract class BankAccount{
     }
 
     /* try to calculate the interest */
-    double amount = _availableBalance * _interest;
-    _availableBalance += amount; // add the interest calculated to the available balance
+    double amount = _availableBalance * _interest / 100;
 
     /* add the transaction */
     addTransaction(

@@ -71,6 +71,10 @@ class Stock extends FinancialInstrument{
   /// * [sharesBought] number of shares bought
   /// * [pricePerShare] price per share at the moment of purchase
   List<BankTransaction> buyShares(double sharesBought, double pricePerShare){
+    if(super.status != FinancialInstrumentStatus.ongoing){
+      return [];
+    }
+
     /* check the validity of the parameters */
     if(sharesBought <= 0){
       throw Exception("The amount of shares bought must be more than 0");
@@ -79,6 +83,7 @@ class Stock extends FinancialInstrument{
     double oldTotalCost = _totalShares * _averagePurchasePrice; // calculate the total shares get so far
     _totalShares += sharesBought; // update the number of shares bought
     _averagePurchasePrice = (oldTotalCost + sharesBought * pricePerShare) / _totalShares; // get new average price
+    super.currentValue = _totalShares * _averagePurchasePrice;
 
     /* return the transaction to register */
     List<BankTransaction> transactions = [];
@@ -94,6 +99,10 @@ class Stock extends FinancialInstrument{
   /// * [sharesSold] number of shares sold from the stock
   /// * [pricePerShare] current price for each share
   List<BankTransaction> sellShares(double sharesSold, double pricePerShare){
+    if(super.status != FinancialInstrumentStatus.ongoing){
+      return [];
+    }  
+
     /* check the validity of the attributes */
     if (sharesSold > _totalShares) {
       throw Exception("Non puoi vendere più azioni di quante ne possiedi");
@@ -101,6 +110,7 @@ class Stock extends FinancialInstrument{
 
     double realizedProfitOrLoss = sharesSold * (pricePerShare - _averagePurchasePrice); // calculate potential profit or loss
     _totalShares -= sharesSold;
+    super.currentValue = _totalShares * _averagePurchasePrice;
 
     /* create the list of transactions to return */
     List<BankTransaction> transactions = [];
@@ -127,12 +137,23 @@ class Stock extends FinancialInstrument{
       );
     }
 
+    /* if no share remains on the stock, 
+    end the service by changing the status */
+    if(_totalShares == 0){
+      super.end();
+      _endingDate = DateTime.now();
+    }
+
     return transactions;
   }
 
   /// Function to add a dividend for the stock selected
   /// * [netAmount] amount of money given in the corresponding currency
   List<BankTransaction> addDividend(double netAmount) {
+    if(super.status != FinancialInstrumentStatus.ongoing){
+      return [];
+    }
+
     /* control validity of the parameters */
     if(netAmount <= 0){
       throw Exception("Dividend distributes must be more than 0€");
@@ -188,7 +209,8 @@ class Stock extends FinancialInstrument{
       totalShares: _totalShares,
       averagePurchasePrice: _averagePurchasePrice,
       totalDividends: _totalDividends,
-      endingDate: _endingDate
+      endingDate: _endingDate,
+      status: super.status
     );
   }
 
