@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/templates/AccountTypePage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/EntityListSection.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
@@ -25,13 +27,16 @@ import 'package:mira_finance_tracker/frontend/updates/EditStockPage.dart';
 /// accounts: the financial products held on it (time deposits, bonds and
 /// stocks), backed by the TimeDeposit, Bond and Stock classes.
 ///
-/// Unlike CurrentAccountPage, every product here also supports a
-/// "riscossione" (cash-in / redemption) action, but only when it's
-/// actually meaningful: cashable, still-ongoing time deposits and stocks
-/// with shares still held (bonds don't expose this action for now).
-/// Because deletion and cash-in are both irreversible, they're always
-/// confirmed through an overlay popup before being executed, to protect
-/// against accidental taps or typing mistakes.
+/// Unlike CurrentAccountPage, this account type shows both the
+/// "saldo contabile" and "saldo disponibile" on the balance card, and
+/// every product supports a "riscossione" (cash-in / redemption) action
+/// where it's actually meaningful: cashable, still-ongoing time deposits
+/// (bonds don't expose this action for now). Stocks instead get their own
+/// dedicated buy/sell/dividend operations (see [_buildStockOperationsList]),
+/// since a stock position changes gradually rather than being redeemed
+/// all at once. Because deletion and cash-in are both irreversible,
+/// they're always confirmed through an overlay popup before being
+/// executed, to protect against accidental taps or typing mistakes.
 class SavingsAccountPage extends StatefulWidget {
   final UserDatabaseWrapper _database; // use database as an attribute
 
@@ -42,9 +47,19 @@ class SavingsAccountPage extends StatefulWidget {
 }
 
 class _SavingsAccountPageState extends State<SavingsAccountPage> {
+  int _pageRefreshToken = 0;
+
+  void _refreshAccountPage() {
+    if (!mounted) return;
+    setState(() {
+      _pageRefreshToken++;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AccountTypePage<SavingsAccount>(
+      key: ValueKey(_pageRefreshToken),
       currentRoute: AppRoutes.savingsAccounts,
       title: 'Conti deposito',
       icon: Icons.savings,
@@ -52,10 +67,13 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
 
       loadAccounts: () async => await widget._database.getCompleteSavingsAccounts(),
 
-      // A deposit account only has one meaningful balance, so the
-      // secondary ("saldo disponibile") slot is left unset.
-      primaryBalanceOf: (account) => account.availableBalance,
-      primaryBalanceLabel: 'Saldo',
+      // Unlike CurrentAccountPage, a deposit account shows both balances:
+      // the "contabile" one (all registered movements) and the
+      // "disponibile" one (net of anything not yet settled).
+      primaryBalanceOf: (account) => account.ledgerBalance,
+      primaryBalanceLabel: 'Saldo contabile',
+      secondaryBalanceOf: (account) => account.availableBalance,
+      secondaryBalanceLabel: 'Saldo disponibile',
 
       loadTransactionsPage: (account, page, pageSize) async {
         return await widget._database.getAccountTransactionSlot(account, pageSize, page * pageSize);
@@ -84,8 +102,13 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
           loadItems: () async => account.timeDeposits,
           matchesQuery: (deposit, query) => _matchesInstrument(deposit.name, deposit.provider?.name, query),
           titleOf: (deposit) => deposit.name,
-          subtitleOf: (deposit) => _instrumentSubtitle(formatter, deposit.currentValue, deposit.status, extra: deposit.isCashable ? 'svincolabile' : null),
-          buildAddPage: (context) => NewTimeDepositPage(database: widget._database),
+          subtitleOf: (deposit) => _instrumentSubtitle(
+            formatter,
+            deposit.currentValue,
+            deposit.status,
+            extra: deposit.isCashable && deposit.status == FinancialInstrumentStatus.ongoing ? 'svincolabile' : null,
+          ),
+          buildAddPage: (context) => NewTimeDepositPage(database: widget._database, functionName: "Object-return",),
           buildEditPage: (context, deposit) => EditTimeDepositPage(title: 'Modifica deposito a tempo', item: deposit, database: widget._database),
           deleteItem: (deposit) async {
             // Deleting a financial product is irreversible, so it's
@@ -99,16 +122,22 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
 
             account.removeService(deposit);
             await widget._database.deleteSavingsAccountTimeDeposit(deposit);
+            _refreshAccountPage();
           },
           addItem: (deposit) async {
+            List<BankTransaction> transactions = [];
             setState(() {
-              account.addService(deposit);
+              transactions = account.addService(deposit);
             });
+            await widget._database.saveTransactions(account, transactions);
+            await widget._database.updateBankAccountBalance(account);
+            _refreshAccountPage();
           },
           updateItem: (deposit) async {
             setState(() {
               account.replaceService(deposit);
             });
+            _refreshAccountPage();
           },
         ),
         const SizedBox(height: 8),
@@ -117,7 +146,7 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
         // separately with a dedicated confirmation-guarded action.
         _buildRedeemableList<TimeDeposit>(
           title: 'Prodotti riscuotibili',
-          items: account.timeDeposits.where((deposit) => deposit.isCashable && deposit.status == FinancialInstrumentStatus.ongoing).toList(),
+          items: account.timeDeposits.where((deposit) => deposit.isCashable && deposit.isActive && deposit.status == FinancialInstrumentStatus.ongoing).toList(),
           labelOf: (deposit) => deposit.name,
           valueOf: (deposit) => deposit.currentValue,
           formatter: formatter,
@@ -136,7 +165,7 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
           matchesQuery: (bond, query) => _matchesInstrument(bond.name, bond.provider?.name, query),
           titleOf: (bond) => bond.name,
           subtitleOf: (bond) => _instrumentSubtitle(formatter, bond.currentValue, bond.status),
-          buildAddPage: (context) => NewBondPage(database: widget._database),
+          buildAddPage: (context) => NewBondPage(database: widget._database, functionName: "Object-return"),
           buildEditPage: (context, bond) => EditBondPage(title: 'Modifica obbligazione', item: bond, database: widget._database),
           deleteItem: (bond) async {
             final bool confirmed = await _confirmDestructiveAction(
@@ -148,16 +177,22 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
 
             account.removeService(bond);
             await widget._database.deleteSavingsAccountBond(bond);
+            _refreshAccountPage();
           },
           addItem: (bond) async {
+            List<BankTransaction> transactions = [];
             setState(() {
-              account.addService(bond);
+              transactions = account.addService(bond);
             });
+            await widget._database.saveTransactions(account, transactions);
+            await widget._database.updateBankAccountBalance(account);
+            _refreshAccountPage();
           },
           updateItem: (bond) async {
             setState(() {
               account.replaceService(bond);
             });
+            _refreshAccountPage();
           },
         ),
         // Note: unlike time deposits and stocks, bonds don't expose a
@@ -175,7 +210,7 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
           matchesQuery: (stock, query) => _matchesInstrument(stock.name, stock.ticker, query),
           titleOf: (stock) => stock.name,
           subtitleOf: (stock) => _stockSubtitle(formatter, stock),
-          buildAddPage: (context) => NewStockPage(database: widget._database),
+          buildAddPage: (context) => NewStockPage(database: widget._database, functionName: "Object-return"),
           buildEditPage: (context, stock) => EditStockPage(title: 'Modifica azione', item: stock, database: widget._database),
           deleteItem: (stock) async {
             final bool confirmed = await _confirmDestructiveAction(
@@ -187,30 +222,30 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
 
             account.removeService(stock);
             await widget._database.deleteSavingsAccountStock(stock);
+            _refreshAccountPage();
           },
           addItem: (stock) async {
+            List<BankTransaction> transactions = [];
             setState(() {
-              account.addService(stock);
+              transactions = account.addService(stock);
             });
+            await widget._database.saveTransactions(account, transactions);
+            await widget._database.updateBankAccountBalance(account);
+            _refreshAccountPage();
           },
           updateItem: (stock) async {
             setState(() {
               account.replaceService(stock);
             });
+            _refreshAccountPage();
           },
         ),
         const SizedBox(height: 8),
-        // Cash-in ("riscossione") for a stock liquidates the whole position
-        // at once (see Stock.end()), so it's offered only while shares are
-        // still held and the position is ongoing.
-        _buildRedeemableList<Stock>(
-          title: 'Prodotti riscuotibili',
-          items: account.stocks.where((stock) => stock.totalShares > 0 && stock.status == FinancialInstrumentStatus.ongoing).toList(),
-          labelOf: (stock) => stock.name,
-          valueOf: (stock) => stock.currentValue,
-          formatter: formatter,
-          onRedeem: (stock) => _redeemStock(account, stock),
-        ),
+        // Buy/sell/dividend operations for each ongoing stock: kept
+        // separate from the EntityListSection above because these aren't
+        // just edits to the entity, but proper transactions that also
+        // produce BankTransaction records to register on the account.
+        _buildStockOperationsList(account),
       ],
     );
   }
@@ -240,33 +275,157 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
     await widget._database.updateSavingsAccountTimeDeposit(deposit);
     await widget._database.saveTransactions(account, transactions);
     await widget._database.updateBankAccountBalance(account);
+    _refreshAccountPage();
   }
 
-  /// Cash in ("riscuoti") a stock by liquidating the whole position.
-  /// Confirmed with a popup because the operation is irreversible.
-  Future<void> _redeemStock(SavingsAccount account, Stock stock) async {
-    final bool confirmed = await _confirmDestructiveAction(
-      title: 'Riscuoti azione',
-      message: 'Confermi di voler vendere tutte le azioni di "${stock.name}"? L\'operazione non potrà essere annullata.',
-      confirmLabel: 'Riscuoti',
+  /// Sell some (or all) of the shares held for [stock], at the average
+  /// sale price entered by the user. Unlike the old "Riscuoti" action
+  /// (which used to default to the average purchase price, so the gain
+  /// was always zero), this lets [Stock.sellShares] compute the actual
+  /// gain or loss realized on the sale.
+  Future<void> _sellStock(SavingsAccount account, Stock stock) async {
+    final input = await _showShareOperationDialog(
+      title: 'Vendi azioni di "${stock.name}"',
+      confirmLabel: 'VENDI',
+      confirmColor: Colors.red,
+      quantityLabel: 'Numero di azioni da vendere',
+      priceLabel: 'Prezzo medio di vendita',
+      maxQuantity: stock.totalShares,
     );
-    if (!confirmed) return;
+    if (input == null) return;
 
-    // 1. Liquidate the whole position to get the resulting transactions
-    final List<BankTransaction> transactions = stock.end();
+    List<BankTransaction> transactions;
+    try {
+      // 1. Run the sale locally to get the resulting transactions
+      // (proceeds, gain/loss and, if applicable, taxes)
+      transactions = stock.sellShares(input.quantity, input.pricePerShare);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+      return;
+    }
 
-    // 2. Update the local UI state (all shares have now been sold)
+    // 2. Update the local UI state (fewer shares, new average price)
     setState(() {
       account.replaceService(stock);
       account.addTransactions(transactions);
     });
 
     // 3. BACKEND DATABASE CALL:
-    // Persist the updated status/shares of the stock and register the
-    // resulting transactions (sale, profit/loss, taxes...) against the
+    // Persist the updated stock (new share count/average price) and register
+    // the resulting transactions (sale, gain/loss, taxes...) against the
+    // account
     await widget._database.updateSavingsAccountStock(stock);
     await widget._database.saveTransactions(account, transactions);
     await widget._database.updateBankAccountBalance(account);
+    _refreshAccountPage();
+  }
+
+  /// Buy more shares of [stock], at the average purchase price entered
+  /// by the user; updates the stock's average purchase price accordingly
+  /// (see [Stock.buyShares]).
+  Future<void> _buyStock(SavingsAccount account, Stock stock) async {
+    final input = await _showShareOperationDialog(
+      title: 'Acquista azioni di "${stock.name}"',
+      confirmLabel: 'ACQUISTA',
+      confirmColor: Colors.indigo,
+      quantityLabel: 'Numero di azioni da acquistare',
+      priceLabel: 'Prezzo medio di acquisto',
+    );
+    if (input == null) return;
+
+    List<BankTransaction> transactions;
+    try {
+      // 1. Run the purchase locally to get the resulting transaction (cost)
+      transactions = stock.buyShares(input.quantity, input.pricePerShare, accountBalance: account.availableBalance);
+    } catch (e) {
+      AppToast.show(context, "$e", ToastType.error);
+      return;
+    }
+
+    // 2. Update the local UI state (more shares, new average price)
+    setState(() {
+      account.replaceService(stock);
+      account.addTransactions(transactions);
+    });
+
+    // 3. BACKEND DATABASE CALL:
+    // Persist the updated stock (new share count/average price) and register
+    // the resulting transaction (purchase cost) against the account
+    await widget._database.updateSavingsAccountStock(stock);
+    await widget._database.saveTransactions(account, transactions);
+    await widget._database.updateBankAccountBalance(account);
+    _refreshAccountPage();
+  }
+
+  /// Register a dividend payout for [stock].
+  Future<void> _addDividend(SavingsAccount account, Stock stock) async {
+    final formKey = GlobalKey<FormState>();
+    final amountController = TextEditingController();
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Aggiungi dividendo per "${stock.name}"', style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: amountController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}'))],
+            decoration: const InputDecoration(
+              labelText: 'Importo netto',
+              prefixIcon: Icon(Icons.euro, color: Colors.teal),
+            ),
+            validator: _validateAmount,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ANNULLA', style: TextStyle(color: Colors.teal)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.pop(dialogContext, true);
+              }
+            },
+            child: const Text('AGGIUNGI'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final double netAmount = double.parse(amountController.text.trim().replaceAll(',', '.'));
+
+    List<BankTransaction> transactions;
+    try {
+      // 1. Run the dividend registration locally to get the resulting transaction
+      transactions = stock.addDividend(netAmount);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+      return;
+    }
+
+    // 2. Update the local UI state (new total dividends)
+    setState(() {
+      account.replaceService(stock);
+      account.addTransactions(transactions);
+    });
+
+    // 3. BACKEND DATABASE CALL:
+    // Persist the updated stock (new total dividends) and register the
+    // resulting dividend transaction against the account
+    await widget._database.updateSavingsAccountStock(stock);
+    await widget._database.saveTransactions(account, transactions);
+    await widget._database.updateBankAccountBalance(account);
+    _refreshAccountPage();
   }
 
   /// Generic overlay confirmation popup, used before any destructive or
@@ -295,6 +454,127 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
     );
 
     return confirm ?? false;
+  }
+
+  /// Shared numeric-input dialog for buying/selling shares: both need a
+  /// share count and a per-share price, only the labels, the optional
+  /// maximum quantity (only relevant when selling) and the resulting
+  /// action differ.
+  Future<_ShareOperationInput?> _showShareOperationDialog({
+    required String title,
+    required String confirmLabel,
+    required Color confirmColor,
+    required String quantityLabel,
+    required String priceLabel,
+    double? maxQuantity,
+  }) async {
+    final formKey = GlobalKey<FormState>();
+    final quantityController = TextEditingController();
+    final priceController = TextEditingController();
+
+    final bool? result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: quantityController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,4}'))],
+                decoration: InputDecoration(
+                  labelText: quantityLabel,
+                  helperText: maxQuantity != null ? 'Massimo disponibile: ${maxQuantity.toStringAsFixed(4)}' : null,
+                ),
+                validator: (value) => _validateQuantity(value, max: maxQuantity),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: priceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}'))],
+                decoration: InputDecoration(
+                  labelText: priceLabel,
+                  prefixIcon: const Icon(Icons.euro, color: Colors.teal),
+                ),
+                validator: _validateAmount,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ANNULLA', style: TextStyle(color: Colors.teal)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: confirmColor, foregroundColor: Colors.white),
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.pop(dialogContext, true);
+              }
+            },
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+
+    if (result != true) return null;
+
+    return _ShareOperationInput(
+      quantity: double.parse(quantityController.text.trim().replaceAll(',', '.')),
+      pricePerShare: double.parse(priceController.text.trim().replaceAll(',', '.')),
+    );
+  }
+
+  /// Compact list of quick operations available on each ongoing stock:
+  /// buying more shares, selling some (or all) of the shares already
+  /// held, and registering a dividend payout. "Vendi" is only shown
+  /// while there are shares left to sell.
+  Widget _buildStockOperationsList(SavingsAccount account) {
+    final ongoingStocks = account.stocks.where((stock) => stock.status == FinancialInstrumentStatus.ongoing).toList();
+    if (ongoingStocks.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Operazioni sulle azioni', style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
+        ...ongoingStocks.map((stock) {
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: Text(stock.name),
+            subtitle: Text('${stock.totalShares.toStringAsFixed(2)} azioni possedute'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (stock.totalShares > 0)
+                  IconButton(
+                    tooltip: 'Vendi',
+                    icon: const Icon(Icons.sell_outlined, color: Colors.red, size: 20),
+                    onPressed: () => _sellStock(account, stock),
+                  ),
+                IconButton(
+                  tooltip: 'Acquista',
+                  icon: const Icon(Icons.add_shopping_cart, color: Colors.indigo, size: 20),
+                  onPressed: () => _buyStock(account, stock),
+                ),
+                IconButton(
+                  tooltip: 'Aggiungi dividendo',
+                  icon: const Icon(Icons.attach_money, color: Colors.teal, size: 20),
+                  onPressed: () => _addDividend(account, stock),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
   }
 
   /// Compact list of the products of type [T] eligible for cash-in: shown
@@ -366,4 +646,31 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
         return status.name;
     }
   }
+
+  /// Validates a monetary amount: it must be a valid, strictly positive number.
+  String? _validateAmount(String? value) {
+    if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+    final parsed = double.tryParse(value.replaceAll(',', '.'));
+    if (parsed == null || parsed <= 0) return 'Inserisci un importo valido';
+    return null;
+  }
+
+  /// Validates a share quantity: it must be a valid, strictly positive
+  /// number, and can't exceed [max] when provided (e.g. the shares
+  /// actually held, when selling).
+  String? _validateQuantity(String? value, {double? max}) {
+    if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+    final parsed = double.tryParse(value.replaceAll(',', '.'));
+    if (parsed == null || parsed <= 0) return 'Inserisci un numero di azioni valido';
+    if (max != null && parsed > max) return 'Non puoi superare $max azioni';
+    return null;
+  }
+}
+
+/// Small value holder returned by [_SavingsAccountPageState._showShareOperationDialog].
+class _ShareOperationInput {
+  final double quantity;
+  final double pricePerShare;
+
+  const _ShareOperationInput({required this.quantity, required this.pricePerShare});
 }

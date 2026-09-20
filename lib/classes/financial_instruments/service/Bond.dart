@@ -63,7 +63,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
 
       /* update some attributes */
       _couponSchedule = couponSchedule?.toSet() ?? {};
-      super.currentValue = _purchasePrice * super.initialValue;
+      super.currentValue = _purchasePrice * super.initialValue / 100;
       if(_interestType == BondType.variable){
         _couponSchedule = {};
       }
@@ -468,6 +468,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       couponSchedule: couponSchedule,
       minimumDenomination: _minimumDenomination,
       instrumentUsed: super.instrumentModelName,
+      status: super.status
     );
   }
 

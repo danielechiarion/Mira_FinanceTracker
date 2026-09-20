@@ -35,7 +35,7 @@ class EditTimeDepositPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentValueController = TextEditingController(text: item.currentValue.toString());
-    final interestRateController = TextEditingController(text: (item.interestRate * 100).toStringAsFixed(2));
+    final interestRateController = TextEditingController(text: (item.interestRate).toStringAsFixed(2));
     final earlyWithdrawalController = TextEditingController(text: (item.earlyWithdrawalInterestRate * 100).toStringAsFixed(2));
     final formKey = GlobalKey<FormState>();
 

@@ -836,20 +836,12 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     /* get time deposits, bonds and stocks from
     the database and add them to the list of services
     provided by the savings account */
-    List<TimeDeposit> deposits = await getAccountTimeDeposits(account);
-    for(TimeDeposit deposit in deposits){
-      account.addService(deposit);
-    }
+    List<FinancialInstrument> instruments = [];
+    instruments.addAll(await getAccountTimeDeposits(account));
+    instruments.addAll(await getAccountBonds(account));
+    instruments.addAll(await getAccountStocks(account));
 
-    List<Bond> bonds = await getAccountBonds(account);
-    for(Bond bond in bonds){
-      account.addService(bond);
-    }    
-
-    List<Stock> stocks = await getAccountStocks(account);
-    for(Stock stock in stocks){
-      account.addService(stock);
-    }
+    account.financialServices = instruments;
   }
 
   /// Function to get the bonds related to 

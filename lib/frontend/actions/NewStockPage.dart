@@ -43,8 +43,9 @@ import 'package:mira_finance_tracker/frontend/single_elements/NumericAmountField
 ///   position to import.
 class NewStockPage extends StatefulWidget {
   final UserDatabaseWrapper database;
+  final String? functionName; 
 
-  const NewStockPage({super.key, required this.database});
+  const NewStockPage({super.key, required this.database, this.functionName});
 
   @override
   State<NewStockPage> createState() => _NewStockPageState();
@@ -132,7 +133,16 @@ class _NewStockPageState extends State<NewStockPage> {
       totalDividends: totalDividends,
       );
 
-      await widget.database.saveAccountStock(account, stock);
+      stock.id = await widget.database.saveAccountStock(account, stock);
+
+      /* if the function name says return value, 
+      it won't be necessary to add save the transaction of the financial instrument
+      iniside the database */
+      if(widget.functionName != null && widget.functionName != "Object-return"){
+        await widget.database.saveTransactions(account, account.addService(stock)); // add the transactions to the database
+        await widget.database.updateBankAccountBalance(account);
+      }
+
       return stock;
     }catch(e){
       AppToast.show(context, "Errore nel salvataggio dell'azione: $e", ToastType.error);
@@ -309,7 +319,8 @@ class _NewStockPageState extends State<NewStockPage> {
           provider!,
           currency,
           double.tryParse(taxRateController.text) ?? 0.0,
-          double.tryParse(averagePurchasePriceController.text) ?? double.tryParse(totalSharesController.text) ?? 0.0,
+          (double.tryParse(totalSharesController.text) ?? 0.0) *
+            (double.tryParse(averagePurchasePriceController.text) ?? 0.0),
           double.tryParse(totalSharesController.text) ?? 0.0,
           double.tryParse(averagePurchasePriceController.text) ?? 0.0,
           double.tryParse(totalDividendsController.text) ?? 0.0,

@@ -70,14 +70,21 @@ class Stock extends FinancialInstrument{
   /// Method to update the status of a stock buy shares
   /// * [sharesBought] number of shares bought
   /// * [pricePerShare] price per share at the moment of purchase
-  List<BankTransaction> buyShares(double sharesBought, double pricePerShare){
+  /// * [accountBalance] balance of the account to control if it's possible to buy more shares
+  List<BankTransaction> buyShares(double sharesBought, double pricePerShare, {double? accountBalance}){
     if(super.status != FinancialInstrumentStatus.ongoing){
       return [];
     }
 
     /* check the validity of the parameters */
-    if(sharesBought <= 0){
-      throw Exception("The amount of shares bought must be more than 0");
+    if(sharesBought <= 0 || pricePerShare <= 0){
+      throw Exception("The amount of shares and the price per share must be more than 0");
+    }
+    /* control if the shares are less expensive than the
+    available balance of the account, 
+    if the last parameter has been given */
+    if(accountBalance != null && sharesBought * pricePerShare > accountBalance){
+      throw Exception("Can't buy more share of a stock when they are more expensive than the balance available.");
     }
 
     double oldTotalCost = _totalShares * _averagePurchasePrice; // calculate the total shares get so far
@@ -104,6 +111,9 @@ class Stock extends FinancialInstrument{
     }  
 
     /* check the validity of the attributes */
+    if (sharesSold <= 0 || pricePerShare <= 0) {
+      throw Exception("The amount of shares and the price per share must be more than 0");
+    }
     if (sharesSold > _totalShares) {
       throw Exception("Non puoi vendere più azioni di quante ne possiedi");
     }
@@ -115,7 +125,7 @@ class Stock extends FinancialInstrument{
     /* create the list of transactions to return */
     List<BankTransaction> transactions = [];
     transactions.add(
-      Income(IncomeCategory.stock_return, "Vendita di $sharesSold azioni di $_ticker", _averagePurchasePrice * sharesSold, DateTime.now())
+      Income(IncomeCategory.stock_return, "Vendita di $sharesSold azioni di $_ticker", pricePerShare * sharesSold, DateTime.now())
     );
     /* based on the potential profit or loss, 
     create an income or outcome transactions, 
@@ -128,9 +138,11 @@ class Stock extends FinancialInstrument{
       /* when realizing profits is useful
       to take into account taxations */
       double taxes = realizedProfitOrLoss * super.taxRate;
-      transactions.add(
-        Outcome(OutcomeCategory.financial_tax, "Tassazione vendita di $sharesSold di $_ticker", taxes, DateTime.now())
-      );
+      if (taxes > 0) {
+        transactions.add(
+          Outcome(OutcomeCategory.financial_tax, "Tassazione vendita di $sharesSold di $_ticker", taxes, DateTime.now())
+        );
+      }
     }else if(realizedProfitOrLoss < 0){
       transactions.add(
         Outcome(OutcomeCategory.stock_loss, "Perdita capitale vendita di $sharesSold di $_ticker", realizedProfitOrLoss.abs(), DateTime.now())
@@ -218,12 +230,12 @@ class Stock extends FinancialInstrument{
   /// could exists, unless they are contemporary
   @override
   bool operator ==(Object other){
-    return other is Stock && super.name == other.name && super.status == other.status;
+    return other is Stock && super.name == other.name;
   }
 
   /// Change the hashcode after the changes at the operator ==
   @override
-  int get hashCode => Object.hash(super.name, super.status);
+  int get hashCode => super.name.hashCode;
 
   /// Method to convert an object into a map for
   /// database manipulation

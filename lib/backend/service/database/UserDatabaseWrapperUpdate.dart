@@ -199,7 +199,7 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
   Future<void> updateSavingsAccountTimeDeposit(TimeDeposit deposit, {bool close = false}) async {
     await appDatabase.executeWithMap(sql: '''UPDATE TimeDeposit SET providerType = :providerType, provider = :provider,
       initialValue = :initialValue, currentValue = :currentValue, taxRate = :taxRate, status = :status, 
-      interestRate = :interestRate, earlyWithrawalInterestRate = :earlyWithrawalInterestRate, isCashable= :isCashable,
+      interestRate = :interestRate, earlyWithdrawalInterestRate = :earlyWithdrawalInterestRate, isCashable= :isCashable,
       startingDate = :startingDate, includeStart = :includeStart, timeFrequency = :timeFrequency, dayOfMonth = :dayOfMonth, 
       monthOfYear = :monthOfYear, lastDateActivity = :lastDateActivity, endingDate = :endingDate, includeEnd = :includeEnd
       WHERE id = :id''', parameters: deposit.toMap());

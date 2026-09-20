@@ -106,7 +106,9 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       currentValue: currentValue,
       duration: model.duration.clone(),
       provider: model.provider?.clone(),
-      instrumentUsed: model.name
+      instrumentUsed: model.name,
+      isCashable: model.isCashable,
+      earlyWithdrawalInterestRate: model.earlyWithdrawalInterestRate,
     );
   }
 
@@ -181,7 +183,11 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
     while(super.isActive && _timeInfo.isTime()){
       /* otherwise calculate the interest, 
       the tax applied and the current value of the time deposit */
-      double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_interestRate) / 100;
+        double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(
+          _interestRate,
+          startingDate: _timeInfo.startingDate,
+          endingDate: _timeInfo.endingDate,
+        ) / 100;
       double taxes = interests * super.taxRate / 100;
       super.currentValue += interests - taxes;
 
@@ -222,7 +228,11 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
 
     /* otherwise calculate a possible interest gained by 
     rate provided by the financial institute */
-    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(_earlyWithdrawalInterestRate) / 100;
+    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(
+      _earlyWithdrawalInterestRate,
+      startingDate: _timeInfo.startingDate,
+      endingDate: stopDate,
+    ) / 100;
     double taxes = interests * super.taxRate / 100;
     
     /* create the transactions */
@@ -312,7 +322,8 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       currentValue: super.currentValue,
       isCashable: _isCashable,
       earlyWithdrawalInterestRate: _earlyWithdrawalInterestRate,
-      instrumentUsed: super.instrumentModelName
+      instrumentUsed: super.instrumentModelName,
+      status: super.status
     );
   }
 

@@ -50,8 +50,9 @@ import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 ///   is a guess at the actual method name and is marked with a "TODO".
 class NewTimeDepositPage extends StatefulWidget {
   final UserDatabaseWrapper database;
+  final String? functionName;
 
-  const NewTimeDepositPage({super.key, required this.database});
+  const NewTimeDepositPage({super.key, required this.database, this.functionName});
 
   @override
   State<NewTimeDepositPage> createState() => _NewTimeDepositPageState();
@@ -185,7 +186,15 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
         );
       }
 
-      await widget.database.saveAccountTimeDeposit(account, timeDeposit);
+      timeDeposit.id = await widget.database.saveAccountTimeDeposit(account, timeDeposit);
+
+      /* if the function name says return value, 
+      it won't be necessary to add save the transaction of the financial instrument
+      iniside the database */
+      if(widget.functionName != null && widget.functionName != "Object-return"){
+        await widget.database.saveTransactions(account, account.addService(timeDeposit)); // add the transactions to the database
+        await widget.database.updateBankAccountBalance(account);
+      }
     }catch(e){
       AppToast.show(context, "Errore nel salvataggio del deposito a tempo: $e", ToastType.error);
     }

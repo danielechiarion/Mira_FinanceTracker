@@ -71,10 +71,11 @@ class SavingsAccount extends BankAccount{
 
   /* *** SETTER METHODS *** */
   set ledgerBalance(double ledgerBalance) => _ledgerBalance = ledgerBalance;
+  set financialServices(List<FinancialInstrument> services) => _financialServices = services.toSet();
 
   /* *** CRUD METHODS *** 
   for the list of financial instruments */
-  void addService(FinancialInstrument service){
+  List<BankTransaction> addService(FinancialInstrument service){
     if(service.currentValue > super.availableBalance){
       throw Exception("Can't add a financial service when it requires more amount available than in the balance");
     }
@@ -92,6 +93,20 @@ class SavingsAccount extends BankAccount{
     if(_financialServices.add(service)){
       super.availableBalance -= service.initialValue;
     }
+
+    /* get the date of the investment
+    to register it as a transaction */
+    DateTime serviceDate;
+    if(service is TimeDeposit){
+      serviceDate = service.timeInfo.startingDate;
+    }else if(service is Bond){
+      serviceDate = service.timeInfo.startingDate;
+    }else{
+      serviceDate = (service as Stock).startingDate;
+    }
+
+    /* return the transaction of the financial investment */
+    return [Outcome(OutcomeCategory.financial_investment, "Inizio investimento finanziario in prodotto: ${service.name}", service.currentValue, serviceDate)];
   }
 
   void removeService(FinancialInstrument service){
@@ -108,14 +123,26 @@ class SavingsAccount extends BankAccount{
   }
 
   void replaceService(FinancialInstrument service){
-    FinancialInstrument? existingService = _financialServices.lookup(service);
+    // Find the stored instance without relying on equality that may include
+    // mutable fields such as the instrument status.
+    FinancialInstrument? existingService;
+    for (final candidate in _financialServices) {
+      final sameId = service.id >= 0 && candidate.id == service.id;
+      final sameIdentity = candidate.runtimeType == service.runtimeType && candidate.name == service.name;
+      if (sameId || sameIdentity) {
+        existingService = candidate;
+        break;
+      }
+    }
     if(existingService == null){
       return;
     }
 
-    /* control if the available balance 
-    is still positive */
-    if(super.availableBalance - (service.initialValue - existingService.initialValue) < 0){
+    /* Only an increase of the reserved capital requires available money.
+    Replacing a service with the same initial value must remain possible even
+    when an older operation left the account temporarily below zero. */
+    final double additionalReservedCapital = service.initialValue - existingService.initialValue;
+    if(additionalReservedCapital > super.availableBalance){
       throw Exception("Can't replace a financial service if the new available balance becomes negative.");
     }
 

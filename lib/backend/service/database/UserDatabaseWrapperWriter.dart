@@ -316,8 +316,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [account] savings account connected to the time deposit
   /// * [timeDeposit] service to save
   /// * [close] flag to close the database
-  Future<void> saveAccountTimeDeposit(SavingsAccount account, TimeDeposit timeDeposit, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO TimeDeposit (name, provider, providerType, instrumentUsed,
+  Future<int> saveAccountTimeDeposit(SavingsAccount account, TimeDeposit timeDeposit, {bool close = false}) async {
+    int id = await appDatabase.executeWithMap(sql: '''INSERT INTO TimeDeposit (name, provider, providerType, instrumentUsed,
       currentValue, initialValue, taxRate, status, interestRate, earlyWithdrawalInterestRate, isCashable, 
       startingDate, timeFrequency, includeStart, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd,
       bankAccount) VALUES (:name, :provider, :providerType, :instrumentUsed,
@@ -328,6 +328,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
     if(close){
       await appDatabase.close();
     }
+    
+    return id;
   }
 
   /// Function to save a bond related to the
@@ -335,7 +337,7 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [account] savings account connected to the bond
   /// * [bond] bond to save
   /// * [close] flag to close the database
-  Future<void> saveAccountBond(SavingsAccount account, Bond bond, {bool close = false}) async {
+  Future<int> saveAccountBond(SavingsAccount account, Bond bond, {bool close = false}) async {
     await appDatabase.transaction((transaction) async {
       final bondMap = bond.toMap();
       final insertedId = await transaction.rawInsert('''INSERT INTO Bond (name, provider, providerType, instrumentUsed,
@@ -364,7 +366,6 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
         account.id,
       ]);
       bond.id = insertedId;
-
       for (final singleInterest in bond.couponSchedule) {
         await transaction.rawInsert('''INSERT INTO StepInterest (position, bond, interestRate, duration)
           VALUES (?, ?, ?, ?)''', [
@@ -379,6 +380,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
     if(close){
       await appDatabase.close();
     }
+
+    return bond.id;
   }
 
   /// Function to save the stock related to the savings account
@@ -386,8 +389,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
   /// * [account] savings account connected to the stock
   /// * [stock] stock to save
   /// * [close] flag to close the database
-  Future<void> saveAccountStock(SavingsAccount account, Stock stock, {bool close = false}) async {
-    await appDatabase.executeWithMap(sql: '''INSERT INTO STOCK (name, bankAccount, provider, providerType,
+  Future<int> saveAccountStock(SavingsAccount account, Stock stock, {bool close = false}) async {
+    int id = await appDatabase.executeWithMap(sql: '''INSERT INTO STOCK (name, bankAccount, provider, providerType,
       instrumentUsed, initialValue, currentValue, taxRate, status, totalShares, averagePurchasePrice, currency,
       totalDividends, startingDate, endingDate, ticker)
       VALUES (:name, :bankAccount, :provider, :providerType, :instrumentUsed, :initialValue, :currentValue, 
@@ -397,6 +400,8 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
     if(close){
       await appDatabase.close();
     }
+
+    return id;
   }
 
   /// Function to delete a [cashback] related to a specific account

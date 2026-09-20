@@ -50,8 +50,9 @@ import 'package:mira_finance_tracker/frontend/actions/StepInterestEditor.dart';
 ///   [NewTimeDepositPage] does, instead of asking for them separately.
 class NewBondPage extends StatefulWidget {
   final UserDatabaseWrapper database;
+  final String? functionName;
 
-  const NewBondPage({super.key, required this.database});
+  const NewBondPage({super.key, required this.database, this.functionName});
 
   @override
   State<NewBondPage> createState() => _NewBondPageState();
@@ -204,7 +205,15 @@ class _NewBondPageState extends State<NewBondPage> {
           couponSchedule: couponSchedule,
         );
       } 
-      await widget.database.saveAccountBond(account, bond);
+      bond.id = await widget.database.saveAccountBond(account, bond);
+
+      /* if the function name says return value, 
+      it won't be necessary to add save the transaction of the financial instrument
+      iniside the database */
+      if(widget.functionName != null && widget.functionName != "Object-return"){
+        await widget.database.saveTransactions(account, account.addService(bond)); // add the transactions to the database
+        await widget.database.updateBankAccountBalance(account);
+      }
     }catch(e){
       AppToast.show(context, "Errore nel salvataggio dell'obbligazione: $e", ToastType.error);
     }
