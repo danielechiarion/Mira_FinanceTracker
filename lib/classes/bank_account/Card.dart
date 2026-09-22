@@ -137,7 +137,9 @@ class Card extends BankAccount{
   }
 
   /// Function to check periodic operations to be done
-  /// overriding the superclas method in [BankAccount]
+  /// overriding the superclas method in [BankAccount].
+  /// For a credit card the instance shuld have transactions 
+  /// saved in the inner list to operate
   @override
   void check({List<NotificationData>? notificationRequests}){
     _checkCredit(); // check credit

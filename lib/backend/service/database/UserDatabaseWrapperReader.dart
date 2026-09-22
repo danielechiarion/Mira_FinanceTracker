@@ -1074,4 +1074,23 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return CounterParty.fromMap(result.first);
   }
+
+  /// Function to find the transactions of the credit card
+  /// to be charged in the specific date
+  Future<List<BankTransaction>> getCreditCardTransactions(Card card) async {
+    if(card.cardType != CardType.credit){
+      return [];
+    }
+    
+    List<BankTransaction> transactions = [];
+    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+          Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
+          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+          WHERE accountingDate = ?''', arguments: [card.creditTime!.returnNextSignalDate()]);
+    for(Map<String, dynamic> singleOutcome in outcomeResults){
+      transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
+    }
+
+    return transactions;
+  }
 }

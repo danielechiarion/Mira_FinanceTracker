@@ -1,5 +1,6 @@
 import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
+import 'package:mira_finance_tracker/classes/bank_account/Card.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
@@ -55,6 +56,13 @@ class UserBackgroundCheck {
     List<BankAccount> accounts = await _database.getCompleteBankAccounts();
     List<NotificationData> notificationRequests = [];
     for(BankAccount singleBankAccount in accounts) {
+      /* first check if it's a credit card. 
+      in this case get the latest transactions to make
+      it sure the control can be made to use the credit */
+      if(singleBankAccount is Card && singleBankAccount.cardType == CardType.credit){
+        singleBankAccount.transactions = await _database.getCreditCardTransactions(singleBankAccount);
+      }
+
       singleBankAccount.check(notificationRequests: notificationRequests);
       /* if notification is enabled
       send notification for each movement */
