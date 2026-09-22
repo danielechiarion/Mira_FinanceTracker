@@ -5,6 +5,7 @@ import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/bank_account/CurrentAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/bank_account/SavingsAccountPage.dart';
+import 'package:mira_finance_tracker/frontend/bank_account/CardAccountPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/SummaryCard.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 import 'package:mira_finance_tracker/frontend/charts/MonthlyTrendChart.dart';
@@ -278,7 +279,7 @@ class _HomePageState extends State<HomePage> {
         Navigator.push(context, MaterialPageRoute(builder: (context) => SavingsAccountPage(database: _database,)));
         break;
       case _AccountSection.cards:
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => const CardAccountPage()));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CardAccountPage(database: _database,)));
         break;
     }
   }
