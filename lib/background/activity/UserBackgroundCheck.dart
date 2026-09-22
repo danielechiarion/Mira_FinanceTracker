@@ -53,14 +53,21 @@ class UserBackgroundCheck {
     bank accounts and check for each one
     if something has to be done */
     List<BankAccount> accounts = await _database.getCompleteBankAccounts();
+    List<NotificationData> notificationRequests = [];
     for(BankAccount singleBankAccount in accounts) {
-      singleBankAccount.check();
+      singleBankAccount.check(notificationRequests: notificationRequests);
       /* if notification is enabled
       send notification for each movement */
       if(notificationEnabled) await _sendNotifications(singleBankAccount);
       /* then save the changes inside the database
       to keep it permanent */
       await _saveChanges(singleBankAccount);
+    }
+
+    /* publish the notification requests 
+    for the user as the last ones, to be more visible */
+    for(NotificationData notification in notificationRequests){
+      await _notificationService.showNotification(id: NotificationManager.generateNotificationID(), title: notification.title, body: notification.text);
     }
 
     await _disposeResources(); // then dispose all the resouces at the end of the operation

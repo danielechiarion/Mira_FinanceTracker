@@ -240,7 +240,9 @@ class SavingsAccount extends BankAccount{
   inside the savings account */
   void _checkServices(List<NotificationData>? notificationRequests){
     for(FinancialInstrument service in _financialServices){
-      if(service is CadenceCheck){
+      if(service is Bond){
+        addTransactions(service.checkAndExecute(notificationRequests: notificationRequests));
+      }else if(service is CadenceCheck){
         addTransactions((service as CadenceCheck).checkAndExecute());
       }
     }
