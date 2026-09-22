@@ -7,6 +7,8 @@ import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Enumerator to classify different
 /// types of card
 enum CardType{
@@ -137,7 +139,7 @@ class Card extends BankAccount{
   /// Function to check periodic operations to be done
   /// overriding the superclas method in [BankAccount]
   @override
-  void check(){
+  void check({List<NotificationData>? notificationRequests}){
     _checkCredit(); // check credit
     super.check();
   }

@@ -12,6 +12,7 @@ import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/TimeDeposit.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/Bond.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/model/BondModel.dart'; // for BondType, used to spot variable-rate bonds
 import 'package:mira_finance_tracker/classes/financial_instruments/service/Stock.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 
@@ -197,6 +198,12 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
         ),
         // Note: unlike time deposits and stocks, bonds don't expose a
         // "riscossione" action on this page (only add/edit/delete).
+        const SizedBox(height: 8),
+        // Variable-rate bonds need their coupon rate refreshed at every
+        // due date (see Bond.currentVariableRate), so ongoing ones with
+        // BondType.variable get a quick action for that, similar in
+        // spirit to the redeemable list above for time deposits.
+        _buildVariableRateBondsList(account),
 
         const SizedBox(height: 24),
         const Text('Azioni', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -275,6 +282,75 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
     await widget._database.updateSavingsAccountTimeDeposit(deposit);
     await widget._database.saveTransactions(account, transactions);
     await widget._database.updateBankAccountBalance(account);
+    _refreshAccountPage();
+  }
+
+  /// Update the current coupon rate of a variable-rate [bond], through a
+  /// small pop-up: needed at every due date since a variable-rate bond
+  /// has no fixed coupon schedule (see [Bond.currentVariableRate] and the
+  /// setter used below). Unlike cash-in or deletion, this isn't a
+  /// destructive/irreversible action, so it doesn't go through
+  /// [_confirmDestructiveAction], just its own small form dialog.
+  Future<void> _updateBondVariableRate(SavingsAccount account, Bond bond) async {
+    final formKey = GlobalKey<FormState>();
+    final rateController = TextEditingController(text: bond.currentVariableRate?.toString() ?? '');
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Aggiorna tasso di "${bond.name}"', style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: rateController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+[.,]?\d{0,2}'))],
+            decoration: const InputDecoration(
+              labelText: 'Nuovo tasso di interesse annuo',
+              suffixIcon: Icon(Icons.percent, color: Colors.teal),
+            ),
+            validator: _validateRate,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ANNULLA', style: TextStyle(color: Colors.teal)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.pop(dialogContext, true);
+              }
+            },
+            child: const Text('AGGIORNA'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final double newRate = double.parse(rateController.text.trim().replaceAll(',', '.'));
+
+    try {
+      // 1. Run the update locally on the bond instance
+      bond.addVariableInterest(newRate);
+    } catch (e) {
+      if (context.mounted) {
+        AppToast.show(context, "$e", ToastType.error);
+      }
+      return;
+    }
+
+    // 2. Update the local UI state with the new rate
+    setState(() {
+      account.replaceService(bond);
+    });
+
+    // 3. BACKEND DATABASE CALL:
+    // Persist the updated variable rate on the bond record
+    await widget._database.updateSavingsAccountBondComplete(bond);
     _refreshAccountPage();
   }
 
@@ -577,6 +653,41 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
     );
   }
 
+  /// Compact list of ongoing bonds with a variable interest rate, each
+  /// with a quick action to refresh the coupon rate currently applied
+  /// (see [Bond.currentVariableRate]): needed at every due date, since a
+  /// variable-rate bond has no fixed coupon schedule to compute the
+  /// interest from.
+  Widget _buildVariableRateBondsList(SavingsAccount account) {
+    final variableRateBonds = account.bonds
+        .where((bond) => bond.interestType == BondType.variable && bond.status == FinancialInstrumentStatus.ongoing)
+        .toList();
+    if (variableRateBonds.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Tassi variabili da aggiornare', style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
+        ...variableRateBonds.map((bond) {
+          final String rateLabel = bond.currentVariableRate != null
+              ? 'Tasso attuale: ${bond.currentVariableRate!.toStringAsFixed(2)}%'
+              : 'Tasso non ancora impostato';
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: Text(bond.name),
+            subtitle: Text(rateLabel),
+            trailing: TextButton.icon(
+              icon: const Icon(Icons.percent, size: 18),
+              label: const Text('Aggiorna tasso'),
+              onPressed: () => _updateBondVariableRate(account, bond),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
   /// Compact list of the products of type [T] eligible for cash-in: shown
   /// under the corresponding EntityListSection, only when at least one
   /// item qualifies (see the filters used when calling this method).
@@ -645,6 +756,16 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
       default:
         return status.name;
     }
+  }
+
+  /// Validates an interest rate expressed as a percentage: it must be a
+  /// valid number and can't be negative (0% is allowed, unlike
+  /// [_validateAmount] for monetary amounts).
+  String? _validateRate(String? value) {
+    if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+    final parsed = double.tryParse(value.replaceAll(',', '.'));
+    if (parsed == null || parsed < 0) return 'Inserisci un tasso valido';
+    return null;
   }
 
   /// Validates a monetary amount: it must be a valid, strictly positive number.

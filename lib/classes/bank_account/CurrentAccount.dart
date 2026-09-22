@@ -7,6 +7,8 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicIncome.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Class used to define specifically a bank account,
 /// extending the [BankAccount] provided class
 class CurrentAccount extends BankAccount{
@@ -85,7 +87,7 @@ class CurrentAccount extends BankAccount{
   /// Function to check periodic transactions to be done
   /// override of the method in super class [BankAccount]
   @override
-  void check(){
+  void check({List<NotificationData>? notificationRequests}){
     super.check(); // check the basic functions of the bank account
     
     /* then check domiciliations

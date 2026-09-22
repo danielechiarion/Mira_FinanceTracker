@@ -13,6 +13,8 @@ import 'package:mira_finance_tracker/classes/financial_instruments/service/Stock
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/CadenceCheck.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Class to manage specifically saving accounts
 /// and investments connected to it,
 /// extending the class [BankAccount]
@@ -229,14 +231,14 @@ class SavingsAccount extends BankAccount{
   /// Override of the superclass method in [BankAccount]
   /// to check periodically services provided
   @override
-  void check(){
+  void check({List<NotificationData>? notificationRequests}){
     super.check(); // call the superclass method to check
-    _checkServices();
+    _checkServices(notificationRequests);
   }
 
   /* function to check periodically services
   inside the savings account */
-  void _checkServices(){
+  void _checkServices(List<NotificationData>? notificationRequests){
     for(FinancialInstrument service in _financialServices){
       if(service is CadenceCheck){
         addTransactions((service as CadenceCheck).checkAndExecute());

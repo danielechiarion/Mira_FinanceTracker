@@ -66,6 +66,8 @@ class EditBondPage extends StatelessWidget {
               const SizedBox(height: 16),
               _readOnlyField('Prezzo di acquisto (non modificabile)', '${item.purchasePrice.toStringAsFixed(2)}%'),
               const SizedBox(height: 16),
+              _readOnlyField('Frequenza pagamento interessi (non modificabile)', item.timeInfo.timeFrequency.name),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: currentValueController,

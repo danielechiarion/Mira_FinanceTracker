@@ -7,6 +7,8 @@ import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Class used to manage general information
 /// about a bank account
 abstract class BankAccount{
@@ -219,7 +221,9 @@ abstract class BankAccount{
   /// Function to check possible actions 
   /// to make inside the bank account,
   /// like calculating billings and interests
-  void check(){
+  /// 
+  /// * [notificationRequests] list of notifications to populate if an account has a request
+  void check({List<NotificationData>? notificationRequests}){
     /* first control if the time has come and 
     there is the interest on the available balance
     to calculate */

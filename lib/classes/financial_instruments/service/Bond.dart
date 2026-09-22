@@ -13,6 +13,8 @@ import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/InterestList.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/StepInterest.dart';
 
+import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
+
 /// Class of bond used to define this particular
 /// type of financial instrument, with all the 
 /// methods and information connected to it
@@ -64,9 +66,6 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       /* update some attributes */
       _couponSchedule = couponSchedule?.toSet() ?? {};
       super.currentValue = _purchasePrice * super.initialValue / 100;
-      if(_interestType == BondType.variable){
-        _couponSchedule = {};
-      }
       
       /* initialize time info starting from the attributes given by the user */
       if(monthOfYear != null){
@@ -143,9 +142,6 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
     /* update some attributes */
     _couponSchedule = couponSchedule?.toSet() ?? {};
     super.currentValue = _purchasePrice * super.initialValue;
-    if(_interestType == BondType.variable){
-      _couponSchedule = {};
-    }
 
     /* attributes assignment */
     _timeInfo = timeInfo;
@@ -165,6 +161,8 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
 
     return list;
   }
+  bool get hasInterests => _couponSchedule.isNotEmpty;
+  double? get currentVariableRate => _couponSchedule.isEmpty ? null : _couponSchedule.first.interestRate;
 
   /* *** SETTER METHODS *** */
   set interestType(BondType interestType){
@@ -311,9 +309,23 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
     _couponSchedule.add(objectRemoved);
   }
 
+  /// Function to add a variable interest in a bond
+  /// with the possibility to remove the previous one
+  void addVariableInterest(double interestRate) {
+    /* do this action only if the interest
+    type is variable */
+    if(_interestType != BondType.variable || !super.isActive) return;
+
+    /* if there was a present interest before, delete it, 
+    so as to add the only variable interest for the next period */
+    if(_couponSchedule.isNotEmpty) _couponSchedule.clear();
+    _couponSchedule.add(StepInterest(0, LongDuration(), interestRate));
+  }
+
   /// Override of the method proposed by the interface [CadenceCheck]
+  /// * [notificationRequests] requests of notification to make appear in the application
   @override
-  List<BankTransaction> checkAndExecute({double? variableInterest}){
+  List<BankTransaction> checkAndExecute({List<NotificationData>? notificationRequests}){
     List<BankTransaction> transactions = []; // declare an empty list
 
     /* use cycle because this operation could be 
@@ -327,12 +339,14 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
         interestRate = _couponSchedule.first.interestRate;
       }else if(_interestType == BondType.step){
         interestRate = _getRightInterest();
-      }else if(_interestType == BondType.variable && variableInterest == null){
+      }else if(_interestType == BondType.variable && !hasInterests){
         /* if the tax rate is variable it's impossible to calculate 
-        it with the right interest, unless it's provided by the user */
+        it with the right interest, unless it's provided by the user.
+        So, add a request of notification to inform the user.*/
+        notificationRequests!.add(NotificationData("Richiesta aggiornamento interessi", "E' presente una cedola da ritirare per l'obbligazione: ${super.name}. Aggiorna il tasso di interesse variabile per ottenerlo!"));
         return transactions;
       }else{
-        interestRate = variableInterest!;
+        interestRate = _couponSchedule.first.interestRate;
       }
 
       /* otherwise calculate the interest, 

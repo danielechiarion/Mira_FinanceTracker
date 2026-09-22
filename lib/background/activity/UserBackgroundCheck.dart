@@ -39,8 +39,8 @@ class UserBackgroundCheck {
   Future<void> execute() async {
     /* first of all get the essential preferences
     for the user to do the background check */
-    bool backgroundEnabled = (await _preference.getPreference('enableBackground')).currentValue;
-    bool notificationEnabled = (await _preference.getPreference('enableNotification')).currentValue;
+    bool backgroundEnabled = _preference.getPreference('enableBackground').currentValue;
+    bool notificationEnabled = _preference.getPreference('enableNotification').currentValue;
 
     /* if the background check is 
     not enabled, just end the execution of the class */

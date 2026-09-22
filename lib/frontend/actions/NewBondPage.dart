@@ -36,6 +36,12 @@ import 'package:mira_finance_tracker/frontend/actions/StepInterestEditor.dart';
 ///
 /// NOTE: [purchasePrice] and [minimumDenomination] have no equivalent on
 /// [BondModel], so they stay editable regardless of the creation mode.
+/// The same goes for the optional starting variable rate
+/// ([currentVariableRate] on [Bond]): it's only shown when the effective
+/// interest type is [BondType.variable] (from the model or from the
+/// manual choice), and, once set, the value can later be updated through
+/// the small pop-up available on the bonds section of the account page
+/// (see [SavingsAccountPage]).
 ///
 /// ASSUMPTIONS MADE WHILE BUILDING THIS PAGE (please double-check them
 /// against the real project before wiring it up):
@@ -65,6 +71,7 @@ class _NewBondPageState extends State<NewBondPage> {
   late TextEditingController minimumDenominationController;
   late TextEditingController taxRateController;
   late TextEditingController fixedRateController;
+  late TextEditingController variableRateController; // optional starting rate for a variable-rate bond
 
   @override
   void initState() {
@@ -75,6 +82,7 @@ class _NewBondPageState extends State<NewBondPage> {
     minimumDenominationController = TextEditingController(text: '1000');
     taxRateController = TextEditingController(text: '0');
     fixedRateController = TextEditingController();
+    variableRateController = TextEditingController();
   }
 
   @override
@@ -85,6 +93,7 @@ class _NewBondPageState extends State<NewBondPage> {
     minimumDenominationController.dispose();
     taxRateController.dispose();
     fixedRateController.dispose();
+    variableRateController.dispose();
     super.dispose();
   }
 
@@ -172,6 +181,7 @@ class _NewBondPageState extends State<NewBondPage> {
     DateTime startingDate,
     int dayOfMonth,
     int? monthOfYear,
+    double? currentVariableRate,
   ) async {
     Bond? bond; // declare variable for the instrument to save
 
@@ -185,7 +195,7 @@ class _NewBondPageState extends State<NewBondPage> {
           startingDate: startingDate,
           day: dayOfMonth,
           month: monthOfYear,
-          minimumDenomination: minimumDenomination,
+          minimumDenomination: minimumDenomination
         );
       } else {
         bond = Bond(
@@ -205,6 +215,7 @@ class _NewBondPageState extends State<NewBondPage> {
           couponSchedule: couponSchedule,
         );
       } 
+      if(currentVariableRate != null) bond.addVariableInterest(currentVariableRate); // add the variable interest rate if it's not null
       bond.id = await widget.database.saveAccountBond(account, bond);
 
       /* if the function name says return value, 
@@ -526,8 +537,20 @@ class _NewBondPageState extends State<NewBondPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
+                  // --- STARTING VARIABLE RATE (optional, instance-specific like purchasePrice/minimumDenomination
+                  // above: it has no equivalent on BondModel, so it stays editable in both creation modes; only
+                  // shown when the effective interest type -- from the model when useModel is true, otherwise the
+                  // manually chosen one -- is BondType.variable) ---
+                  if ((useModel ? selectedModel?.interestType : interestType) == BondType.variable) ...[
+                    InterestAmountField(
+                      controller: variableRateController,
+                      label: 'Tasso di interesse variabile di partenza (opzionale)',
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  const SizedBox(height: 8),
                   // --- STARTING DATE ---
                   InkWell(
                     onTap: () async {
@@ -585,6 +608,14 @@ class _NewBondPageState extends State<NewBondPage> {
             ? [StepInterest(0, duration, double.tryParse(fixedRateController.text) ?? 0.0)]
             : interests;
 
+        /* optional starting rate for a variable-rate bond: left null when
+        the field isn't shown (effective interest type not variable) or
+        when the user leaves it empty, since it's a facultative value */
+        final BondType effectiveInterestType = useModel ? (selectedModel?.interestType ?? interestType) : interestType;
+        final double? currentVariableRate = effectiveInterestType == BondType.variable
+          ? double.tryParse(variableRateController.text.trim().replaceAll(',', '.'))
+          : null;
+
         Bond? savedBond;
         try {
           savedBond = await _saveBond(
@@ -605,6 +636,7 @@ class _NewBondPageState extends State<NewBondPage> {
             startingDate,
             effectiveDayOfMonth,
             effectiveMonthOfYear,
+            currentVariableRate,
           );
         } catch (error) {
           if (context.mounted) {
