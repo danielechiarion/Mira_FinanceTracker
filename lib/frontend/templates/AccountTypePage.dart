@@ -5,14 +5,12 @@ import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/FlippableBalanceCard.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/EntityListSection.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/PaginatedTransactionsSection.dart';
-import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
+import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutputEditable.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/frontend/actions/NewPeriodicAccountBillingPage.dart';
@@ -538,15 +536,12 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
   Widget _buildTransactionsSection(T account) {
     return PaginatedTransactionsSection<BankTransaction>(
       loadPage: (page, pageSize) => widget.loadTransactionsPage(account, page, pageSize),
-      itemBuilder: (transaction) => TransactionOperationOutput(
-        reference: transaction.reference,
-        accountName: account.name,
-        amount: transaction.amount,
-        isIncome: transaction is Income,
-        category: transaction is Income ? transaction.category.name : (transaction as Outcome).category.name,
-        executionDate: transaction.executionDate,
-        accountingDate: transaction.accountingDate,
-      ).build(),
+      itemBuilder: (transaction) => TransactionOperationOutputEditable(
+        transaction: transaction,
+        account: account,
+        updatePage: _reload,
+        database: widget.database
+      )
     );
   }
 

@@ -489,4 +489,18 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to delete a [transaction] inside the database
+  /// * [close] flag to close the database
+  Future<void> deleteTransaction(BankTransaction transaction, {bool close = false}) async {
+    if(transaction is Income){
+      await appDatabase.execute(sql: 'DELETE FROM Income WHERE id = ?', arguments: [transaction.id]);
+    }else{
+      await appDatabase.execute(sql: 'DELETE FROM Outcome WHERE id = ?', arguments: [transaction.id]);
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  } 
 }

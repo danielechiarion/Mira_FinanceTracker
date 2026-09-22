@@ -123,6 +123,7 @@ abstract class BankAccount{
     }
     _endingDate = endingDate;
   }
+  set transactions(List<BankTransaction> transactions) => _transactions = transactions.toSet();
 
   /* *** CRUD METHODS ***
   Used for the lists of periodic account billings
@@ -272,12 +273,12 @@ abstract class BankAccount{
   /// * [other] object to compare
   @override
   bool operator ==(Object other){
-    return other is BankAccount && other.runtimeType == runtimeType && _name == other._name;
+    return other is BankAccount && other.runtimeType == runtimeType && _id == other._id;
   }
 
   /// Getter of the hascode of the instance
   @override
-  int get hashCode => _name.hashCode;
+  int get hashCode => _id.hashCode;
 
   /* *** ABSTRACT METHODS *** */
   /// Method creating a deep clone of the object

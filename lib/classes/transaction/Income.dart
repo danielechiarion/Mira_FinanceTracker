@@ -92,6 +92,7 @@ class Income extends BankTransaction{
   @override
   Map<String, dynamic> toMap(){
     return {
+      if(super.id >= 0) 'id': super.id,
       'category': _category.index,
       'reference': super.reference,
       'amount': super.amount,

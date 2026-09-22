@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
 
@@ -35,7 +33,6 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   }
 
   /* *** GETTER METHODS *** */
-  @protected
   int get id => _id;
   String get reference => _reference;
   CounterParty? get counterParty => _counterParty?.clone();

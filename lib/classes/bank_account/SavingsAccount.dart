@@ -191,7 +191,7 @@ class SavingsAccount extends BankAccount{
     /* first control if the transaction
     is completed by the superclass method, 
     then update the ledger balance */
-    BankTransaction? existingTransaction = super.replaceTransaction(transaction);
+    BankTransaction? existingTransaction = super.removeTransaction(transaction);
     if(existingTransaction == null){
       return;
     }

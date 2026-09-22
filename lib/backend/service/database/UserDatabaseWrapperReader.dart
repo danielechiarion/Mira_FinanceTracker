@@ -1063,4 +1063,15 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
 
     return transactions;
   }
+
+  /// Function to find a counter party and return it
+  /// by its [name]
+  Future<CounterParty> findCounterPartyByName(String name) async {
+    /* call the database to find all 
+    the counterparty inside the database */
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: 'SELECT id,name,IBAN FROM CounterParty WHERE name = ?',
+      arguments: [name]);
+
+    return CounterParty.fromMap(result.first);
+  }
 }

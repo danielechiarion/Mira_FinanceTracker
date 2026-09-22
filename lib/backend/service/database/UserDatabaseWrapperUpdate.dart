@@ -276,4 +276,22 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
       await appDatabase.close();
     }
   }
+
+  /// Function to update a [transaction] inside the database
+  /// * [close] flag to close the database
+  Future<void> updateTransaction(BankTransaction transaction, {bool close = false}) async {
+    if(transaction is Income){
+      await appDatabase.executeWithMap(sql: '''UPDATE Income SET reference = :reference, counterParty = :counterParty,
+        amount = :amount, executionDate = :executionDate, accountingDate = :accountingDate, category = :category
+        WHERE id = :id''', parameters: transaction.toMap());
+    }else{
+      await appDatabase.executeWithMap(sql: '''UPDATE Outcome SET reference = :reference, counterParty = :counterParty,
+        amount = :amount, executionDate = :executionDate, accountingDate = :accountingDate, category = :category
+        WHERE id = :id''', parameters: transaction.toMap());
+    }
+
+    if(close){
+      await appDatabase.close();
+    }
+  }
 }

@@ -71,10 +71,10 @@ class _SavingsAccountPageState extends State<SavingsAccountPage> {
       // Unlike CurrentAccountPage, a deposit account shows both balances:
       // the "contabile" one (all registered movements) and the
       // "disponibile" one (net of anything not yet settled).
-      primaryBalanceOf: (account) => account.ledgerBalance,
-      primaryBalanceLabel: 'Saldo contabile',
-      secondaryBalanceOf: (account) => account.availableBalance,
-      secondaryBalanceLabel: 'Saldo disponibile',
+      primaryBalanceOf: (account) => account.availableBalance,
+      primaryBalanceLabel: 'Saldo disponibile',
+      secondaryBalanceOf: (account) => account.ledgerBalance,
+      secondaryBalanceLabel: 'Saldo contabile',
 
       loadTransactionsPage: (account, page, pageSize) async {
         return await widget._database.getAccountTransactionSlot(account, pageSize, page * pageSize);
