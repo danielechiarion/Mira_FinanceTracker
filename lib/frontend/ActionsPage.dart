@@ -52,7 +52,7 @@ class _ActionsPageState extends State<ActionsPage> {
   void dispose(){
     final database = _database;
     if (database != null) {
-      unawaited(database.closeDatabase());
+      database.closeDatabase();
     }
     super.dispose();
   }

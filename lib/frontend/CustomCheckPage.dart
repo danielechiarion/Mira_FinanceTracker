@@ -75,8 +75,8 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
       }
 
       return outputs;
-    } finally {
-      await database.closeDatabase();
+    } on Exception{
+      return []; // do nothing, just return an empty list
     }
   }
 

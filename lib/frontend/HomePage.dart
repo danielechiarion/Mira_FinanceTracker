@@ -43,7 +43,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     super.dispose();
-    _database.closeCompletelyDatabase();
+    _database.closeDatabase();
   }
 
   Future<HomePageData> _loadSession() async {
