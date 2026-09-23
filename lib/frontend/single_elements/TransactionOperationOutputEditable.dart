@@ -35,7 +35,7 @@ class TransactionOperationOutputEditable extends StatefulWidget {
     required this.updatePage,
     required this.database,
   }) {
-    account.transactions = [transaction]; // add the transaction to the list of transactions to make operations
+    account.addRawTransactions([transaction]); // add the transaction to the list of transactions to make operations
   }
 
   @override
@@ -169,7 +169,6 @@ class _TransactionOperationOutputEditableState
     });
     /* update also the database with the transactions and the balance */
     await widget.database.updateTransaction(updatedTransaction);
-    print('Balance before save: ${widget.account.availableBalance}');
     await widget.database.updateBankAccountBalance(widget.account);
 
     await widget.updatePage();

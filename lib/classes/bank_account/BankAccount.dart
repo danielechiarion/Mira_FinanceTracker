@@ -209,6 +209,13 @@ abstract class BankAccount{
     return existingTransaction;
   }
 
+  /// Function to add existing [transactions] without
+  /// changing the balance, if these ones have already been registred before.
+  /// DO NOT USE THIS METHOD WITH NEW TRANSACTIONS.
+  void addRawTransactions(List<BankTransaction> transactions) {
+    _transactions.addAll(transactions);
+  }
+
   /// Method to add multiple or no transaction inside the bank account.
   /// It's commonly used when calculating interest, billings and 
   /// controlled movements. 
