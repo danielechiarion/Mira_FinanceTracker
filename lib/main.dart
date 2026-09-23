@@ -4,6 +4,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/notification/NotificationManager.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/background/BackgroundManager.dart';
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
@@ -37,6 +38,10 @@ void main(List<String> args) async {
 
     exit(0); // exit the proces
   }
+
+  /* ask permission for notification in
+  order to send messages about the state of the accounts */
+  await NotificationManager().requestPermissions();
 
   /* understand if the user is logged */
   bool userLogged = (await CurrentSession.getFromMemory()) != null;
