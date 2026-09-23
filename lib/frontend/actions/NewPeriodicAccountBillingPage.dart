@@ -59,7 +59,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
     return 'account';
   }
 
-  Future<void> _saveBilling(
+  Future<PeriodicAccountBillings> _saveBilling(
     BuildContext context,
     BankAccount account,
     String name,
@@ -98,6 +98,8 @@ class PeriodicBillingFormPage extends StatelessWidget {
       );
       await database.saveAccountFee(account, billing as BankFee);
     }
+
+    return billing;
   }
 
   @override
@@ -300,7 +302,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
       onConfirm: (context) async {
         if (!nameAvailable || selectedAccount == null) return;
 
-        await _saveBilling(
+        PeriodicAccountBillings billing = await _saveBilling(
           context,
           selectedAccount!,
           nameController.text.trim(),
@@ -315,7 +317,7 @@ class PeriodicBillingFormPage extends StatelessWidget {
         );
 
         if (context.mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, billing);
         }
       },
     );

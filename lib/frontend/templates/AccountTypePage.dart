@@ -65,6 +65,11 @@ class AccountTypePage<T extends BankAccount> extends StatefulWidget {
 class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage<T>> {
   late Future<List<T>> _accountsFuture;
 
+  /* create tokens to update the 
+  services of the page */
+  int _feesRefreshToken = 0;
+  int _cashbacksRefreshToken = 0;
+
   @override
   void initState() {
     super.initState();
@@ -464,6 +469,7 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
         const Text('Commissioni bancarie', style: TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         EntityListSection<BankFee>(
+          key: ValueKey('fees-${account.id}-$_feesRefreshToken'),
           searchHint: 'Cerca una commissione...',
           addLabel: 'Aggiungi',
           icon: Icons.request_quote_outlined,
@@ -477,15 +483,21 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
           deleteItem: (fee) async {
             account.removeFee(fee);
             await widget.database.deleteAccountFee(fee);
+
+            setState(() {
+              _feesRefreshToken++;
+            });
           },
           addItem: (fee) async {
             setState(() {
               account.addFee(fee);
+              _feesRefreshToken++;
             });
           },
           updateItem: (fee) async {
             setState(() {
               account.replaceFee(fee);
+              _feesRefreshToken++;
             });
           },
         ),
@@ -493,6 +505,7 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
         const Text('Cashback', style: TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         EntityListSection<Cashback>(
+          key: ValueKey('cashbacks-${account.id}-$_cashbacksRefreshToken'),
           searchHint: 'Cerca un cashback...',
           addLabel: 'Aggiungi',
           icon: Icons.savings_outlined,
@@ -506,15 +519,21 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
           deleteItem: (cashback) async {
             account.removeCashback(cashback);
             await widget.database.deleteAccountCashback(cashback);
+
+            setState(() {
+              _cashbacksRefreshToken++;
+            });
           },
           addItem: (cashback) async {
             setState(() {
               account.addCashback(cashback);
+              _cashbacksRefreshToken++;
             });
           },
           updateItem: (cashback) async {
             setState(() {
               account.replaceCashback(cashback);
+              _cashbacksRefreshToken++;
             });
           },
         ),

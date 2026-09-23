@@ -28,9 +28,17 @@ class CurrentAccountPage extends StatefulWidget {
 }
 
 class _CurrentAccountPageState extends State<CurrentAccountPage> {
+  int _pageRefreshToken = 0;
+
+  void _refreshAccountPage() {
+    if (!mounted) return;
+    setState(() { _pageRefreshToken++; });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AccountTypePage<CurrentAccount>(
+      key: ValueKey(_pageRefreshToken),
       currentRoute: AppRoutes.currentAccounts,
       title: 'Conti correnti',
       icon: Icons.account_balance,
@@ -76,16 +84,19 @@ class _CurrentAccountPageState extends State<CurrentAccountPage> {
           deleteItem: (debit) async {
             account.removeDomiciliation(debit);
             await widget._database.deleteAccountDomiciliation(debit);
+            _refreshAccountPage();
           },
           addItem: (debit) async {
             setState(() {
               account.addDomiciliation(debit);
             });
+            _refreshAccountPage();
           },
           updateItem: (debit) async {
             setState(() {
               account.replaceDomiciliation(debit);
             });
+            _refreshAccountPage();
           }
         ),
         const SizedBox(height: 24),
@@ -105,16 +116,19 @@ class _CurrentAccountPageState extends State<CurrentAccountPage> {
           deleteItem: (credit) async {
             account.removePeriodicIncome(credit);
             await widget._database.deleteAccountPeriodicIncome(credit);
+            _refreshAccountPage();
           },
           addItem: (credit) async {
             setState(() {
               account.addPeriodicIncome(credit);
             });
+            _refreshAccountPage();
           },
           updateItem: (credit) async {
             setState(() {
               account.replacePeriodicIncome(credit);
             });
+            _refreshAccountPage();
           },
         ),
       ],

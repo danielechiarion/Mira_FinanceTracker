@@ -69,47 +69,97 @@ class _TransactionOperationOutputEditableState
   Widget build(BuildContext context) {
     final transaction = widget.transaction;
     final color = _isIncome ? Colors.green : Colors.red;
+    final isCompact = MediaQuery.of(context).size.width < 600;
+
+    final leadingIcon = CircleAvatar(
+      backgroundColor: color.withValues(alpha: 0.12),
+      child: Icon(
+        _isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+        color: color,
+        size: 18,
+      ),
+    );
+
+    final amountText = Text(
+      '${_isIncome ? '+' : '-'}${_formatter.format(transaction.amount)}',
+      style: TextStyle(color: color, fontWeight: FontWeight.bold),
+    );
+
+    final subtitleText = Text(
+      '${widget.account.name} • $_categoryLabel\n'
+      'Controparte: ${_counterPartyName ?? '-'}\n'
+      'Esecuzione: '
+      '${DateFormat('dd/MM/yyyy').format(transaction.executionDate)} • '
+      'Contabile: '
+      '${DateFormat('dd/MM/yyyy').format(transaction.accountingDate)}',
+    );
+
+    final editButton = IconButton(
+      icon: const Icon(Icons.edit, size: 20),
+      onPressed: () => _showEditDialog(context),
+      tooltip: 'Modifica',
+    );
+
+    final deleteButton = IconButton(
+      icon: const Icon(Icons.delete, size: 20),
+      onPressed: () => _showDeleteDialog(context),
+      tooltip: 'Elimina',
+    );
+
+    if (isCompact) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                leadingIcon,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    transaction.reference,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                amountText,
+              ],
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 52),
+              child: subtitleText,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                editButton,
+                deleteButton,
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: color.withValues(alpha: 0.12),
-        child: Icon(
-          _isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-          color: color,
-          size: 18,
-        ),
-      ),
+      leading: leadingIcon,
       title: Text(
         transaction.reference,
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
-      subtitle: Text(
-        '${widget.account.name} • $_categoryLabel\n'
-        'Controparte: ${_counterPartyName ?? '-'}\n'
-        'Esecuzione: '
-        '${DateFormat('dd/MM/yyyy').format(transaction.executionDate)} • '
-        'Contabile: '
-        '${DateFormat('dd/MM/yyyy').format(transaction.accountingDate)}',
-      ),
+      subtitle: subtitleText,
       isThreeLine: true,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '${_isIncome ? '+' : '-'}${_formatter.format(transaction.amount)}',
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
+          amountText,
           const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: () => _showEditDialog(context),
-            tooltip: 'Modifica',
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, size: 20),
-            onPressed: () => _showDeleteDialog(context),
-            tooltip: 'Elimina',
-          ),
+          editButton,
+          deleteButton,
         ],
       ),
     );
