@@ -28,6 +28,8 @@
 	<string>Serve per sbloccare la gestione degli account</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.802096950895-pu2e48lo0ho7p3pevbnmsrcockq6stkl</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

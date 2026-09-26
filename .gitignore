@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# remove data with credentials for desktop users
+# using google drive API
+/assets/data/
