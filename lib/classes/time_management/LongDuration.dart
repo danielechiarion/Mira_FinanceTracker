@@ -13,9 +13,9 @@ class LongDuration implements Comparable<LongDuration>{
   /// * [months] months of time left in the duration
   /// * [days] days of time left in the duration
   const LongDuration({int years = 0, int months = 0, int days = 0})
-      : years = years + ((months + (days ~/ 31)) ~/ 12),
-        months = (months + (days ~/ 31)) % 12,
-        days = days % 31;
+    : years = years + ((months + (days ~/ 31)) ~/ 12),
+      months = ((months + (days ~/ 31)) % 12 + 12) % 12,
+      days = ((days % 31) + 31) % 31;
 
   /// Function to calculate if it's the exact time difference 
   /// between two dates given expressed by the instance selected
@@ -43,7 +43,12 @@ class LongDuration implements Comparable<LongDuration>{
       throw Exception("Start date can't be after the end date");
     }
 
-    return calculateExpandedDifference(startDate, endDate).compareTo(this) >= 0;
+    DateTime threshold = DateTime(
+      startDate.year + years,
+      startDate.month + months,
+      startDate.day + days,
+    );
+    return !endDate.isBefore(threshold);
   }
 
   /// Add another LongDuration to this instance, normalizing days and months
@@ -102,23 +107,16 @@ class LongDuration implements Comparable<LongDuration>{
     int months = end.month - start.month;
     int days = end.day - start.day;
 
-    // 1. Handle negative days (e.g., from July 25th to August 10th)
-    if (days < 0) {
-      // Borrow a month from the months count
+    /* strategy to allow them not to be negative */
+    while (days < 0) {
       months--;
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
       
-      // Find the last day of the month prior to the "end" month
-      // In Dart, setting the day to 0 in the DateTime constructor returns the last day of the previous month.
-      DateTime previousMonth = DateTime(end.year, end.month, 0);
-      
-      // Add the days of the previous month to the calculation
-      days += previousMonth.day;
-    }
-
-    // 2. Handle negative months (e.g., from October to March of the following year)
-    if (months < 0) {
-      years--;
-      months += 12;
+      final int dim = DateTime(end.year, end.month + 1, 0).day;
+      days += dim;
     }
 
     return LongDuration(years: years, months: months, days: days);

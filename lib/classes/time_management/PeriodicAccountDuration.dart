@@ -115,40 +115,48 @@ class PeriodicAccountDuration {
 
   /* function to return the next date to signal */
   DateTime returnNextSignalDate(){
-    DateTime signalDate;
-    DateTime lastDate = _lastDateActivity ?? _startingDate;
-    /* then control if it's monthly or less than annual frequency
-    and it's time to signal it */
-    if(_timeFrequency.index < 5) {
-      /* add to the last date the time frequency
-      expressed */
-      signalDate = DateTime(
+    final DateTime lastDate = _lastDateActivity ?? _startingDate;
+
+    /* calculate the base adding the
+    time frequency of the instance */
+    DateTime base;
+    if (_timeFrequency.index < 5) {
+      base = DateTime(
         lastDate.year,
         lastDate.month + _timeFrequency.duration!.months,
-        lastDate.day
+        1, // set first day to avoid overflow, set it later
       );
-    }else{
-      /* add to the last date the time frequency expressed */
-      signalDate = DateTime(
+    } else {
+      base = DateTime(
         lastDate.year + _timeFrequency.duration!.years,
         lastDate.month + _timeFrequency.duration!.months,
-        lastDate.day
+        1,
       );
-
-      /* if the month indicated is after the expressed one,
-      try, add a year and move to the month specified */
-      if(_monthOfYear! < signalDate.month){
-        signalDate = DateTime(signalDate.year+1, _monthOfYear!);
+      if (_monthOfYear! < base.month) {
+        base = DateTime(base.year + 1, _monthOfYear!, 1);
+      } else {
+        base = DateTime(base.year, _monthOfYear!, 1);
       }
     }
 
-    /* if the day of month comes before the signal date,
-    go to the next month and move to the day specified */
-    if(_dayOfMonth < signalDate.day){
-      signalDate = DateTime(signalDate.year, signalDate.month + 1, _dayOfMonth);
+    /* set day of month, managing short months */
+    final int lastDayOfBaseMonth =
+        DateTime(base.year, base.month + 1, 0).day;
+    final int targetDay =
+        _dayOfMonth > lastDayOfBaseMonth ? lastDayOfBaseMonth : _dayOfMonth;
+    DateTime candidate = DateTime(base.year, base.month, targetDay);
+
+    /* further control to advance the date if
+    the candidate date was before the last date calculated at the beginning */
+    while (!candidate.isAfter(lastDate)) {
+      final int nextMonth = candidate.month + 1;
+      candidate = DateTime(candidate.year, nextMonth, 1);
+      final int dim = DateTime(candidate.year, candidate.month + 1, 0).day;
+      candidate = DateTime(candidate.year, candidate.month,
+          _dayOfMonth > dim ? dim : _dayOfMonth);
     }
-    
-    return signalDate;
+
+    return candidate;
   }
 
   /// Function to return a map of the object
