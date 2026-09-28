@@ -14,7 +14,10 @@ class BackgroundControl {
 
   /// Constructor of the background control 
   /// to define the resources needed
-  BackgroundControl() : _database = SystemDatabaseWrapper(), _notificationManager = NotificationManager();
+  BackgroundControl({
+    SystemDatabaseWrapper? database,
+    NotificationManager? notificationManager
+  }) : _database = database ?? SystemDatabaseWrapper(), _notificationManager = notificationManager ?? NotificationManager();
 
   /// Function to initialize the resources needed 
   /// to build up the background control

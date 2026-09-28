@@ -42,6 +42,8 @@ dependencies:
   intl: ^0.20.3
   # package for background activities
   workmanager: ^0.10.9
+  # package to mock resources during tests
+  mocktail: ^1.0.5
 
 dev_dependencies:
   flutter_test:

@@ -41,7 +41,7 @@ class UserBackgroundCheck {
     /* first of all get the essential preferences
     for the user to do the background check */
     bool backgroundEnabled = _preference.getPreference('enableBackground').currentValue;
-    bool notificationEnabled = _preference.getPreference('enableNotification').currentValue;
+    bool notificationEnabled = _preference.getPreference('enableNotifications').currentValue;
 
     /* if the background check is 
     not enabled, just end the execution of the class */

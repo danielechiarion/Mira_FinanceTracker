@@ -1083,10 +1083,19 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     }
     
     List<BankTransaction> transactions = [];
-    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+    /* put staring date and ending date using
+    a safer and wider range to check */
+    final targetDate = card.creditTime!.returnNextSignalDate();
+    final startOfDay = DateTime(targetDate.year, targetDate.month, targetDate.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    final outcomeResults = await appDatabase.query(
+      sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
-          WHERE accountingDate = ?''', arguments: [card.creditTime!.returnNextSignalDate()]);
+          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id 
+          WHERE accountingDate >= ? AND accountingDate < ?''',
+      arguments: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+    );
     for(Map<String, dynamic> singleOutcome in outcomeResults){
       transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
