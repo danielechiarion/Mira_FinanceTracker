@@ -48,7 +48,7 @@ dependencies:
   # with google drive
   googleapis: ^17.0.0
   google_sign_in: ^7.2.0
-  i_google_drive: ^1.0.0
+  multi_cloud_storage: ^0.7.0
 
 dev_dependencies:
   flutter_test:

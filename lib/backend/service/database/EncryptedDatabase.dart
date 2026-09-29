@@ -82,6 +82,8 @@ class EncryptedDatabase {
         version: version,
         onCreate: onCreate,
       );
+
+      print("User Database path: $path");
       _connectionPath = path;
     } catch (e) {
       rethrow;
