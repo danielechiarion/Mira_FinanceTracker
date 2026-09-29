@@ -46,9 +46,9 @@ dependencies:
   mocktail: ^1.0.5
   # library for cloud connection
   # with google drive
-  googleapis: ^17.0.0
-  google_sign_in: ^7.2.0
-  multi_cloud_storage: ^0.7.0
+  googleapis: ^14.0.0
+  google_sign_in: ^6.3.0
+  multi_cloud_storage: ^0.4.0
 
 dev_dependencies:
   flutter_test:
