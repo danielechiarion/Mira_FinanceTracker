@@ -44,6 +44,11 @@ dependencies:
   workmanager: ^0.10.9
   # package to mock resources during tests
   mocktail: ^1.0.5
+  # library for cloud connection
+  # with google drive
+  googleapis: ^17.0.0
+  google_sign_in: ^7.2.0
+  i_google_drive: ^1.0.0
 
 dev_dependencies:
   flutter_test:
