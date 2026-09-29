@@ -111,5 +111,6 @@ class UserBackgroundCheck {
     if it's a savings account, the ledger balance */
     await _database.updateBankAccountBalance(account);
     await _database.updateAccountServices(account);
+    await _database.saveTransactions(account, account.transactions);
   }
 }

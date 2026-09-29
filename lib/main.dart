@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -28,6 +29,7 @@ void main(List<String> args) async {
   /* --- CATCH BACKGROUND TASK ---
   when it's called from the backend */
   if(args.contains("--background-check")){
+    debugger();
     /* call the service to execute
     in background */
     print("=== Avvio controllo automatico Desktop (App Chiusa) ===");

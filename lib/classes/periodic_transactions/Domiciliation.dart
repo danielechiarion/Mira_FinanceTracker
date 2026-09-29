@@ -42,7 +42,7 @@ class Domiciliation extends PeriodicTransaction{
     /* use cycle because this operation could be 
     without a regular cadence, having even more
     transactions of the same type to do */
-    while(super.cadence.isTime()){
+    while(super.originalCadence.isTime()){
       /* if the control has passed, add to the list the 
       various transactions to do */
       transactionList.add(
@@ -56,8 +56,8 @@ class Domiciliation extends PeriodicTransaction{
       );
 
       /* update the cadence counter */
-      super.cadence.acknowledgeSignal(); 
-      }
+      super.originalCadence.acknowledgeSignal(); 
+    }
 
     return transactionList; // return the transaction
   }

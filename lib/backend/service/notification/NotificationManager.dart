@@ -46,11 +46,19 @@ class NotificationManager {
       defaultActionName: 'Open notification',
     );
 
+    const WindowsInitializationSettings windowsSettings = 
+      WindowsInitializationSettings(
+        appName: 'Mira Finance Tracker',
+        appUserModelId: 'com.example.mira_finance_tracker',
+        guid: 'e9476923-e9c8-41f4-825b-66f3a7179a0a'
+      );
+
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
       iOS: darwinSettings,
       macOS: darwinSettings,
       linux: linuxSettings,
+      windows: windowsSettings
     );
 
     /* initialize the plugin with tap callback */
