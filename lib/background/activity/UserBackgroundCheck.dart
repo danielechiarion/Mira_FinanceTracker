@@ -55,18 +55,34 @@ class UserBackgroundCheck {
     if something has to be done */
     List<BankAccount> accounts = await _database.getCompleteBankAccounts();
     List<NotificationData> notificationRequests = [];
+    List<BankTransaction> previousTransactions = []; // list to be used on a credit card transaction to distinguish them from new ones
     for(BankAccount singleBankAccount in accounts) {
       /* first check if it's a credit card. 
       in this case get the latest transactions to make
       it sure the control can be made to use the credit */
       if(singleBankAccount is Card && singleBankAccount.cardType == CardType.credit){
-        singleBankAccount.transactions = await _database.getCreditCardTransactions(singleBankAccount);
+        previousTransactions = await _database.getCreditCardTransactions(singleBankAccount);
+        singleBankAccount.transactions = List.from(previousTransactions);
       }
 
       singleBankAccount.check(notificationRequests: notificationRequests);
+
+      /* add an important control for credit cards. 
+      Before saving new transactions, there are still old ones that could
+      be accounted today. 
+      So update before the already existing transactions, 
+      then remove them so as to keep only the new transactions to be saved. */
+      if(singleBankAccount is Card && singleBankAccount.cardType == CardType.credit){
+        for(BankTransaction singleTransaction in previousTransactions){
+          await _database.updateTransaction(singleTransaction); // update the existing transaction
+          singleBankAccount.removeTransaction(singleTransaction); // then remove it from the list
+        }
+      }
+
       /* if notification is enabled
       send notification for each movement */
       if(notificationEnabled) await _sendNotifications(singleBankAccount);
+
       /* then save the changes inside the database
       to keep it permanent */
       await _saveChanges(singleBankAccount);
