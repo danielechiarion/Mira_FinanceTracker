@@ -80,6 +80,7 @@ class BackgroundManager {
       "com.example.mira.backgroundControl",
       frequency: const Duration(hours: 24),
       constraints: Constraints(networkType: NetworkType.connected),
+      initialDelay: Duration(minutes: 15)
     );
   }
 
