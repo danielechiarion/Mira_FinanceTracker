@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
@@ -10,6 +11,7 @@ mobile background workmanager */
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    debugger();
     if (taskName == "com.example.mira.backgroundControl") {
       WidgetsFlutterBinding.ensureInitialized();
       final service = BackgroundControl();
@@ -78,7 +80,7 @@ class BackgroundManager {
     await Workmanager().registerPeriodicTask(
       "background-control",
       "com.example.mira.backgroundControl",
-      frequency: const Duration(hours: 24),
+      frequency: const Duration(minutes: 15), // default: 24 hours
       constraints: Constraints(networkType: NetworkType.connected),
       initialDelay: Duration(minutes: 15)
     );

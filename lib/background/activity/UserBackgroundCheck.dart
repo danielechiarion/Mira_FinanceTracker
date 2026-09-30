@@ -8,6 +8,8 @@ import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.
 import 'package:mira_finance_tracker/backend/service/notification/NotificationManager.dart';
 import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
 
+import 'package:flutter/foundation.dart';
+
 /// Function to check the state 
 /// of each account and resource connected to 
 /// the user on the application.
@@ -42,6 +44,8 @@ class UserBackgroundCheck {
     for the user to do the background check */
     bool backgroundEnabled = _preference.getPreference('enableBackground').currentValue;
     bool notificationEnabled = _preference.getPreference('enableNotifications').currentValue;
+
+    debugPrint('🔵 [UBC] user=${_user.name}, bg=$backgroundEnabled, notif=$notificationEnabled');
 
     /* if the background check is 
     not enabled, just end the execution of the class */

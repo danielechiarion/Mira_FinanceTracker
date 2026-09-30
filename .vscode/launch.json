@@ -19,6 +19,30 @@
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "debug"
+    },
+    {
+      "name": "Debug Android (device)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "adb-R5CY83G21SE-T44Ajg._adb-tls-connect._tcp",
+      "toolArgs": [
+        "--start-paused"
+      ]
+    },
+    {
+      "name": "Debug Android (background check)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "adb-R5CY83G21SE-T44Ajg._adb-tls-connect._tcp",
+      "toolArgs": [
+        "--start-paused",
+        "--dart-entrypoint-args",
+        "--background-check"
+      ]
     }
   ]
 }
