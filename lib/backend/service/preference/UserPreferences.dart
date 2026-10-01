@@ -55,11 +55,19 @@ class UserPreferences{
 
     List<SinglePreference> result = await database.readUserPreferences(close: true);
 
+    /* if shared preferences has not been saved before inside database,
+    when constructor thought about it, generate it by default */
+    if(result.isEmpty){
+      await _giveDefaultValues();
+      return;
+    }
+
     /* add them into the object with the 
     method created */
     for(SinglePreference preference in result){
       await addPreference(preference);
     }
+    return;
   }
 
   /* method to understand if the keys
