@@ -8,10 +8,7 @@ import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
-/// Management page for the contacts used in operations (bank transfers,
-/// domiciliations, etc.): search, add, edit and delete existing entries.
 class CounterpartyManagementPage extends StatelessWidget {
-  /* define attributes */
   final UserDatabaseWrapper database;
 
   const CounterpartyManagementPage({super.key, required this.database});
@@ -25,49 +22,10 @@ class CounterpartyManagementPage extends StatelessWidget {
   }
 
   Widget _buildForm(BuildContext context, {CounterParty? existing}) {
-    final nameController = TextEditingController(text: existing?.name ?? '');
-    final ibanController = TextEditingController(text: existing?.IBAN ?? '');
-    final formKey = GlobalKey<FormState>();
-    bool nameAvailable = existing != null;
-
-    return ActionOperationPage(
-      title: existing == null ? 'Nuovo contatto' : 'Modifica contatto',
-      formKey: formKey,
-      inputBuilder: (context) => Form(
-        key: formKey,
-        child: Column(
-          children: [
-            UniqueNameField(
-              controller: nameController,
-              label: 'Nome',
-              initialName: existing?.name,
-              checkAvailability: _isNameAvailable,
-              onAvailabilityChanged: (available) => nameAvailable = available,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: ibanController,
-              decoration: const InputDecoration(labelText: 'IBAN'),
-            ),
-          ],
-        ),
-      ),
-      onConfirm: (context) async {
-        if (!nameAvailable) return;
-
-        if (existing == null) {
-          final newContact = CounterParty(nameController.text.trim(), IBAN: ibanController.text.trim());
-          await database.saveCounterparty(newContact);
-        } else {
-          existing.name = nameController.text.trim();
-          existing.IBAN = ibanController.text.trim();
-          await database.updateConterparty(existing);
-        }
-
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-      },
+    return _CounterpartyForm(
+      database: database,
+      existing: existing,
+      isNameAvailable: _isNameAvailable,
     );
   }
 
@@ -80,19 +38,105 @@ class CounterpartyManagementPage extends StatelessWidget {
       icon: Icons.person_outline,
       color: Colors.teal,
       loadItems: _loadContacts,
-      matchesQuery: (item, query) => item.name.toLowerCase().contains(query.toLowerCase()) ||
+      matchesQuery: (item, query) =>
+          item.name.toLowerCase().contains(query.toLowerCase()) ||
           item.IBAN.toLowerCase().contains(query.toLowerCase()),
       titleOf: (item) => item.name,
       subtitleOf: (item) => item.IBAN,
       buildAddPage: (context) => _buildForm(context),
       buildEditPage: (context, item) => _buildForm(context, existing: item),
       deleteItem: (item) async {
-        if(!(await database.checkCounterPartyDeletion(item))){
-          AppToast.show(context, "Eliminazione non riuscita. Elemento collegato ad altre entità", ToastType.warning);
+        if (!(await database.checkCounterPartyDeletion(item))) {
+          AppToast.show(context,
+              "Eliminazione non riuscita. Elemento collegato ad altre entità",
+              ToastType.warning);
           return;
         }
-
         await database.deleteCounterparty(item);
+      },
+    );
+  }
+}
+
+class _CounterpartyForm extends StatefulWidget {
+  final UserDatabaseWrapper database;
+  final CounterParty? existing;
+  final Future<bool> Function(String) isNameAvailable;
+
+  const _CounterpartyForm({
+    required this.database,
+    required this.isNameAvailable,
+    this.existing,
+  });
+
+  @override
+  State<_CounterpartyForm> createState() => _CounterpartyFormState();
+}
+
+class _CounterpartyFormState extends State<_CounterpartyForm> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _ibanController;
+  late bool _nameAvailable;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.existing?.name ?? '');
+    _ibanController = TextEditingController(text: widget.existing?.IBAN ?? '');
+    _nameAvailable = widget.existing != null;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ibanController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionOperationPage(
+      title: widget.existing == null ? 'Nuovo contatto' : 'Modifica contatto',
+      formKey: _formKey,
+      inputBuilder: (context) => Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            UniqueNameField(
+              controller: _nameController,
+              label: 'Nome',
+              initialName: widget.existing?.name,
+              checkAvailability: widget.isNameAvailable,
+              onAvailabilityChanged: (available) => _nameAvailable = available,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _ibanController,
+              decoration: const InputDecoration(labelText: 'IBAN'),
+            ),
+          ],
+        ),
+      ),
+      onConfirm: (context) async {
+        if (!_nameAvailable) return;
+
+        CounterParty? newContact;
+        if (widget.existing == null) {
+          newContact = CounterParty(
+            _nameController.text.trim(),
+            IBAN: _ibanController.text.trim(),
+          );
+          await widget.database.saveCounterparty(newContact);
+        } else {
+          widget.existing!.name = _nameController.text.trim();
+          widget.existing!.IBAN = _ibanController.text.trim();
+          await widget.database.updateConterparty(widget.existing!);
+        }
+
+        if (context.mounted) {
+          Navigator.pop(context, newContact);
+        }
       },
     );
   }

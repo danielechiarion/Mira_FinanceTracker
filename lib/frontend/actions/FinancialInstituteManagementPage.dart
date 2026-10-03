@@ -8,15 +8,7 @@ import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
-/// Management page for financial institutes: search, add, edit and
-/// delete existing entries.
-///
-/// NOTE: [FinancialInstitute] has no setter for [name] (it is treated as
-/// the immutable identity of the object). Because of this, the
-/// edit form only allows address and phone number to be changed, and
-/// the website can only be set when creating a new institute.
 class FinancialInstituteManagementPage extends StatelessWidget {
-  /* define attributes */
   final UserDatabaseWrapper database;
 
   const FinancialInstituteManagementPage({super.key, required this.database});
@@ -30,71 +22,10 @@ class FinancialInstituteManagementPage extends StatelessWidget {
   }
 
   Widget _buildForm(BuildContext context, {FinancialInstitute? existing}) {
-    final nameController = TextEditingController(text: existing?.name ?? '');
-    final emailController = TextEditingController(text: existing?.email ?? '');
-    final phoneController = TextEditingController(text: existing?.phoneNumber ?? '');
-    final siteController = TextEditingController(text: existing?.site ?? '');
-    final formKey = GlobalKey<FormState>();
-    bool nameAvailable = existing != null;
-
-    return ActionOperationPage(
-      title: existing == null ? 'Nuovo istituto finanziario' : 'Modifica istituto finanziario',
-      formKey: formKey,
-      inputBuilder: (context) => Form(
-        key: formKey,
-        child: Column(
-          children: [
-            existing == null
-                ? UniqueNameField(
-                    controller: nameController,
-                    label: 'Nome',
-                    checkAvailability: _isNameAvailable,
-                    onAvailabilityChanged: (available) => nameAvailable = available,
-                  )
-                : TextFormField(
-                    controller: nameController,
-                    enabled: false,
-                    decoration: const InputDecoration(labelText: 'Nome (non modificabile)'),
-                  ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Telefono'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: siteController,
-              decoration: const InputDecoration(labelText: 'Indirizzo'),
-            ),
-          ],
-        ),
-      ),
-      onConfirm: (context) async {
-        if (existing == null) {
-          if (!nameAvailable) return;
-          final newInstitute = FinancialInstitute(
-            nameController.text.trim(),
-            email: emailController.text.trim(),
-            phoneNumber: phoneController.text.trim(),
-            site: siteController.text.trim(),
-          );
-          await database.saveFinancialInstitute(newInstitute);
-        } else {
-          existing.email = emailController.text.trim();
-          existing.phoneNumber = phoneController.text.trim();
-          existing.site = siteController.text.trim();
-          await database.updateFinancialInstitute(existing);
-        }
-
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-      },
+    return _FinancialInstituteForm(
+      database: database,
+      existing: existing,
+      isNameAvailable: _isNameAvailable,
     );
   }
 
@@ -107,18 +38,137 @@ class FinancialInstituteManagementPage extends StatelessWidget {
       icon: Icons.account_balance_outlined,
       color: Colors.indigo,
       loadItems: _loadInstitutes,
-      matchesQuery: (item, query) => item.name.toLowerCase().contains(query.toLowerCase()),
+      matchesQuery: (item, query) =>
+          item.name.toLowerCase().contains(query.toLowerCase()),
       titleOf: (item) => item.name,
-      subtitleOf: (item) => item.phoneNumber.isNotEmpty ? item.phoneNumber : item.email,
+      subtitleOf: (item) =>
+          item.phoneNumber.isNotEmpty ? item.phoneNumber : item.email,
       buildAddPage: (context) => _buildForm(context),
       buildEditPage: (context, item) => _buildForm(context, existing: item),
       deleteItem: (item) async {
-        if(!(await database.checkFinancialInstituteDeletion(item))){
-          AppToast.show(context, "Eliminazione non riuscita. Elemento collegato ad altre entità", ToastType.warning);
+        if (!(await database.checkFinancialInstituteDeletion(item))) {
+          AppToast.show(context,
+              "Eliminazione non riuscita. Elemento collegato ad altre entità",
+              ToastType.warning);
           return;
         }
-
         await database.deleteFinancialInstitute(item);
+      },
+    );
+  }
+}
+
+class _FinancialInstituteForm extends StatefulWidget {
+  final UserDatabaseWrapper database;
+  final FinancialInstitute? existing;
+  final Future<bool> Function(String) isNameAvailable;
+
+  const _FinancialInstituteForm({
+    required this.database,
+    required this.isNameAvailable,
+    this.existing,
+  });
+
+  @override
+  State<_FinancialInstituteForm> createState() =>
+      _FinancialInstituteFormState();
+}
+
+class _FinancialInstituteFormState extends State<_FinancialInstituteForm> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _siteController;
+  late bool _nameAvailable;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController =
+        TextEditingController(text: widget.existing?.name ?? '');
+    _emailController =
+        TextEditingController(text: widget.existing?.email ?? '');
+    _phoneController =
+        TextEditingController(text: widget.existing?.phoneNumber ?? '');
+    _siteController =
+        TextEditingController(text: widget.existing?.site ?? '');
+    _nameAvailable = widget.existing != null;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _siteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionOperationPage(
+      title: widget.existing == null
+          ? 'Nuovo istituto finanziario'
+          : 'Modifica istituto finanziario',
+      formKey: _formKey,
+      inputBuilder: (context) => Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            widget.existing == null
+                ? UniqueNameField(
+                    controller: _nameController,
+                    label: 'Nome',
+                    checkAvailability: widget.isNameAvailable,
+                    onAvailabilityChanged: (available) =>
+                        _nameAvailable = available,
+                  )
+                : TextFormField(
+                    controller: _nameController,
+                    enabled: false,
+                    decoration: const InputDecoration(
+                        labelText: 'Nome (non modificabile)'),
+                  ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _phoneController,
+              decoration: const InputDecoration(labelText: 'Telefono'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _siteController,
+              decoration: const InputDecoration(labelText: 'Indirizzo'),
+            ),
+          ],
+        ),
+      ),
+      onConfirm: (context) async {
+        FinancialInstitute? newInstitute;
+        if (widget.existing == null) {
+          if (!_nameAvailable) return;
+          newInstitute = FinancialInstitute(
+            _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            phoneNumber: _phoneController.text.trim(),
+            site: _siteController.text.trim(),
+          );
+          await widget.database.saveFinancialInstitute(newInstitute);
+        } else {
+          widget.existing!.email = _emailController.text.trim();
+          widget.existing!.phoneNumber = _phoneController.text.trim();
+          widget.existing!.site = _siteController.text.trim();
+          await widget.database.updateFinancialInstitute(widget.existing!);
+        }
+
+        if (context.mounted) {
+          Navigator.pop(context, newInstitute);
+        }
       },
     );
   }
