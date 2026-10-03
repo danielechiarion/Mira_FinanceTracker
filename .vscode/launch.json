@@ -43,6 +43,11 @@
         "--dart-entrypoint-args",
         "--background-check"
       ]
+    },
+    {
+      "name": "Flutter: Attach to device",
+      "type": "dart",
+      "request": "attach",
     }
   ]
 }

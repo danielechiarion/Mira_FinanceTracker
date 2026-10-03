@@ -18,7 +18,7 @@ class KeyManager{
   flutter secure storage environment and 
   cryptography settings */
   static final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(resetOnError: true),
+    aOptions: AndroidOptions(resetOnError: false),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
   static final AesGcm _aesAlgorithm = AesGcm.with256bits();
@@ -160,7 +160,7 @@ class KeyManager{
 
     /* try to recover the data with the given keys */
     final storageKey = isAuthenticated ? "$_USERKEYPREFIX$_username" : _APPLICATIONDATABASE;
-    final storedValue = await _secureStorage.read(key: storageKey);
+    String? storedValue = await _secureStorage.read(key: storageKey);
 
     /* if no stored value has been found, 
     generate a random key if it's for the application */
@@ -171,10 +171,15 @@ class KeyManager{
     /* for the user try to get the user key
     otherwise return if still not available */
     if (isAuthenticated) {
-      if (storedValue == null || storedValue.isEmpty) {
-        return;
+      try {
+        storedValue = await _secureStorage.read(key: storageKey);
+      } catch (e, st) {
+        print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
+        rethrow; // mai generare una chiave nuova dopo un errore di lettura
       }
-      final decodedData = jsonDecode(storedValue);
+      print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
+
+      final decodedData = jsonDecode(storedValue!);
       if (decodedData is! Map<String, dynamic>) {
         throw Exception("Stored key data is not valid");
       }
@@ -258,7 +263,7 @@ class KeyManager{
 
     /* encrypt the user key and return
     the data as a json format */
-    final encryptedUserKey = base64Encode(await _encryptDataWithPassword(userKey, lockerKey));
+    final encryptedUserKey = base64Encode(await _encryptDataWithPassword(base64Decode(userKey), lockerKey));
 
     return {
       'username': _username,
@@ -306,12 +311,12 @@ class KeyManager{
   /// Function to remove the secret key 
   /// and other public information
   /// of the selected user
-  void removeKey(){
+  Future<void> removeKey() async {
     if(!isAuthenticated){
       throw Exception("To remove the key of a user it must be authenticated");
     }
 
-    _secureStorage.delete(key: '$_USERKEYPREFIX$_username'); // delete the key
+    await _secureStorage.delete(key: '$_USERKEYPREFIX$_username'); // delete the key
   }
 
   /// Method to change the passkey given by the user
