@@ -83,7 +83,7 @@ class EncryptedDatabase {
         onCreate: onCreate,
       );
 
-      print("User Database path: $path");
+      // print("User Database path: $path");
       _connectionPath = path;
     } catch (e) {
       rethrow;

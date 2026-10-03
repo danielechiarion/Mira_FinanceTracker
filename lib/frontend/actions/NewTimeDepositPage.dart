@@ -191,7 +191,7 @@ class _NewTimeDepositPageState extends State<NewTimeDepositPage> {
       /* if the function name says return value, 
       it won't be necessary to add save the transaction of the financial instrument
       iniside the database */
-      if(widget.functionName != null && widget.functionName != "Object-return"){
+      if(widget.functionName == null || widget.functionName != "Object-return"){
         await widget.database.saveTransactions(account, account.addService(timeDeposit)); // add the transactions to the database
         await widget.database.updateBankAccountBalance(account);
       }

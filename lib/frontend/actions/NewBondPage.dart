@@ -221,7 +221,7 @@ class _NewBondPageState extends State<NewBondPage> {
       /* if the function name says return value, 
       it won't be necessary to add save the transaction of the financial instrument
       iniside the database */
-      if(widget.functionName != null && widget.functionName != "Object-return"){
+      if(widget.functionName == null || widget.functionName != "Object-return"){
         await widget.database.saveTransactions(account, account.addService(bond)); // add the transactions to the database
         await widget.database.updateBankAccountBalance(account);
       }
