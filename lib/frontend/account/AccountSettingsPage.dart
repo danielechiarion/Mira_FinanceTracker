@@ -53,8 +53,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   void dispose() {
     _nameController.dispose();
     _surnameController.dispose();
+    _profileOperations.disconnect();
     super.dispose();
-    _profileOperations.disconnect(); // disconnect profile operations resources
   }
 
   /// Validates and saves the changes made to name and surname.
@@ -82,90 +82,17 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   /// Opens a popup asking for the old password and the new one twice,
   /// making sure the two new-password inputs match before confirming.
   Future<void> _openChangePasswordDialog() async {
-    final passwordFormKey = GlobalKey<FormState>();
-    final oldPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
-    await showDialog(
+    final result = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Cambia password', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Form(
-            key: passwordFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // --- OLD PASSWORD FIELD ---
-                TextFormField(
-                  controller: oldPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password attuale',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.teal),
-                  ),
-                  validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
-                ),
-                const SizedBox(height: 16),
-
-                // --- NEW PASSWORD FIELDS (double input + match check) ---
-                TextFormField(
-                  controller: newPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Nuova password',
-                    prefixIcon: Icon(Icons.lock, color: Colors.teal),
-                  ),
-                  validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: confirmPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Conferma nuova password',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.teal),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
-                    if (value != newPasswordController.text) return 'Le password non corrispondono';
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('ANNULLA', style: TextStyle(color: Colors.teal)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
-              onPressed: () async {
-                if (!passwordFormKey.currentState!.validate()) return;
-
-                bool result = await _profileOperations.changeUserPassword(oldPasswordController.text.trim(), newPasswordController.text.trim());
-
-                Navigator.pop(dialogContext);
-                if (!mounted) return;
-                if(result == true){
-                  AppToast.show(context, "Password aggiornata con successo", ToastType.success);
-                }else{
-                  AppToast.show(context, "Errore impostazioni password: vecchia password non valida", ToastType.error);
-                }
-              },
-              child: const Text('CONFERMA'),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => _ChangePasswordDialog(profileOperations: _profileOperations),
     );
 
-    oldPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
+    if (!mounted) return;
+    if (result == true) {
+      AppToast.show(context, "Password aggiornata con successo", ToastType.success);
+    } else if (result == false) {
+      AppToast.show(context, "Errore impostazioni password: vecchia password non valida", ToastType.error);
+    }
   }
 
   /// Executes the logout operations and brings the user back to the login page.
@@ -327,6 +254,101 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         label,
         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
       ),
+    );
+  }
+}
+
+class _ChangePasswordDialog extends StatefulWidget {
+  final ProfileChanges profileOperations;
+
+  const _ChangePasswordDialog({required this.profileOperations});
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final _passwordFormKey = GlobalKey<FormState>();
+  final _oldPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_passwordFormKey.currentState!.validate()) return;
+
+    final result = await widget.profileOperations.changeUserPassword(
+      _oldPasswordController.text.trim(),
+      _newPasswordController.text.trim(),
+    );
+
+    if (!mounted) return;
+    Navigator.pop(context, result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Cambia password', style: TextStyle(fontWeight: FontWeight.bold)),
+      content: Form(
+        key: _passwordFormKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _oldPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Password attuale',
+                prefixIcon: Icon(Icons.lock_outline, color: Colors.teal),
+              ),
+              validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _newPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Nuova password',
+                prefixIcon: Icon(Icons.lock, color: Colors.teal),
+              ),
+              validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Conferma nuova password',
+                prefixIcon: Icon(Icons.lock_outline, color: Colors.teal),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+                if (value != _newPasswordController.text) return 'Le password non corrispondono';
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('ANNULLA', style: TextStyle(color: Colors.teal)),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+          onPressed: _submit,
+          child: const Text('CONFERMA'),
+        ),
+      ],
     );
   }
 }
