@@ -174,10 +174,10 @@ class KeyManager{
       try {
         storedValue = await _secureStorage.read(key: storageKey);
       } catch (e, st) {
-        print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
+        // print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
         rethrow; // mai generare una chiave nuova dopo un errore di lettura
       }
-      print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
+      // print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
 
       final decodedData = jsonDecode(storedValue!);
       if (decodedData is! Map<String, dynamic>) {
