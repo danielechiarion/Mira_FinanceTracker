@@ -1,6 +1,4 @@
 import 'package:meta/meta.dart';
-import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
-import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperationOutput.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:intl/intl.dart';
 
@@ -28,6 +26,7 @@ import 'package:mira_finance_tracker/classes/financial_instruments/elements/Step
 import 'package:mira_finance_tracker/classes/financial_instruments/service/TimeDeposit.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/Bond.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/Stock.dart';
+import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
 
 import 'package:mira_finance_tracker/backend/service/preference/SinglePreference.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart';

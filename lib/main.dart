@@ -29,7 +29,7 @@ void main(List<String> args) async {
   /* --- CATCH BACKGROUND TASK ---
   when it's called from the backend */
   if(args.contains("--background-check")){
-    debugger();
+    // debugger();
     /* call the service to execute
     in background */
     print("=== Avvio controllo automatico Desktop (App Chiusa) ===");

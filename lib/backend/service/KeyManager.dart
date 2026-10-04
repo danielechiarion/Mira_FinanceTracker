@@ -154,13 +154,17 @@ class KeyManager{
   /// Function to recover a key from the secure storage
   /// and convert it in the right way to be used
   Future<void> recoverKey() async{
-    if (_activeKey != null) {
-      return;
-    }
-
-    /* try to recover the data with the given keys */
+    if (_activeKey != null) return;
     final storageKey = isAuthenticated ? "$_USERKEYPREFIX$_username" : _APPLICATIONDATABASE;
-    String? storedValue = await _secureStorage.read(key: storageKey);
+
+    String? storedValue;
+    try {
+      storedValue = await _secureStorage.read(key: storageKey);
+    } catch (e, st) {
+      print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
+      rethrow;
+    }
+    print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
 
     /* if no stored value has been found, 
     generate a random key if it's for the application */
