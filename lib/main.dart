@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:developer';
+// import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -32,11 +32,11 @@ void main(List<String> args) async {
     // debugger();
     /* call the service to execute
     in background */
-    print("=== Avvio controllo automatico Desktop (App Chiusa) ===");
+    // print("=== Avvio controllo automatico Desktop (App Chiusa) ===");
     final service = BackgroundControl();
     await service.init();
     await service.execute();
-    print("=== Controllo completato ===");
+    // print("=== Controllo completato ===");
 
     exit(0); // exit the proces
   }
@@ -51,7 +51,7 @@ void main(List<String> args) async {
   /* enable background manager daily task
   throughout all platforms */
   await BackgroundManager.instance.enableDailyBackgroundCheck();
-  await BackgroundManager.instance.testOneOff(); 
+  // await BackgroundManager.instance.testOneOff(); 
 
   runApp(MainApp(isLogged: userLogged));
 }

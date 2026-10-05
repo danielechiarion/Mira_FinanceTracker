@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:developer';
+//import 'dart:developer';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
@@ -11,23 +11,23 @@ mobile background workmanager */
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
-    print("[BG] Start task = $taskName");
+    // print("[BG] Start task = $taskName");
     try{
       // debugger();
       if (taskName == "com.example.mira.backgroundControl") {
         WidgetsFlutterBinding.ensureInitialized();
         final service = BackgroundControl();
-        print("[BG] init...");
+        // print("[BG] init...");
         await service.init();
-        print("[BG] init OK, execute...");
+        // print("[BG] init OK, execute...");
         await service.execute();
-        print("[BG] execute OK");
+        // print("[BG] execute OK");
       }
-      print("[BG] END ok");
+      // print("[BG] END ok");
       return Future.value(true);
-    }catch(e, st){
-      print("[BG] ERROR: $e");
-      print("[BG] STACKTRACE: $st");
+    }catch(e){
+      // print("[BG] ERROR: $e");
+      // print("[BG] STACKTRACE: $st");
       return Future.value(false);
     }
   });
@@ -132,7 +132,7 @@ class BackgroundManager {
 
   /* debug function to test one off operations
   inside the device */
-  Future<void> testOneOff() async {
+  /* Future<void> testOneOff() async {
     await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
     await Workmanager().registerOneOffTask(
       "test-bg-2",                          // cambialo a ogni prova: test-bg-2, ...
@@ -141,5 +141,5 @@ class BackgroundManager {
       constraints: Constraints(networkType: NetworkType.connected),
     );
     print('[BG] one-off registrato');
-  }
+  } */
 }

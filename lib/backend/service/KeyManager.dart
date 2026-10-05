@@ -160,11 +160,11 @@ class KeyManager{
     String? storedValue;
     try {
       storedValue = await _secureStorage.read(key: storageKey);
-    } catch (e, st) {
-      print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
+    } catch (e) {
+      // print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
       rethrow;
     }
-    print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
+    // print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
 
     /* if no stored value has been found, 
     generate a random key if it's for the application */
@@ -177,7 +177,7 @@ class KeyManager{
     if (isAuthenticated) {
       try {
         storedValue = await _secureStorage.read(key: storageKey);
-      } catch (e, st) {
+      } catch (e) {
         // print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
         rethrow; // mai generare una chiave nuova dopo un errore di lettura
       }
