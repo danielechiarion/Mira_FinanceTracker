@@ -51,6 +51,7 @@ void main(List<String> args) async {
   /* enable background manager daily task
   throughout all platforms */
   await BackgroundManager.instance.enableDailyBackgroundCheck();
+  await BackgroundManager.instance.testOneOff(); 
 
   runApp(MainApp(isLogged: userLogged));
 }

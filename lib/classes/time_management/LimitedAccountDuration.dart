@@ -34,8 +34,8 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
     if(endingDate == null){
       _endingDate = DateTime(
         super.startingDate.year + duration!.years,
-        super.startingDate.month + duration!.months,
-        super.startingDate.day + duration!.days
+        super.startingDate.month + duration.months,
+        super.startingDate.day + duration.days
       );
     }else{
       _endingDate = endingDate;
@@ -91,6 +91,18 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
     return false;
   }
 
+  /// Function to return the next signal date, 
+  /// considering the maturity case and the fact that the 
+  /// period of the instance is limited and not periodic
+  @override
+  DateTime returnNextSignalDate() {
+    /* if we are at a maturity frequency,
+    return directly the ending date */
+    if(super.timeFrequency == DurationType.atMaturity) return _endingDate;
+
+    return super.returnNextSignalDate();
+  }
+
   /// Acknowledge signal date 
   /// updating the last activity date 
   /// with the expected signal date
@@ -99,7 +111,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
     if(super.lastDateActivity != null && super.lastDateActivity!.isAtSameMomentAs(_endingDate)){
       return;
     }
-    else if(_includeEnd && super.returnNextSignalDate().isAfter(_endingDate)){
+    else if(_includeEnd && !returnNextSignalDate().isBefore(_endingDate)){
       super.lastDateActivity = _endingDate;
     }else{
       super.acknowledgeSignal();
@@ -127,7 +139,7 @@ class LimitedAccountDuration extends PeriodicAccountDuration{
       map['dayOfMonth'],
       endingDate: DateTime.parse(map['endingDate']),
       monthOfYear: map['monthOfYear'],
-      lastDateActivity: map['lastDateActivity'],
+      lastDateActivity: map['lastDateActivity'] == null ? null : DateTime.parse(map['lastDateActivity']),
       includeEnd: map['includeEnd'] == 1,
       includeStart: map['includeStart'] == 1
     );

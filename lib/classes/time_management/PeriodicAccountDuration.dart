@@ -126,7 +126,7 @@ class PeriodicAccountDuration {
         lastDate.month + _timeFrequency.duration!.months,
         1, // set first day to avoid overflow, set it later
       );
-    } else {
+    } else if(_timeFrequency != DurationType.atMaturity){
       base = DateTime(
         lastDate.year + _timeFrequency.duration!.years,
         lastDate.month + _timeFrequency.duration!.months,
@@ -137,6 +137,13 @@ class PeriodicAccountDuration {
       } else {
         base = DateTime(base.year, _monthOfYear!, 1);
       }
+    }else{
+      /* if a periodic account duration 
+      has the maturity frequency don't throw errors.
+      Just put every time current date with a year after,
+      in order to postpone controls infinite times */
+      DateTime currentDate = DateTime.now();
+      base = DateTime(currentDate.year+1, currentDate.month, currentDate.day);
     }
 
     /* set day of month, managing short months */

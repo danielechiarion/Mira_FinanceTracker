@@ -11,14 +11,25 @@ mobile background workmanager */
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
-    // debugger();
-    if (taskName == "com.example.mira.backgroundControl") {
-      WidgetsFlutterBinding.ensureInitialized();
-      final service = BackgroundControl();
-      await service.init();
-      await service.execute();
+    print("[BG] Start task = $taskName");
+    try{
+      // debugger();
+      if (taskName == "com.example.mira.backgroundControl") {
+        WidgetsFlutterBinding.ensureInitialized();
+        final service = BackgroundControl();
+        print("[BG] init...");
+        await service.init();
+        print("[BG] init OK, execute...");
+        await service.execute();
+        print("[BG] execute OK");
+      }
+      print("[BG] END ok");
+      return Future.value(true);
+    }catch(e, st){
+      print("[BG] ERROR: $e");
+      print("[BG] STACKTRACE: $st");
+      return Future.value(false);
     }
-    return Future.value(true);
   });
 }
 
@@ -82,7 +93,7 @@ class BackgroundManager {
       "com.example.mira.backgroundControl",
       frequency: const Duration(hours: 24), // default: 24 hours
       constraints: Constraints(networkType: NetworkType.connected),
-      initialDelay: Duration(minutes: 5)
+      initialDelay: Duration(minutes: 15)
     );
   }
 
@@ -117,5 +128,18 @@ class BackgroundManager {
       updateProcess.stdin.write(newCron);
       await updateProcess.stdin.close();
     }
+  }
+
+  /* debug function to test one off operations
+  inside the device */
+  Future<void> testOneOff() async {
+    await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
+    await Workmanager().registerOneOffTask(
+      "test-bg-2",                          // cambialo a ogni prova: test-bg-2, ...
+      "com.example.mira.backgroundControl", // stesso nome del task vero
+      initialDelay: const Duration(minutes: 1),
+      constraints: Constraints(networkType: NetworkType.connected),
+    );
+    print('[BG] one-off registrato');
   }
 }
