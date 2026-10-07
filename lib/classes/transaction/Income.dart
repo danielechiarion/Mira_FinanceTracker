@@ -154,7 +154,7 @@ class Income extends BankTransaction{
       title = "Altro accredito";
     }
 
-    title += ": ${super.amount}€"; // then add the amount received
+    title += ": ${super.amount.toStringAsFixed(2)}€"; // then add the amount received
 
     return NotificationData(
       title,

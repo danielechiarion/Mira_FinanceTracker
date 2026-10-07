@@ -157,7 +157,7 @@ class Outcome extends BankTransaction{
       title = "Altro addebito";
     }
 
-    title += ": ${super.amount}€"; // then add the amount paid
+    title += ": ${super.amount.toStringAsFixed(2)}€"; // then add the amount paid
 
     return NotificationData(
       title,
