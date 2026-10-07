@@ -30,6 +30,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
     }
 
     this._accountingDate = accountingDate ?? _executionDate;
+    this._amount = double.parse(_amount.toStringAsFixed(2)); // round the amount to 2 decimal places
   }
 
   /* *** GETTER METHODS *** */

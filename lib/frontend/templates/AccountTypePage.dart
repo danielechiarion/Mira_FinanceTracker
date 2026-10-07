@@ -256,13 +256,13 @@ class _AccountTypePageState<T extends BankAccount> extends State<AccountTypePage
     // Note: Adjust the fields logic as necessary depending on your BankAccount class setters
     final ibanController = TextEditingController(text: account.IBAN ?? '');
     final interestController = TextEditingController(text: (account.interest * 100).toStringAsFixed(2));
-    final balanceController = TextEditingController(text: widget.primaryBalanceOf(account).toString());
+    final balanceController = TextEditingController(text: widget.primaryBalanceOf(account).toStringAsFixed(2));
     final double? initialSecondaryBalance = account is SavingsAccount 
         ? (account as SavingsAccount).ledgerBalance
         : widget.secondaryBalanceOf?.call(account);
 
     final ledgerController = TextEditingController(
-      text: initialSecondaryBalance?.toString() ?? '',
+      text: initialSecondaryBalance?.toStringAsFixed(2) ?? '',
     );
 
     await showDialog(
