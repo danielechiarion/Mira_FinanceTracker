@@ -91,7 +91,7 @@ class _TransactionOperationOutputEditableState
       'Esecuzione: '
       '${DateFormat('dd/MM/yyyy').format(transaction.executionDate)} • '
       'Contabile: '
-      '${DateFormat('dd/MM/yyyy').format(transaction.accountingDate)}',
+      '${transaction.accountingDate != null ? DateFormat('dd/MM/yyyy').format(transaction.accountingDate!) : '-'}',
     );
 
     final editButton = IconButton(
@@ -284,7 +284,7 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
   late TextEditingController _amountController;
   late TextEditingController _counterPartyController;
   late DateTime _executionDate;
-  late DateTime _accountingDate;
+  late DateTime? _accountingDate;
   late String _selectedCategory;
 
   @override
@@ -490,7 +490,7 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
                   Expanded(
                     child: Text(
                       'Contabile: '
-                      '${DateFormat('dd/MM/yyyy').format(_accountingDate)}',
+                      '${_accountingDate != null ? DateFormat('dd/MM/yyyy').format(_accountingDate!) : '-'}',
                     ),
                   ),
                   TextButton(

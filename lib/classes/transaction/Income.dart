@@ -98,7 +98,7 @@ class Income extends BankTransaction{
       'amount': super.amount,
       'executionDate': super.executionDate.toIso8601String(),
       'counterParty': super.counterParty?.identifier,
-      'accountingDate': super.accountingDate.toIso8601String(),
+      'accountingDate': super.accountingDate?.toIso8601String(),
     };
   }
 
@@ -115,7 +115,7 @@ class Income extends BankTransaction{
       DateTime.parse(map['executionDate']),
       id: map['id'],
       counterParty: counterParty,
-      accountingDate: DateTime.parse(map['accountingDate'])
+      accountingDate: map['accountingDate'] != null ? DateTime.parse(map['accountingDate']) : null
     );
   }
 

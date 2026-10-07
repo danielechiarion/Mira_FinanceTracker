@@ -115,8 +115,8 @@ class MovementFormPage extends StatelessWidget {
 
       /* then save the movement inside the 
       account and update the available balance */
-      await database.saveTransactions(account, [movement]);
       account.addTransaction(movement);
+      await database.saveTransactions(account, [movement]);
       await database.updateBankAccountBalance(account);
     }catch(e){
       AppToast.show(context, "Errore durante l'inserimento del movimento: $e", ToastType.error);

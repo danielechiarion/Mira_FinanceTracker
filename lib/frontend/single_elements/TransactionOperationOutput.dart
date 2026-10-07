@@ -13,7 +13,7 @@ class TransactionOperationOutput {
   final bool isIncome;
   final String category;
   final DateTime executionDate;
-  final DateTime accountingDate;
+  final DateTime? accountingDate;
 
   const TransactionOperationOutput({
     required this.reference,
@@ -47,7 +47,7 @@ class TransactionOperationOutput {
         '$accountName • $category\n'
         'Controparte: ${counterParty ?? '-'}\n'
         'Esecuzione: ${DateFormat('dd/MM/yyyy').format(executionDate)} • '
-        'Contabile: ${DateFormat('dd/MM/yyyy').format(accountingDate)}',
+        'Contabile: ${accountingDate != null ? DateFormat('dd/MM/yyyy').format(accountingDate!) : '-'}',
       ),
       isThreeLine: true,
       trailing: Text(

@@ -10,7 +10,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   CounterParty? _counterParty;
   double _amount;
   DateTime _executionDate;
-  late DateTime _accountingDate;
+  late DateTime? _accountingDate;
 
   /// Constructor method of the bank transaction class
   /// * [reference] the reference of the transaction
@@ -30,7 +30,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
     }
 
     this._accountingDate = accountingDate ?? _executionDate;
-    this._amount = double.parse(_amount.toStringAsFixed(2)); // round the amount to 2 decimal places
+    this._amount = double.parse(_amount.toStringAsFixed(2)); // round the amount to 2 decimal
   }
 
   /* *** GETTER METHODS *** */
@@ -39,7 +39,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   CounterParty? get counterParty => _counterParty?.clone();
   double get amount => _amount;
   DateTime get executionDate => _executionDate;
-  DateTime get accountingDate => _accountingDate;
+  DateTime? get accountingDate => _accountingDate;
 
   /* *** SETTER METHODS *** */
   set reference (String reference) => _reference = reference;
@@ -48,15 +48,15 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
   set executionDate (DateTime executionDate){
     /* control if the execution date remains before 
     the accounting date, otherwise it's not possible to proceed */
-    if(executionDate.isAfter(_accountingDate)){
+    if(_accountingDate != null && executionDate.isAfter(_accountingDate!)){
       throw Exception("The execution date can't be after the accounting date");
     }
     _executionDate = executionDate;
   }
-  set accountingDate (DateTime accountingDate){
+  set accountingDate (DateTime? accountingDate){
     /* control if the accounting date remains after 
     the execution date, otherwise it's not possible to proceed */
-    if(accountingDate.isBefore(_executionDate)){
+    if(accountingDate != null && accountingDate.isBefore(_executionDate)){
       throw Exception("The accounting date can't be before the execution date");
     }
     _accountingDate = accountingDate;
@@ -90,7 +90,7 @@ abstract class BankTransaction implements Comparable<BankTransaction>{
     /* if the result is equal, compare the accountig dates,
     also with descending order */
     if (firstComparison == 0) {
-      return other._accountingDate.compareTo(_accountingDate);
+      return other._accountingDate?.compareTo(_accountingDate!) ?? 0;
     }
     return firstComparison;
   }

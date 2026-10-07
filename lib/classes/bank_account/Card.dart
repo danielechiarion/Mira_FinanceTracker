@@ -70,13 +70,15 @@ class Card extends BankAccount{
     if(_cardType != CardType.credit){
       throw Exception("Cannot set the credit time if the card is not of type credit");
     }
+
+    _creditTime = creditTime;
   }
 
   /* function to understand if the transaction 
   can receive the credit from the card */
   bool _hasCredit(BankTransaction transaction){
     return transaction is Outcome && _cardType == CardType.credit && 
-            transaction.category == OutcomeCategory.general_outcome &&
+            (transaction.category == OutcomeCategory.general_outcome || transaction.category == OutcomeCategory.other) &&
             (_creditTime!.lastDateActivity == null || transaction.executionDate.isAfter(_creditTime!.lastDateActivity!));
   }
 
@@ -91,7 +93,7 @@ class Card extends BankAccount{
     one and the payment is after the last 
     activity date */
     if(_hasCredit(transaction)){
-      transaction.accountingDate = _creditTime!.returnNextSignalDate();
+      transaction.accountingDate = null; // set the accounting date to null to indicate the payment is postponed
       /* add the sum that will be subtracted
       after for the credit given by the credit card */
       super.availableBalance += transaction.amount;
@@ -132,7 +134,7 @@ class Card extends BankAccount{
       super.availableBalance -= existingTransaction.amount;
     }
     if(_hasCredit(transaction)){
-      super.availableBalance += existingTransaction.amount;
+      super.availableBalance += transaction.amount;
     }
   }
 
@@ -168,13 +170,14 @@ class Card extends BankAccount{
       already sorted if the transaction is in time window.
       Otherwise, using a descending date order, this would mean 
       there is no need to check the following transactions */
-      if(!transaction.accountingDate.isAfter(nextSignalDate)){
+      if(transaction.accountingDate != null){
         break;
       }
       
       /* first check if we have credit */
       if(_hasCredit(transaction)){
         super.availableBalance -= transaction.amount;
+        transaction.accountingDate = nextSignalDate; // set the accounting date to the date of credit
       }
     }
 
@@ -186,7 +189,7 @@ class Card extends BankAccount{
   Card clone(){
     return Card(super.name, super.bank, super.subscriptionDate, _cardType, id: super.id, availableBalance: super.availableBalance,
                       IBAN: super.IBAN, interest: super.interest, active: super.isActive, endingDate: super.endingDate,
-                      interestTime: super.interestTime.clone(), fees: super.fees, cashbacks: super.cashbacks, transactions: super.transactions,
+                      interestTime: super.interestTime, fees: super.fees, cashbacks: super.cashbacks, transactions: super.transactions,
                       dayOfMonthCredit: _creditTime?.dayOfMonth, lastDateActivityCredit: _creditTime?.lastDateActivity);
   }
 
@@ -229,10 +232,10 @@ class Card extends BankAccount{
       fees: fees,
       cashbacks: cashbacks,
       transactions: transactions,
-      dayOfMonthCredit: cardMap['dayOfMonthCredit'],
+      dayOfMonthCredit: cardMap.remove('dayOfMonthCredit'),
       lastDateActivityCredit: cardMap['lastDateActivityCredit'] == null
           ? null
-          : DateTime.parse(cardMap['lastDateActivityCredit'])
+          : DateTime.parse(cardMap.remove('lastDateActivityCredit'))
     );
   }
 }
