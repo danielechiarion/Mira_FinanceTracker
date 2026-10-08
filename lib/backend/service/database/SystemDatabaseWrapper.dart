@@ -6,6 +6,7 @@ import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
+import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.dart';
 
 /// Class which wrapps the secure database class 
 /// in order to manage the most common system functionalities,
@@ -56,6 +57,20 @@ class SystemDatabaseWrapper{
         email TEXT
       )
     ''');
+
+    /* after google account integration, add one more table
+    to save the account tokens */
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS GoogleAuthSession(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE,
+        display_name TEXT,
+        access_token TEXT,
+        refresh_token TEXT,
+        server_auth_code TEXT,
+        updated_at DATETIME
+      )
+    '''); 
   }
 
   /// Function to check if the user who tries
@@ -192,9 +207,66 @@ class SystemDatabaseWrapper{
       throw Exception(e);
     }finally{
       if(close){
-        database.close();
+        await database.close();
       }
     }
+  }
+
+  /// Function to add or replace a google [account] inside the database,
+  /// in order to save the tokens
+  /// * [close] flag to close the database
+  Future<void> addGoogleAccount(GoogleAccount account, {bool close = false}) async {
+    await database.executeWithMap(sql: '''INSERT OR REPLACE INTO GoogleAuthSession
+      (email, display_name, access_token, refresh_token, server_auth_code, updated_at) 
+      VALUES (:email, :display_name, :access_token, :refresh_token, :server_auth_code, :updated_at)''',
+      parameters: account.toMap());
+
+    if(close){
+      await database.close();
+    }
+  }
+
+  /// Function to get the google account by its [email]
+  /// * [close] flag to close the database
+  Future<GoogleAccount?> getGoogleAccountByEmail(String email, {bool close = false}) async {
+    final result = await database.query(sql: '''
+      SELECT id, name, email, display_name, access_token, refresh_token, server_auth_code, updated_at
+      FROM GoogleAuthSession WHERE email = ?''', arguments: [email]);
+
+    if(result.isEmpty){
+      return null;
+    }
+    final account = GoogleAccount.fromMap(result.first);
+    
+    if(close){
+      await database.close();
+    }
+
+    return account;
+  }
+
+  /// Function to remove a google account from the database
+  /// * [close] flag to close the database
+  Future<void> removeGoogleAccount(String email, {bool close = false}) async {
+    await database.execute(sql: 'DELETE FROM GoogleAuthSession WHERE email = ?', arguments: [email]);
+
+    if(close){
+      await database.close();
+    }
+  }
+
+  /// Function to get all google accounts from the database
+  /// * [close] flag to close the database
+  Future<List<GoogleAccount>> getAllGoogleAccounts({bool close = false}) async {
+    final result = await database.query(sql: '''SELECT 
+      id, name, email, display_name, access_token, refresh_token, server_auth_code, updated_at
+      FROM GoogleAuthSession ORDER BY updated_at DESC''');
+
+    if(close){
+      await database.close();
+    }
+
+    return result.map((map) => GoogleAccount.fromMap(map)).toList();
   }
 
   /// Method to check the user validity
