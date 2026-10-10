@@ -220,4 +220,18 @@ class GoogleAuthenticationManager{
       updatedAt: DateTime.now().toUtc(),
     );
   }
+
+  /// Public function to refresh the access token for the account 
+  /// with the given [email], letting the class extracting the 
+  /// corresponing record from the database and updating it
+  Future<String?> refreshAccessToken(String email) async {
+    final account = await _database.getGoogleAccountByEmail(email);
+    if (account == null) return null;
+
+    final refreshed = await _refreshAccessToken(account);
+    if (refreshed == null) return null;
+
+    await _database.addGoogleAccount(refreshed);
+    return refreshed.accessToken;
+  }
 }
