@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:meta/meta.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -158,6 +159,14 @@ class CurrentSession{
 
   /* *** GETTER METHODS *** */
   User get user => _user;
+  @protected
+  DateTime get accessTime => _accessTime;
+
+  /* *** SETTER METHODS *** */
+  @protected
+  set deviceModel(String? model) => _deviceModel = model;
+  set deviceName(String? deviceName) => _deviceName = deviceName;
+  set os(String os) => _os = os;
 
   /// Function to compare two sessions based on the 
   /// user logged and the device name

@@ -25,11 +25,16 @@ class DriveHttpHandler extends http.BaseClient {
   /// to the caller
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    /* Get a valid token */
-    final token = await _auth.getAccessToken(email: _email);
-    request.headers['Authorization'] = 'Bearer $token';
+    var response;
+    try{
+      /* Get a valid token */
+      final token = await _auth.getAccessToken(email: _email);
+      request.headers['Authorization'] = 'Bearer $token';
 
-    var response = await _inner.send(request); // execute the request
+      response = await _inner.send(request); // execute the request
+    }on Exception catch(e){
+      throw http.ClientException("$e");
+    }
 
     /* if token has expired, try it one more time */
     if (response.statusCode == 401) {

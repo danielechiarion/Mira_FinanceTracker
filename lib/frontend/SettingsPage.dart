@@ -5,7 +5,7 @@ import 'package:mira_finance_tracker/frontend/account/AccountSettingsPage.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
-import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 
 /// Main entry point for the Settings feature.
 /// Displays the account shortcut and the application-wide preferences

@@ -8,7 +8,7 @@ import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicIncome.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation.dart';
 
-import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';

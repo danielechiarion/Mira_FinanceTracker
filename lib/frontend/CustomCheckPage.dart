@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 
-import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';

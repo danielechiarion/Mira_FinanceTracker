@@ -1,5 +1,5 @@
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
-import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 

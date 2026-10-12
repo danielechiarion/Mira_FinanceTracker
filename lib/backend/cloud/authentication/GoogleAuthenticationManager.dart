@@ -234,4 +234,14 @@ class GoogleAuthenticationManager{
     await _database.addGoogleAccount(refreshed);
     return refreshed.accessToken;
   }
+
+  /// Function to restore the account by the specified email, 
+  /// in order to make it clear
+  Future<bool> restoreAccount(String email) async {
+    final account = await _database.getGoogleAccountByEmail(email);
+    if (account == null) return false;
+
+    _currentEmail = email;
+    return true;
+  }
 }

@@ -11,7 +11,7 @@ import 'package:mira_finance_tracker/frontend/single_elements/TransactionOperati
 import 'package:mira_finance_tracker/frontend/charts/MonthlyTrendChart.dart';
 import 'package:mira_finance_tracker/frontend/charts/PatrimonyPieChart.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/HomePageData.dart';
-import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';

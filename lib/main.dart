@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'package:mira_finance_tracker/backend/service/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/notification/NotificationManager.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/background/BackgroundManager.dart';
