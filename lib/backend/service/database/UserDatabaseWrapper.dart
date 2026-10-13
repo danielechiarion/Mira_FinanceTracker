@@ -34,6 +34,8 @@ import 'package:mira_finance_tracker/backend/operation/chart/ChartElements.dart'
 part 'UserDatabaseWrapperReader.dart';
 part 'UserDatabaseWrapperWriter.dart';
 part 'UserDatabaseWrapperUpdate.dart';
+part 'UserDatabaseWrapperImport.dart';
+part 'UserDatabaseWrapperExport.dart';
 
 /// Class to handle personal database belonging to 
 /// the user registered inside the application. 
