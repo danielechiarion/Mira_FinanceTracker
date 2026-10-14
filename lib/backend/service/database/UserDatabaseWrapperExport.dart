@@ -39,7 +39,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT CurrentAccount.id, CurrentAccount.name, 
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            financialInstitute FROM CurrentAccount WHERE endingDate IS NULL OR endingDate >= ?''',
+            FROM CurrentAccount JOIN BankAccount ON CurrentAccount.id = BankAccount.id WHERE endingDate IS NULL OR endingDate >= ?''',
             arguments: [limitDate.toIso8601String()]);
 
     if(close) await appDatabase.close();
@@ -60,7 +60,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT SavingsAccount.id, SavingsAccount.name, ledgerBalance,
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            financialInstitute FROM SavingsAccount WHERE endingDate IS NULL OR endingDate >= ?''',
+            FROM SavingsAccount JOIN BankAccount ON SavingsAccount.id = BankAccount.id WHERE endingDate IS NULL OR endingDate >= ?''',
             arguments: [limitDate.toIso8601String()]);
 
     if(close) await appDatabase.close();
@@ -82,7 +82,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
             cardType, dayOfMonthCredit, lastDateActivityCredit,
-            financialInstitute FROM Card WHERE endingDate IS NULL OR endingDate >= ?''',
+            FROM Card JOIN BankAccount ON Card.id = BankAccount.id WHERE endingDate IS NULL OR endingDate >= ?''',
             arguments: [limitDate.toIso8601String()]);
 
     if(close) await appDatabase.close();
@@ -161,7 +161,6 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
   /// Function to exports cashbacks related to a current account
   /// * [close] flag to close the database
   Future<Map<String, dynamic>> exportCashbacks({bool close = false}) async {
-    
     Map<String, dynamic> result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency, 
       dayOfMonth, monthOfYear, lastDateActivity, bankAccount FROM Cashback''');
 
@@ -189,7 +188,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     Map<String, dynamic> output = {
       "superclass": "PeriodicAccountBilling",
       "cashbacks": await exportCashbacks(),
-      "bankfees": await exportBankFees()
+      "bankFees": await exportBankFees()
     };
 
     if(close) await appDatabase.close();
