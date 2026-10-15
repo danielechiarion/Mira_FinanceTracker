@@ -29,18 +29,25 @@ class BackgroundSession extends CurrentSession {
   @override
   bool isBusy(Map<String, dynamic> map){
     BackgroundSession another = BackgroundSession.fromMap(map); // convert the map to a background session object
-    if(this == another) return true; // if the two sessions are equal it must be time
+    if(this == another) return false; // if the two sessions are equal it must be time
 
     /* if the other session is not finished but the starting time
     has been registered more than 30 mins ago, return true */
     DateTime currentDate = DateTime.now();
-    if(another._endingTime == null && currentDate.difference(another.accessTime) > Duration(minutes: 30)) return true;
+    if(another._endingTime == null && currentDate.difference(another.accessTime) < Duration(minutes: 30)) return true;
 
     /* if the other session is finished and more than 20 hours has passed from last control, 
     return true and let the background execute */
-    if(another._endingTime != null && currentDate.difference(another._endingTime!) > Duration(hours: 20)) return true;
+    if(another._endingTime != null && currentDate.difference(another._endingTime!) < Duration(hours: 20)) return true;
 
     return false; // otherwise return false
+  }
+
+  /// Function to check if the current background session is finished
+  /// and the channel is available
+  bool channelAvailable() {
+    DateTime currentDate = DateTime.now();
+    return _endingTime != null || (_endingTime == null && currentDate.difference(super.accessTime) > Duration(minutes: 30));
   }
 
   /// Function to convert an object to a map 

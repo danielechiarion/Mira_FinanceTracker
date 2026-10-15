@@ -1,6 +1,7 @@
 import 'package:googleapis/drive/v3.dart' as drive;
 
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/BackgroundSession.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.dart';
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
@@ -8,9 +9,6 @@ import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenti
 /// Class extending [CloudConnection] to manage connection
 /// when the application is used in foreground
 class CloudConnectionForeground extends CloudConnection{
-  /* define constants for the execution of the class */
-  static const String _SESSIONFILEPATH = "foreground_session.json";
-
   /// Constructor of the instance providing attributes for the superclass
   CloudConnectionForeground(CurrentSession session, {GoogleAuthenticationManager? authentication, DriveHttpHandler? handler}) :
     super(session, authentication: authentication, handler: handler);
@@ -20,7 +18,7 @@ class CloudConnectionForeground extends CloudConnection{
   /// Override of the method provided in [CloudConnection] class
   @override
   Future<CloudConnectionStatus> connect() async {
-    CloudConnectionStatus status = await super.tryConnection(_SESSIONFILEPATH); // get first results from the connection test
+    CloudConnectionStatus status = await super.tryConnection(super.FOREGROUNDSESSIONFILEPATH); // get first results from the connection test
 
     /* if the status is positive 
     create or upload the file with the session */
@@ -28,8 +26,17 @@ class CloudConnectionForeground extends CloudConnection{
       return status;
     }
 
-    drive.File? file = await super.fileService.findByName(_SESSIONFILEPATH); // try to find the file
-    if(file == null) {await super.fileService.createJson(fileName: _SESSIONFILEPATH, content: super.session.toMap());} // if it's null create it from scratch
+    /* in the connection foreground first you have to look for
+    the background session. If it's running, just run a status to wait
+    till session is completed, because of the update of the database. */
+    drive.File? backgroundFile = await super.fileService.findByName(super.BACKGROUNDSESSIONFILEPATH);
+    if(backgroundFile != null){
+      BackgroundSession backgroundSession = BackgroundSession.fromMap(await super.fileService.readJson(backgroundFile.id!));
+      if(!backgroundSession.channelAvailable()) return CloudConnectionStatus.wait_till_update; // return the status to wait till background is finished
+    }
+
+    drive.File? file = await super.fileService.findByName(super.FOREGROUNDSESSIONFILEPATH); // try to find the file
+    if(file == null) {await super.fileService.createJson(fileName: super.FOREGROUNDSESSIONFILEPATH, content: super.session.toMap());} // if it's null create it from scratch
     else {await super.fileService.updateText(fileId: file.id!, content: super.session.toMap().toString());} // otherwise update the existing file
 
     return status; // finally return the status
@@ -40,7 +47,7 @@ class CloudConnectionForeground extends CloudConnection{
   /// the cloud accessible to other application instances
   @override
   Future<bool> disconnect() async {
-    drive.File? file = await super.fileService.findByName(_SESSIONFILEPATH); // try to find the file
+    drive.File? file = await super.fileService.findByName(super.FOREGROUNDSESSIONFILEPATH); // try to find the file
     if(file == null) return true; // if file has not found it means that the session has already been deleted
 
     /* otherwise try to delete the file.

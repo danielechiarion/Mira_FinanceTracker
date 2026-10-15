@@ -13,12 +13,18 @@ enum CloudConnectionStatus{
   connection_established, // it means that connection has been established
   network_error, // it means that it was not possible to reach the cloud 
   line_busy, // it means another device is using the application with the same cloud
-  authentication_failed // it means that the authentication has not been restored from database
+  authentication_failed, // it means that the authentication has not been restored from database
+  wait_till_update
 }
 
 /// Class to handle general cloud connection
 /// and define methods to be implemented both in foreground and background
 abstract class CloudConnection{
+  /* define global variables for the path of the 
+  session files */
+  static const String _BACKGROUNDSESSIONFILEPATH = "background_session.json";
+  static const String _FOREGROUNDSESSIONFILEPATH = "foreground_session.json";
+  
   /* attributes definition */
   CurrentSession _session;
   late DriveHttpHandler _handler;
@@ -43,6 +49,12 @@ abstract class CloudConnection{
     _givenAuthentication = authentication != null;
     _givenHandler = handler != null;
   }
+
+  /* getter for constants for file paths */
+  @protected
+  String get BACKGROUNDSESSIONFILEPATH => _BACKGROUNDSESSIONFILEPATH;
+  @protected
+  String get FOREGROUNDSESSIONFILEPATH => _FOREGROUNDSESSIONFILEPATH;
 
   /// Function to initialize resources
   /// for the cloud connection, such as the authentication manager,
