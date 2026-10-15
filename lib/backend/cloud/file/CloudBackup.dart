@@ -125,4 +125,15 @@ abstract class CloudBackup {
   String get CRYPTOFILENAME => _CRYPTOFILENAME;
   @protected
   String get PREFERENCEFILENAME => _PREFERENCEFILENAME;
+
+  /* *** GETTER METHODS ***
+  of resources to pass to subclasses */
+  @protected
+  UserDatabaseWrapper get database => _database;
+  @protected
+  CloudFileService get fileService => _fileService;
+  @protected
+  KeyManager get keyManager => _keyManager;
+  @protected 
+  UserPreferences get userPreferences => _userPreferences;
 }
