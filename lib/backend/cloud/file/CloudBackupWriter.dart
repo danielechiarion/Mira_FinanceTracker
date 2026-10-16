@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
@@ -26,6 +27,8 @@ class CloudBackupWriter extends CloudBackup {
 
     /* then save the user preferences
     and database data */
+    await _saveUserPrefecences();
+    await _saveDatabaseData();
   }
 
   /* function to save cryptography file
@@ -63,5 +66,32 @@ class CloudBackupWriter extends CloudBackup {
     drive.File? file = await super.fileService.findByName(fileName, folderId: directoryPath.id);
     if(file == null) {await super.fileService.createBytes(fileName: fileName, bytes: content);}
     else {await super.fileService.updateBytes(fileId: file.id!, bytes: content);}
+  }
+
+  /* Function to save data from database on 
+  the selected drive folder */
+  Future<void> _saveDatabaseData() async {
+    List<int> byteContent; // declare list to convert json into bytes
+    int yearLimit = super.userPreferences.getPreference('backupTime').currentValue; // extract interest user preference
+
+    /* save files for all the categories */
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportCounterparties())));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.COUNTERPARTIESFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportFinancialInstitutes())));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.FINANCIALINSTITUTESFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportBankAccounts(yearLimit))));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.BANKACCOUNTSFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportTransactions(yearLimit))));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.TRANSACTIONSFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportPeriodicAccountBillings())));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.BILLINGSFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportPeriodicTransactions())));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.PERIODICTRANSACTIONSFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportFinancialInstrumentModels())));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.FINANCIALMODELSFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportFinancialInstruments(yearLimit))));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.FINANCIALINSTRUMENTSFILENAME);
+    byteContent = await super.keyManager.encryptData(base64Decode(jsonEncode(await super.database.exportStepInterests(yearLimit))));
+    await _saveEncryptedData(byteContent, super.DATABASEDIRECTORY, super.STEPINTERESTSFILENAME);
   }
 }
