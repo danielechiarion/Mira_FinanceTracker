@@ -136,4 +136,12 @@ abstract class CloudBackup {
   KeyManager get keyManager => _keyManager;
   @protected 
   UserPreferences get userPreferences => _userPreferences;
+  @protected
+  GoogleAuthenticationManager get authenticationManager => _authenticationManager;
+  @protected
+  bool get givenAuthentication => _givenAuthentication;
+  @protected
+  bool get givenHandler => _givenHandler;
+  @protected
+  String get email => _email;
 }

@@ -152,9 +152,10 @@ class KeyManager{
   }
 
   /// Function to recover a key from the secure storage
-  /// and convert it in the right way to be used
-  Future<void> recoverKey() async{
-    if (_activeKey != null) return;
+  /// and convert it in the right way to be used.
+  /// Return a boolean value indicating if the key has been found or not
+  Future<bool> recoverKey() async{
+    if (_activeKey != null) return true;
     final storageKey = isAuthenticated ? "$_USERKEYPREFIX$_username" : _APPLICATIONDATABASE;
 
     String? storedValue;
@@ -170,7 +171,7 @@ class KeyManager{
     generate a random key if it's for the application */
     if ((storedValue == null || storedValue.isEmpty) && !isAuthenticated) {
       await generateRandomKey();
-      return;
+      return false;
     }
     /* for the user try to get the user key
     otherwise return if still not available */
@@ -179,7 +180,7 @@ class KeyManager{
         storedValue = await _secureStorage.read(key: storageKey);
       } catch (e) {
         // print('❌ [KeyManager] read($storageKey) failed: $e\n$st');
-        rethrow; // mai generare una chiave nuova dopo un errore di lettura
+        rethrow; // never generate a new key after a reading error
       }
       // print('🔑 [KeyManager] $storageKey found=${storedValue != null}');
 
@@ -197,6 +198,8 @@ class KeyManager{
     } else {
       _activeKey = SecretKey(base64Decode(storedValue!));
     }
+
+    return true;
   }
 
   /// Function to encrypt data starting from the
