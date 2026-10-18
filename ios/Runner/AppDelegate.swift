@@ -1,6 +1,5 @@
 import Flutter
 import UIKit
-import workmanager
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -9,15 +8,17 @@ import workmanager
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
+    
     GeneratedPluginRegistrant.register(with: self)
 
-    /* set workmanager plugin to 
-    record and operate inside iOS environment */
+    /*
+    // Temporaneamente disabilitato per permettere la compilazione IPA senza errori di modulo Swift
     WorkmanagerPlugin.setPluginRegistrantCallback { registry in
         GeneratedPluginRegistrant.register(with: registry)
     }
+    */
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
