@@ -63,7 +63,7 @@ flutter:
     # logos for the application
     - assets/logos/extended_logo.png
     - assets/logos/restricted_logo.png
-    - assets/data/credentials.json
+    # - assets/data/credentials.json
 
 # customizing application icon
 # settings cross-platform
