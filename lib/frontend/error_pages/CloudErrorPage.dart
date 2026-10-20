@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
+
 /// Base page used to show a static cloud connection error.
 /// It only shows the app logo, an error icon, the error text
 /// and a button to reload the application. The user cannot
@@ -18,7 +20,7 @@ class CloudErrorPage extends StatelessWidget {
   final String message;
 
   /// Callback executed when the user presses the reload button
-  final VoidCallback onReload;
+  final VoidCallback? onReload;
 
   /// Creates a [CloudErrorPage] widget instance.
   const CloudErrorPage({
@@ -27,7 +29,7 @@ class CloudErrorPage extends StatelessWidget {
     required this.color,
     required this.title,
     required this.message,
-    required this.onReload,
+    this.onReload,
   });
 
   @override
@@ -91,7 +93,9 @@ class CloudErrorPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton.icon(
-                        onPressed: onReload,
+                        onPressed: onReload ?? () {
+                          Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false); // it's not possible to come back
+                        },
                         icon: const Icon(Icons.refresh),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal,

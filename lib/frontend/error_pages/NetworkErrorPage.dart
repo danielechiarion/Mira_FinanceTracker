@@ -6,10 +6,10 @@ import 'package:mira_finance_tracker/frontend/error_pages/CloudErrorPage.dart';
 /// the device is not connected to the internet.
 class NetworkErrorPage extends StatelessWidget {
   /// Callback executed when the user presses the reload button
-  final VoidCallback onReload;
+  final VoidCallback? onReload;
 
   /// Creates a [NetworkErrorPage] widget instance.
-  const NetworkErrorPage({super.key, required this.onReload});
+  const NetworkErrorPage({super.key, this.onReload});
 
   @override
   Widget build(BuildContext context) {

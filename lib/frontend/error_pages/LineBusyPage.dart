@@ -6,10 +6,10 @@ import 'package:mira_finance_tracker/frontend/error_pages/CloudErrorPage.dart';
 /// another device is using the application with the same cloud.
 class LineBusyPage extends StatelessWidget {
   /// Callback executed when the user presses the reload button
-  final VoidCallback onReload;
+  final VoidCallback? onReload;
 
   /// Creates a [LineBusyPage] widget instance.
-  const LineBusyPage({super.key, required this.onReload});
+  const LineBusyPage({super.key, this.onReload});
 
   @override
   Widget build(BuildContext context) {

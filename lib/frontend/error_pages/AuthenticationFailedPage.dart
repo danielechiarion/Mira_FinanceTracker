@@ -6,10 +6,10 @@ import 'package:mira_finance_tracker/frontend/error_pages/CloudErrorPage.dart';
 /// the authentication has not been restored correctly from the database.
 class AuthenticationFailedPage extends StatelessWidget {
   /// Callback executed when the user presses the reload button
-  final VoidCallback onReload;
+  final VoidCallback? onReload;
 
   /// Creates an [AuthenticationFailedPage] widget instance.
-  const AuthenticationFailedPage({super.key, required this.onReload});
+  const AuthenticationFailedPage({super.key, this.onReload});
 
   @override
   Widget build(BuildContext context) {
