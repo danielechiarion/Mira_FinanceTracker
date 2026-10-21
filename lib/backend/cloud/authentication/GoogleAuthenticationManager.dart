@@ -9,9 +9,9 @@ import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.
 
 /// Class to handle authentication management
 /// with google account in order to access into drive resource
-class GoogleAuthenticationManager{
+class GoogleAuthenticationManager {
   /* define attributes */
-  late final String _clientID; 
+  late final String _clientID;
   final List<String> _scopes;
   final SystemDatabaseWrapper _database;
 
@@ -23,9 +23,15 @@ class GoogleAuthenticationManager{
   /* define constants for the use of the application */
   static const String _apiDataFile = "assets/credentials.json";
 
-  /// Constructor to initialize the authenticator manager for google account, 
+  /// Constructor to initialize the authenticator manager for google account,
   /// defining the [_scopes] to access into drive resources
-  GoogleAuthenticationManager({this._scopes = const ['https://www.googleapis.com/auth/drive.file']}) : _database = SystemDatabaseWrapper();
+  // Existing accounts may need to sign in again to grant the appData scope.
+  GoogleAuthenticationManager({
+    this._scopes = const [
+      'https://www.googleapis.com/auth/drive.file',
+      'https://www.googleapis.com/auth/drive.appdata',
+    ],
+  }) : _database = SystemDatabaseWrapper();
 
   /// Function to initialize the resources of the class,
   /// such as the client id and the database
@@ -54,11 +60,13 @@ class GoogleAuthenticationManager{
 
     /* try to read the file, 
     otherwise throw an exception */
-    try{
+    try {
       String contents = await file.readAsString();
-      Map<String, dynamic> jsonData = jsonDecode(contents); // decode contents into json
+      Map<String, dynamic> jsonData = jsonDecode(
+        contents,
+      ); // decode contents into json
       return jsonData['client_id']; // return the client id
-    }catch(e){
+    } catch (e) {
       throw FileSystemException("Error reading client ID from file: $e");
     }
   }
@@ -115,7 +123,9 @@ class GoogleAuthenticationManager{
   Future<String> getAccessToken({String? email}) async {
     final target = email ?? _currentEmail;
     if (target == null) {
-      throw Exception('Nessun account attivo. Effettua il login o switchAccount.');
+      throw Exception(
+        'Nessun account attivo. Effettua il login o switchAccount.',
+      );
     }
     final account = await _database.getGoogleAccountByEmail(target);
     if (account == null) {
@@ -221,8 +231,8 @@ class GoogleAuthenticationManager{
     );
   }
 
-  /// Public function to refresh the access token for the account 
-  /// with the given [email], letting the class extracting the 
+  /// Public function to refresh the access token for the account
+  /// with the given [email], letting the class extracting the
   /// corresponing record from the database and updating it
   Future<String?> refreshAccessToken(String email) async {
     final account = await _database.getGoogleAccountByEmail(email);
@@ -235,7 +245,7 @@ class GoogleAuthenticationManager{
     return refreshed.accessToken;
   }
 
-  /// Function to restore the account by the specified email, 
+  /// Function to restore the account by the specified email,
   /// in order to make it clear
   Future<bool> restoreAccount(String email) async {
     final account = await _database.getGoogleAccountByEmail(email);

@@ -8,16 +8,16 @@ import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.d
 /// Class to handle the operations on files and folder
 /// for every other instance
 class CloudFileService {
+  static const String appDataFolderId = 'appDataFolder';
+  static const String _folderMimeType = 'application/vnd.google-apps.folder';
+
   final String _email;
   late final DriveHttpHandler _client;
   late final drive.DriveApi _driveApi;
 
   /// Cloud file service requiring the [_email] of the user
   /// and the [_client] to handle the http requests
-  CloudFileService({
-    required this._email,
-    required this._client,
-  }){
+  CloudFileService({required this._email, required this._client}) {
     _driveApi = drive.DriveApi(_client);
   }
 
@@ -30,10 +30,12 @@ class CloudFileService {
   /// Downloads the whole file content as bytes in memory
   /// starting from the [fileId] given
   Future<Uint8List> readBytes(String fileId) async {
-    final media = await _driveApi.files.get(
-      fileId,
-      downloadOptions: drive.DownloadOptions.fullMedia,
-    ) as drive.Media;
+    final media =
+        await _driveApi.files.get(
+              fileId,
+              downloadOptions: drive.DownloadOptions.fullMedia,
+            )
+            as drive.Media;
 
     final chunks = <int>[];
     await for (final chunk in media.stream) {
@@ -65,19 +67,21 @@ class CloudFileService {
     return (await _driveApi.files.get(fileId, $fields: fields)) as drive.File;
   }
 
-  /// Read a file by [name] and returns the first match found, 
-  /// or null if it's not found. 
-  /// [folderId] and [trashed] are optional and represent respectively 
+  /// Read a file by [name] and returns the first match found,
+  /// or null if it's not found.
+  /// [folderId] and [trashed] are optional and represent respectively
   /// the folder where the file has been saved in and the trashed state of the file
   Future<drive.File?> findByName(
     String name, {
     String? folderId,
     bool trashed = false,
+    String? spaces,
   }) async {
     final results = await listFiles(
       query: "name = '${_escape(name)}' and trashed = $trashed",
       folderId: folderId,
       pageSize: 1,
+      spaces: spaces,
     );
     return results.isEmpty ? null : results.first;
   }
@@ -89,7 +93,9 @@ class CloudFileService {
     String? folderId,
     int pageSize = 100,
     String? pageToken,
-    String fields = 'nextPageToken,files(id,name,mimeType,size,modifiedTime,parents)',
+    String? spaces,
+    String fields =
+        'nextPageToken,files(id,name,mimeType,size,modifiedTime,parents)',
   }) async {
     String? q;
     if (folderId != null && query != null) {
@@ -104,15 +110,24 @@ class CloudFileService {
       q: q,
       pageSize: pageSize,
       pageToken: pageToken,
+      spaces: spaces,
       $fields: fields,
     );
     return result.files ?? [];
   }
 
   /// Function to find a folder by its [folderName]
-  Future<drive.File?> findFolderByName(String folderName) async {
+  Future<drive.File?> findFolderByName(
+    String folderName, {
+    String? parentFolderId,
+    String? spaces,
+  }) async {
     final folder = await listFiles(
-      query: "name = 'Backup' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+      query:
+          "name = '${_escape(folderName)}' and mimeType = '$_folderMimeType' and trashed = false",
+      folderId: parentFolderId,
+      spaces: spaces,
+      pageSize: 1,
     );
 
     if (folder.isNotEmpty) {
@@ -209,11 +224,7 @@ class CloudFileService {
     final metadata = drive.File();
     if (mimeType != null) metadata.mimeType = mimeType;
 
-    return _driveApi.files.update(
-      metadata,
-      fileId,
-      uploadMedia: media,
-    );
+    return _driveApi.files.update(metadata, fileId, uploadMedia: media);
   }
 
   /// Overrides file with a new text [content]
@@ -230,10 +241,7 @@ class CloudFileService {
 
   /// Update metadata file (such as the [newName])
   /// without affecting the content
-  Future<drive.File> rename({
-    required String fileId,
-    required String newName,
-  }) {
+  Future<drive.File> rename({required String fileId, required String newName}) {
     final metadata = drive.File()..name = newName;
     return _driveApi.files.update(metadata, fileId);
   }
@@ -257,7 +265,7 @@ class CloudFileService {
     );
   }
 
-  /// Copy an existing file, optionally 
+  /// Copy an existing file, optionally
   /// renaming and moving it
   Future<drive.File> copyFile({
     required String fileId,
@@ -278,6 +286,41 @@ class CloudFileService {
   /// Definitely eliminating the file (without trashing it)
   Future<void> delete(String fileId) async {
     await _driveApi.files.delete(fileId);
+  }
+
+  /// Permanently deletes all files and folders in the app-private Drive space.
+  /// The appDataFolder itself is a virtual Drive root and cannot be deleted.
+  Future<void> deleteAppDataFolderContents() async {
+    await _deleteAppDataChildren(appDataFolderId);
+  }
+
+  Future<void> _deleteAppDataChildren(String parentFolderId) async {
+    final children = <drive.File>[];
+    String? pageToken;
+
+    do {
+      final page = await _driveApi.files.list(
+        q: "'$parentFolderId' in parents",
+        spaces: 'appDataFolder',
+        pageSize: 1000,
+        pageToken: pageToken,
+        $fields: 'nextPageToken,files(id,name,mimeType)',
+      );
+      children.addAll(page.files ?? const <drive.File>[]);
+      pageToken = page.nextPageToken;
+    } while (pageToken != null);
+
+    for (final child in children) {
+      final fileId = child.id;
+      if (fileId == null) {
+        throw StateError('Drive returned an app data item without an id.');
+      }
+
+      if (child.mimeType == _folderMimeType) {
+        await _deleteAppDataChildren(fileId);
+      }
+      await delete(fileId);
+    }
   }
 
   /// Move a file to to trash (restorable)

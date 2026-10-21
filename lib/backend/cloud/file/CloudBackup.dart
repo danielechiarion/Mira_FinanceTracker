@@ -71,17 +71,22 @@ abstract class CloudBackup {
   /// Function to initialize resources of the cloud backup
   /// in order to make it operative
   Future<void> init() async {
-    /* restore authentication if it's given */
-    if(!_givenAuthentication){
-      await _authenticationManager.init();
-      await _authenticationManager.restoreAccount(_email);
-    }
-    
+    await initAuthentication();
+
     /* initialize database, preference
     and all the other resources */
     await _database.init();
     await _userPreferences.init();
     await _keyManager.init();
+  }
+
+  /// Initializes the cloud authentication shared by backup subclasses.
+  @protected
+  Future<void> initAuthentication() async {
+    if (!_givenAuthentication) {
+      await _authenticationManager.init();
+      await _authenticationManager.restoreAccount(_email);
+    }
   }
 
   /// Abstract function to execute the interaction with cloud, 
@@ -91,8 +96,14 @@ abstract class CloudBackup {
   /// Function to dipose the resources used inside
   /// the cloud backup instance
   Future<void> dispose() async {
-    if(!_givenHandler) _handler.close();
+    disposeHandler();
     await _database.closeDatabase();
+  }
+
+  /// Closes the HTTP client only when this instance created it.
+  @protected
+  void disposeHandler() {
+    if (!_givenHandler) _handler.close();
   }
 
   /* *** GETTER METHODS ***
