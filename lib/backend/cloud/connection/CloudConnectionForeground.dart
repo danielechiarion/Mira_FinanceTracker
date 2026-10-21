@@ -41,11 +41,11 @@ class CloudConnectionForeground extends CloudConnection {
       BackgroundSession backgroundSession = BackgroundSession.fromMap(
         await super.fileService.readJson(backgroundFile.id!),
       );
-      if (!backgroundSession.channelAvailable())
-        return CloudConnectionStatus
-            .wait_till_update; // return the status to wait till background is finished
+      if (!backgroundSession.channelAvailable()) return CloudConnectionStatus.wait_till_update; // return the status to wait till background is finished
     }
 
+    /* then add the information
+    of the device in the session file */
     drive.File? file = await super.findSessionFile(
       super.FOREGROUNDSESSIONFILEPATH,
     ); // try to find the file
@@ -61,8 +61,50 @@ class CloudConnectionForeground extends CloudConnection {
         content: super.session.toMap().toString(),
       );
     } // otherwise update the existing file
+    await _checkIfUpdateDeviceRegister(); // check if it's possible to update device register
 
     return status; // finally return the status
+  }
+
+  /* function to update the device register
+  placed inside the drive. 
+  This file allows the system to know how many devices
+  are connected to the application cloud. 
+  This will help also to let the other know, when trying
+  to erase the cloud, if there is some devices which still
+  needs data saved. */
+  Future<void> _checkIfUpdateDeviceRegister() async {
+    drive.File? file = await super.fileService.findByName(
+      super.DEVICEREGISTERFILEPATH,
+    ); // try to find the file
+
+    /* if the file is not found add a new 
+    file with the information about the device,
+    which is the first session to be registered */
+    if(file == null){
+      await super.fileService.createJson(fileName: super.DEVICEREGISTERFILEPATH, 
+        content: {
+          "Object": "Device register",
+          "devices": [super.session.toMap()]
+      });
+      return;
+    }
+
+    /* otherwise try to read the file 
+    and understand if the device has already been registered before */
+    Map<String, dynamic> fileContent = await super.fileService.readJson(file.id!);
+    List<CurrentSession> registeredDevices = (fileContent['devices'] as List<Map<String, dynamic>>).map((device) {
+      return CurrentSession.fromMap(Map<String, dynamic>.from(device));
+    }).toList();
+
+    /* understand if the device is missing,
+    otherwise register it */
+    if(registeredDevices.contains(super.session)) return;
+    Map<String, dynamic> updatedContent = {
+      "Object": "Device register",
+      "devices": registeredDevices.map((element) => element.toMap())
+    };
+    await super.fileService.updateText(fileId: file.id!, content: updatedContent.toString());
   }
 
   /// Function to disconnect the application

@@ -24,6 +24,7 @@ abstract class CloudConnection {
   session files */
   static const String _BACKGROUNDSESSIONFILEPATH = "background_session.json";
   static const String _FOREGROUNDSESSIONFILEPATH = "foreground_session.json";
+  static const String _DEVICEREGISTERFILEPATH = "device_register.json";
 
   /* attributes definition */
   CurrentSession _session;
@@ -70,6 +71,8 @@ abstract class CloudConnection {
   String get BACKGROUNDSESSIONFILEPATH => _BACKGROUNDSESSIONFILEPATH;
   @protected
   String get FOREGROUNDSESSIONFILEPATH => _FOREGROUNDSESSIONFILEPATH;
+  @protected
+  String get DEVICEREGISTERFILEPATH => _DEVICEREGISTERFILEPATH;
 
   /// Function to initialize resources
   /// for the cloud connection, such as the authentication manager,
@@ -117,9 +120,7 @@ abstract class CloudConnection {
     /* if the control has passed try to find 
     if there is another application session using cloud */
     drive.File? file = await findSessionFile(sessionPath);
-    if (file == null)
-      return CloudConnectionStatus
-          .connection_established; // if no file has found return that connection has been established
+    if (file == null) return CloudConnectionStatus.connection_established; // if no file has found return that connection has been established
 
     /* otherwise get the session from the 
     json file and compare it to current session */
