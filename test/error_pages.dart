@@ -5,14 +5,12 @@ import 'package:mira_finance_tracker/frontend/error_pages/CloudWritingErrorPage.
 import 'package:mira_finance_tracker/frontend/error_pages/LineBusyPage.dart';
 import 'package:mira_finance_tracker/frontend/error_pages/NetworkErrorPage.dart';
 
-void main(List<String> args) {
-  if (args.length != 1) {
-    throw ArgumentError(
-      'Specifica una pagina: authentication, reading, writing, line-busy, network',
-    );
-  }
+void main() {
+  const pageName = String.fromEnvironment('ERROR_PAGE');
 
-  runApp(ErrorPagesTestApp(pageName: args.single));
+  runApp(ErrorPagesTestApp(
+    pageName: pageName.isEmpty ? 'network' : pageName,
+  ));
 }
 
 class ErrorPagesTestApp extends StatelessWidget {
