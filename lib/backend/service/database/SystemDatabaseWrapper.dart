@@ -102,7 +102,6 @@ class SystemDatabaseWrapper{
     return User.fromMap(result);
   }
 
-  
   /// Function to add a new user checking
   /// the hash of the password and if it already exists
   /// * [user] user to be added
@@ -117,7 +116,7 @@ class SystemDatabaseWrapper{
     if(!passwordHashed){
       user.hashCurrentPassword();
     }
-    
+
     int newId;
     try{
       // Ensure argument order matches the INSERT column order
@@ -230,14 +229,14 @@ class SystemDatabaseWrapper{
   /// * [close] flag to close the database
   Future<GoogleAccount?> getGoogleAccountByEmail(String email, {bool close = false}) async {
     final result = await database.query(sql: '''
-      SELECT id, name, email, display_name, access_token, refresh_token, server_auth_code, updated_at
+      SELECT id, email, display_name, access_token, refresh_token, server_auth_code, updated_at
       FROM GoogleAuthSession WHERE email = ?''', arguments: [email]);
 
     if(result.isEmpty){
       return null;
     }
     final account = GoogleAccount.fromMap(result.first);
-    
+
     if(close){
       await database.close();
     }
@@ -259,7 +258,7 @@ class SystemDatabaseWrapper{
   /// * [close] flag to close the database
   Future<List<GoogleAccount>> getAllGoogleAccounts({bool close = false}) async {
     final result = await database.query(sql: '''SELECT 
-      id, name, email, display_name, access_token, refresh_token, server_auth_code, updated_at
+      id, email, display_name, access_token, refresh_token, server_auth_code, updated_at
       FROM GoogleAuthSession ORDER BY updated_at DESC''');
 
     if(close){
@@ -287,6 +286,20 @@ class SystemDatabaseWrapper{
     }
 
     return false;
+  }
+
+  /// Function to update user on general table
+  /// saving email connected to the google account
+  Future<void> updateUserEmail(User user, String email) async {
+    await database.execute(sql: '''UPDATE User SET email=? WHERE username=?''',
+      arguments: [email, user.username]);
+  }
+
+  /// Function to remove user email 
+  /// connected to the cloud settings
+  Future<void> removeUserEmail(User user) async {
+    await database.execute(sql: '''UPDATE User SET email=? WHERE username=?''',
+      arguments: [null, user.username]);
   }
 
   /// Function to close definitely the database

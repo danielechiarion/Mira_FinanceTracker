@@ -1,8 +1,13 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
+import 'dart:math';
+
+import 'package:cryptography/cryptography.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.dart';
@@ -12,6 +17,7 @@ import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.
 class GoogleAuthenticationManager {
   /* define attributes */
   late final String _clientID;
+  String? _windowsClientSecret;
   final List<String> _scopes;
   final SystemDatabaseWrapper _database;
 
@@ -21,7 +27,7 @@ class GoogleAuthenticationManager {
   String? _currentEmail;
 
   /* define constants for the use of the application */
-  static const String _apiDataFile = "assets/credentials.json";
+  static const String _apiDataFile = "assets/data/credentials.json";
 
   /// Constructor to initialize the authenticator manager for google account,
   /// defining the [_scopes] to access into drive resources
@@ -30,6 +36,8 @@ class GoogleAuthenticationManager {
     this._scopes = const [
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/drive.appdata',
+      'openid',
+      'email',
     ],
   }) : _database = SystemDatabaseWrapper();
 
@@ -49,26 +57,42 @@ class GoogleAuthenticationManager {
     );
   }
 
-  /* function to read client id 
-  from the file given */
-  Future<String> _getClientID() async {
-    /* get the directory and combine it with the file path
-    in order to extract the file from memory */
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
-    final file = File('$path/$_apiDataFile');
+  bool get _isWindows =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
 
-    /* try to read the file, 
-    otherwise throw an exception */
-    try {
-      String contents = await file.readAsString();
-      Map<String, dynamic> jsonData = jsonDecode(
-        contents,
-      ); // decode contents into json
-      return jsonData['client_id']; // return the client id
-    } catch (e) {
-      throw FileSystemException("Error reading client ID from file: $e");
+  /// Closes the system database connection used by this manager.
+  Future<void> close() async {
+    await _database.closeDatabase();
+  }
+
+  /* function to read client id
+  from the configured asset */
+  Future<String> _getClientID() async {
+    final contents = await rootBundle.loadString(_apiDataFile);
+    final jsonData = jsonDecode(contents) as Map<String, dynamic>;
+    final isWindows =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
+    final clientId = jsonData[isWindows ? 'windows_client_id' : 'client_id'];
+    if (clientId is! String || clientId.isEmpty) {
+      throw const FormatException(
+        'Google OAuth client ID is missing from credentials. Windows '
+        'requires a Desktop app client ID in "windows_client_id"; other '
+        'platforms require "client_id".',
+      );
     }
+
+    if (isWindows) {
+      final clientSecret = jsonData['windows_client_secret'];
+      if (clientSecret != null &&
+          (clientSecret is! String || clientSecret.isEmpty)) {
+        throw const FormatException(
+          'The Windows OAuth client secret must be a non-empty string.',
+        );
+      }
+      _windowsClientSecret = clientSecret as String?;
+    }
+
+    return clientId;
   }
 
   /* *** GETTER METHODS *** */
@@ -76,6 +100,11 @@ class GoogleAuthenticationManager {
 
   /// Function to sign in the user with google account
   Future<void> signIn() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+      await _signInWithWindowsBrowser();
+      return;
+    }
+
     final account = await _googleSignIn.signIn();
     if (account == null) {
       throw Exception('Login annullato dall\'utente');
@@ -182,29 +211,212 @@ class GoogleAuthenticationManager {
     if (target == null) return;
 
     if (target == _currentEmail) {
-      await _googleSignIn.disconnect();
+      if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) {
+        await _googleSignIn.disconnect();
+      }
       _currentEmail = null;
     }
     await _database.removeGoogleAccount(target);
   }
 
+  /// Authenticates a Windows user through the system browser and a loopback callback.
+  Future<void> _signInWithWindowsBrowser() async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final redirectUri = 'http://127.0.0.1:${server.port}';
+    final codeVerifier = _generateSecureValue();
+    final state = _generateSecureValue();
+    final challenge = await Sha256().hash(utf8.encode(codeVerifier));
+    final codeChallenge = base64Url.encode(challenge.bytes).replaceAll('=', '');
+
+    final authorizationUri =
+        Uri.https('accounts.google.com', '/o/oauth2/v2/auth', {
+          'client_id': _clientID,
+          'redirect_uri': redirectUri,
+          'response_type': 'code',
+          'scope': _scopes.join(' '),
+          'access_type': 'offline',
+          'prompt': 'consent',
+          'state': state,
+          'code_challenge': codeChallenge,
+          'code_challenge_method': 'S256',
+        });
+
+    try {
+      final callback = _waitForOAuthCallback(
+        server,
+      ).timeout(const Duration(minutes: 5));
+      if (!await launchUrl(
+        authorizationUri,
+        mode: LaunchMode.externalApplication,
+      )) {
+        throw StateError(
+          'Unable to open the system browser for Google sign-in.',
+        );
+      }
+
+      final callbackUri = await callback;
+      if (callbackUri.queryParameters['state'] != state) {
+        throw StateError('Google sign-in returned an invalid state.');
+      }
+
+      final authorizationError = callbackUri.queryParameters['error'];
+      if (authorizationError != null) {
+        throw StateError(
+          'Google sign-in was not completed: $authorizationError',
+        );
+      }
+
+      final code = callbackUri.queryParameters['code'];
+      if (code == null || code.isEmpty) {
+        throw StateError('Google did not return an authorization code.');
+      }
+
+      final tokenData = await _exchangeCodeForTokens(
+        code,
+        redirectUri: redirectUri,
+        codeVerifier: codeVerifier,
+      );
+      if (tokenData == null) {
+        throw StateError('Google authorization code exchange failed.');
+      }
+
+      final accessToken = tokenData['access_token'];
+      final refreshToken = tokenData['refresh_token'];
+      if (accessToken is! String || accessToken.isEmpty) {
+        throw StateError('Google did not return an access token.');
+      }
+      if (refreshToken is! String || refreshToken.isEmpty) {
+        throw StateError(
+          'Google did not return a refresh token. Revoke the app access '
+          'from your Google account and try again.',
+        );
+      }
+
+      final profile = await _getGoogleProfile(accessToken);
+      final email = profile['email'];
+      if (email is! String || email.isEmpty) {
+        throw StateError('Google did not return an account email address.');
+      }
+
+      final account = GoogleAccount(
+        email: email,
+        displayName: profile['name'] as String? ?? email,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        serverAuthCode: code,
+        updatedAt: DateTime.now().toUtc(),
+      );
+
+      await _database.addGoogleAccount(account);
+      _currentEmail = email;
+    } finally {
+      await server.close(force: true);
+    }
+  }
+
+  /// Waits for the one-time authorization response from the system browser.
+  Future<Uri> _waitForOAuthCallback(HttpServer server) async {
+    await for (final request in server) {
+      final response = request.response
+        ..statusCode = HttpStatus.ok
+        ..headers.contentType = ContentType.html
+        ..write(
+          '<!doctype html><html><body>'
+          '<p>Google sign-in finished. You can close this window.</p>'
+          '</body></html>',
+        );
+      await response.close();
+      return request.uri;
+    }
+
+    throw StateError(
+      'The Google sign-in callback server stopped unexpectedly.',
+    );
+  }
+
+  /// Generates a high-entropy URL-safe value for OAuth state and PKCE.
+  String _generateSecureValue() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
+    return base64Url.encode(bytes).replaceAll('=', '');
+  }
+
+  /// Retrieves the authenticated Google profile required for database storage.
+  Future<Map<String, dynamic>> _getGoogleProfile(String accessToken) async {
+    final response = await http.get(
+      Uri.https('openidconnect.googleapis.com', '/v1/userinfo'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+    if (response.statusCode != HttpStatus.ok) {
+      throw HttpException(
+        'Google profile request failed with status ${response.statusCode}.',
+      );
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   /* function to exchange the authorization code
   for access and refresh tokens for the account */
-  Future<Map<String, dynamic>?> _exchangeCodeForTokens(String code) async {
+  Future<Map<String, dynamic>?> _exchangeCodeForTokens(
+    String code, {
+    String redirectUri = '',
+    String? codeVerifier,
+  }) async {
+    final body = <String, String>{
+      'code': code,
+      'client_id': _clientID,
+      'redirect_uri': redirectUri,
+      'grant_type': 'authorization_code',
+      'code_verifier': ?codeVerifier,
+      if (_isWindows) 'client_secret': ?_windowsClientSecret,
+    };
     final response = await http.post(
       Uri.parse('https://oauth2.googleapis.com/token'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: {
-        'code': code,
-        'client_id': _clientID,
-        'redirect_uri': '',
-        'grant_type': 'authorization_code',
-      },
+      body: body,
     );
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final tokenData = jsonDecode(response.body);
+      if (tokenData is Map<String, dynamic>) {
+        return tokenData;
+      }
+
+      throw StateError('Google returned an invalid token response.');
     }
-    return null;
+
+    String? oauthError;
+    String? errorDescription;
+    try {
+      final errorData = jsonDecode(response.body);
+      if (errorData is Map<String, dynamic>) {
+        oauthError = errorData['error'] as String?;
+        errorDescription = errorData['error_description'] as String?;
+      }
+    } on FormatException {
+      // The HTTP status remains useful when Google returns a non-JSON response.
+    }
+
+    final details = [?oauthError, ?errorDescription].join(': ');
+    final hint = switch (oauthError) {
+      'invalid_client' || 'unauthorized_client' =>
+        'Verify that credentials.json contains the OAuth client ID for a '
+            'Desktop app.',
+      'invalid_request'
+          when errorDescription?.contains('client_secret') ?? false =>
+        'Add the matching "windows_client_secret" to credentials.json or '
+            'replace the Windows client with a Desktop app OAuth client.',
+      'invalid_grant' =>
+        'The authorization code may have expired, or the redirect URI or '
+            'PKCE verifier did not match. Retry the Google sign-in.',
+      _ => null,
+    };
+
+    throw StateError(
+      'Google token exchange failed (HTTP ${response.statusCode})'
+      '${details.isEmpty ? '' : ': $details'}'
+      '${hint == null ? '' : ' $hint'}',
+    );
   }
 
   /* function to refresh the access token for the account
@@ -216,6 +428,7 @@ class GoogleAuthenticationManager {
       body: {
         'refresh_token': account.refreshToken,
         'client_id': _clientID,
+        if (_isWindows) 'client_secret': ?_windowsClientSecret,
         'grant_type': 'refresh_token',
       },
     );

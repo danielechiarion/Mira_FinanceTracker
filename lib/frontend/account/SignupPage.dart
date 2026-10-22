@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
+import 'package:mira_finance_tracker/frontend/account/GoogleConnectionPage.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/backend/operation/account/Signup.dart';
 
@@ -35,6 +36,7 @@ class _SignupPageState extends State<SignupPage> {
   bool _isCheckingUsername = false;
   String? _usernameAvailabilityMessage;
   bool _usernameAvailable = false;
+  User? _user;
 
   /// Wrapper for system database operations 
   /// to save the user and access to the methods
@@ -123,12 +125,12 @@ class _SignupPageState extends State<SignupPage> {
 
     /* create the user based on 
     the parameters given by the user */
-    User newUser = User(_usernameController.text.trim(), _passwordController.text.trim(), _nameController.text.trim(), 
+    _user = User(_usernameController.text.trim(), _passwordController.text.trim(), _nameController.text.trim(), 
                           surname: _surnameController.text.trim());
 
     /* use backend logic to signup the user
     inside the database and adjust all the cryptography settings */
-    Signup signup = Signup(newUser, _passkeyController.text.trim());
+    Signup signup = Signup(_user!, _passkeyController.text.trim());
     try {
       await signup.execute();
       return true;
@@ -314,18 +316,15 @@ class _SignupPageState extends State<SignupPage> {
                       // --- SUBMIT BUTTON ---
                       ElevatedButton(
                         onPressed: () async {
+                          final navigator = Navigator.of(context);
                           final success = await _submitSignup();
-                          if (!success) return;
+                          if (!success || !mounted) return;
 
-                          // Navigate back only if signup succeeded
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          } else {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginPage()),
-                            );
-                          }
+                          await navigator.pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => GoogleConnectionPage(user: _user!),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.indigo,
