@@ -25,7 +25,7 @@ class DriveHttpHandler extends http.BaseClient {
   /// to the caller
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    var response;
+    http.StreamedResponse response;
     try{
       /* Get a valid token */
       final token = await _auth.getAccessToken(email: _email);

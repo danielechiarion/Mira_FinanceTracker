@@ -28,7 +28,8 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _surnameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _passkeyController = TextEditingController();
 
   /// Logic for real-time username checking
@@ -38,7 +39,7 @@ class _SignupPageState extends State<SignupPage> {
   bool _usernameAvailable = false;
   User? _user;
 
-  /// Wrapper for system database operations 
+  /// Wrapper for system database operations
   /// to save the user and access to the methods
   final SystemDatabaseWrapper _systemDatabaseWrapper = SystemDatabaseWrapper();
 
@@ -50,8 +51,12 @@ class _SignupPageState extends State<SignupPage> {
 
     /* initialize the system database
     catching possible errors during initialization */
-    _systemDatabaseWrapper.init().catchError((error){
-      AppToast.show(context, "Errore durante l'inizializzazione del database: $error", ToastType.fatal);
+    _systemDatabaseWrapper.init().catchError((error) {
+      AppToast.show(
+        context,
+        "Errore durante l'inizializzazione del database: $error",
+        ToastType.fatal,
+      );
     });
   }
 
@@ -66,14 +71,19 @@ class _SignupPageState extends State<SignupPage> {
     _passkeyController.dispose();
     super.dispose();
 
-    _systemDatabaseWrapper.closeDatabase(); // dispose the database connection at the end
+    _systemDatabaseWrapper
+        .closeDatabase(); // dispose the database connection at the end
   }
 
   /// Generates a random alphanumeric string for the default passkey.
   String _generateRandomPasskey(int length) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random.secure();
-    return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
+    return List.generate(
+      length,
+      (index) => chars[random.nextInt(chars.length)],
+    ).join();
   }
 
   /// Simulates an asynchronous call to check if the username is taken.
@@ -98,12 +108,12 @@ class _SignupPageState extends State<SignupPage> {
       /* control if the username is available
       for creating the new account */
       bool isAvailable = await _systemDatabaseWrapper.userValidity(value);
-      
+
       setState(() {
         _isCheckingUsername = false;
         _usernameAvailable = isAvailable;
-        _usernameAvailabilityMessage = _usernameAvailable 
-            ? 'Username disponibile' 
+        _usernameAvailabilityMessage = _usernameAvailable
+            ? 'Username disponibile'
             : 'Username già in uso';
       });
     });
@@ -118,15 +128,21 @@ class _SignupPageState extends State<SignupPage> {
 
     if (!_usernameAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Scegli un username disponibile prima di continuare.')),
+        const SnackBar(
+          content: Text('Scegli un username disponibile prima di continuare.'),
+        ),
       );
       return false;
     }
 
     /* create the user based on 
     the parameters given by the user */
-    _user = User(_usernameController.text.trim(), _passwordController.text.trim(), _nameController.text.trim(), 
-                          surname: _surnameController.text.trim());
+    _user = User(
+      _usernameController.text.trim(),
+      _passwordController.text.trim(),
+      _nameController.text.trim(),
+      surname: _surnameController.text.trim(),
+    );
 
     /* use backend logic to signup the user
     inside the database and adjust all the cryptography settings */
@@ -145,7 +161,10 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crea Account', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Crea Account',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -165,7 +184,10 @@ class _SignupPageState extends State<SignupPage> {
                       Text(
                         'Inserisci i tuoi dati per iniziare.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
                       const SizedBox(height: 32),
 
@@ -175,28 +197,44 @@ class _SignupPageState extends State<SignupPage> {
                         controller: _usernameController,
                         decoration: InputDecoration(
                           hintText: 'Scegli il tuo username',
-                          prefixIcon: const Icon(Icons.person, color: Colors.teal),
+                          prefixIcon: const Icon(
+                            Icons.person,
+                            color: Colors.teal,
+                          ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal.shade300, width: 1.5),
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2.0,
+                            ),
                           ),
-                          suffixIcon: _isCheckingUsername 
+                          suffixIcon: _isCheckingUsername
                               ? const Padding(
                                   padding: EdgeInsets.all(12.0),
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : _usernameAvailabilityMessage != null
-                                  ? Icon(
-                                      _usernameAvailable ? Icons.check_circle : Icons.error,
-                                      color: _usernameAvailable ? Colors.green : Colors.red,
-                                    )
-                                  : null,
+                              ? Icon(
+                                  _usernameAvailable
+                                      ? Icons.check_circle
+                                      : Icons.error,
+                                  color: _usernameAvailable
+                                      ? Colors.green
+                                      : Colors.red,
+                                )
+                              : null,
                         ),
                         onChanged: _onUsernameChanged,
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
+                          if (value == null || value.isEmpty)
+                            return 'Il valore deve essere impostato';
                           return null;
                         },
                       ),
@@ -206,8 +244,10 @@ class _SignupPageState extends State<SignupPage> {
                           child: Text(
                             _usernameAvailabilityMessage!,
                             style: TextStyle(
-                              fontSize: 12, 
-                              color: _usernameAvailable ? Colors.green : Colors.red
+                              fontSize: 12,
+                              color: _usernameAvailable
+                                  ? Colors.green
+                                  : Colors.red,
                             ),
                           ),
                         ),
@@ -219,15 +259,26 @@ class _SignupPageState extends State<SignupPage> {
                         controller: _nameController,
                         decoration: InputDecoration(
                           hintText: 'Il tuo nome',
-                          prefixIcon: const Icon(Icons.badge_outlined, color: Colors.teal),
+                          prefixIcon: const Icon(
+                            Icons.badge_outlined,
+                            color: Colors.teal,
+                          ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal.shade300, width: 1.5),
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2.0,
+                            ),
                           ),
                         ),
-                        validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
+                        validator: (value) => (value == null || value.isEmpty)
+                            ? 'Il valore deve essere impostato'
+                            : null,
                       ),
                       const SizedBox(height: 20),
 
@@ -237,12 +288,21 @@ class _SignupPageState extends State<SignupPage> {
                         controller: _surnameController,
                         decoration: InputDecoration(
                           hintText: 'Il tuo cognome (opzionale)',
-                          prefixIcon: const Icon(Icons.badge_outlined, color: Colors.teal),
+                          prefixIcon: const Icon(
+                            Icons.badge_outlined,
+                            color: Colors.teal,
+                          ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal.shade300, width: 1.5),
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2.0,
+                            ),
                           ),
                         ),
                       ),
@@ -255,15 +315,26 @@ class _SignupPageState extends State<SignupPage> {
                         obscureText: true,
                         decoration: InputDecoration(
                           hintText: 'Password sicura',
-                          prefixIcon: const Icon(Icons.lock, color: Colors.teal),
+                          prefixIcon: const Icon(
+                            Icons.lock,
+                            color: Colors.teal,
+                          ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal.shade300, width: 1.5),
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2.0,
+                            ),
                           ),
                         ),
-                        validator: (value) => (value == null || value.isEmpty) ? 'Il valore deve essere impostato' : null,
+                        validator: (value) => (value == null || value.isEmpty)
+                            ? 'Il valore deve essere impostato'
+                            : null,
                       ),
                       const SizedBox(height: 20),
 
@@ -273,17 +344,28 @@ class _SignupPageState extends State<SignupPage> {
                         obscureText: true,
                         decoration: InputDecoration(
                           hintText: 'Ripeti la password',
-                          prefixIcon: const Icon(Icons.lock_outline, color: Colors.teal),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: Colors.teal,
+                          ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal.shade300, width: 1.5),
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2.0,
+                            ),
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Il valore deve essere impostato';
-                          if (value != _passwordController.text) return 'Le password non corrispondono';
+                          if (value == null || value.isEmpty)
+                            return 'Il valore deve essere impostato';
+                          if (value != _passwordController.text)
+                            return 'Le password non corrispondono';
                           return null;
                         },
                       ),
@@ -295,17 +377,26 @@ class _SignupPageState extends State<SignupPage> {
                         controller: _passkeyController,
                         decoration: InputDecoration(
                           hintText: 'Chiave segreta per i dati',
-                          helperText: 'Verrà usata per proteggere il database locale.',
+                          helperText:
+                              'Verrà usata per proteggere il database locale.',
                           prefixIcon: const Icon(Icons.key, color: Colors.teal),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal.shade300, width: 1.5),
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2.0,
+                            ),
                           ),
                         ),
                         validator: (value) {
-                          if (value != null && value.isNotEmpty && value.length < 10) {
+                          if (value != null &&
+                              value.isNotEmpty &&
+                              value.length < 10) {
                             return 'La passkey deve essere lunga almeno 10 caratteri';
                           }
                           return null;
@@ -322,7 +413,8 @@ class _SignupPageState extends State<SignupPage> {
 
                           await navigator.pushReplacement(
                             MaterialPageRoute(
-                              builder: (context) => GoogleConnectionPage(user: _user!),
+                              builder: (context) =>
+                                  GoogleConnectionPage(user: _user!),
                             ),
                           );
                         },
@@ -331,7 +423,10 @@ class _SignupPageState extends State<SignupPage> {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text('REGISTRATI', style: TextStyle(fontSize: 18)),
+                        child: const Text(
+                          'REGISTRATI',
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                       const SizedBox(height: 12),
 
@@ -346,16 +441,24 @@ class _SignupPageState extends State<SignupPage> {
                             // Replace 'LoginPage()' with your actual login widget class name
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => const LoginPage()),
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
                             );
                           }
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.teal,
-                          side: const BorderSide(color: Colors.teal, width: 1.5),
+                          side: const BorderSide(
+                            color: Colors.teal,
+                            width: 1.5,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text('ANNULLA', style: TextStyle(fontSize: 16)),
+                        child: const Text(
+                          'ANNULLA',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ],
                   ),
@@ -374,7 +477,10 @@ class _SignupPageState extends State<SignupPage> {
       padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
       ),
     );
   }

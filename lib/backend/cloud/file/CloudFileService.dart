@@ -239,6 +239,18 @@ class CloudFileService {
     );
   }
 
+  /// Overrides an existing JSON file with the provided [content].
+  Future<drive.File> updateJson({
+    required String fileId,
+    required Map<String, dynamic> content,
+  }) {
+    return updateBytes(
+      fileId: fileId,
+      bytes: utf8.encode(jsonEncode(content)),
+      mimeType: 'application/json',
+    );
+  }
+
   /// Update metadata file (such as the [newName])
   /// without affecting the content
   Future<drive.File> rename({required String fileId, required String newName}) {

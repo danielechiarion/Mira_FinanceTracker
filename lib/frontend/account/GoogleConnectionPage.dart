@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
+import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountConnection.dart';
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
 /// Page shown after signup to optionally connect a Google account.
 /// The user can skip this step and continue to the login page.
 class GoogleConnectionPage extends StatefulWidget {
-  final SystemDatabaseWrapper database;
   final User user;
 
   /// Creates a [GoogleConnectionPage] widget instance.
-  GoogleConnectionPage({super.key, required this.user})
-    : database = SystemDatabaseWrapper();
+  const GoogleConnectionPage({super.key, required this.user});
 
   @override
   State<GoogleConnectionPage> createState() => _GoogleConnectionPageState();
 }
 
 class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
+  final TextEditingController _decryptionKeyController =
+      TextEditingController();
   bool _isConnecting = false;
   String? _connectedEmail;
   String? _errorMessage;
@@ -38,8 +38,16 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
     };
   }
 
-  /// Connects the Google account and saves its credentials to the system database.
+  @override
+  void dispose() {
+    _decryptionKeyController.dispose();
+    super.dispose();
+  }
+
+  /// Connects Google after validating the encrypted cloud key.
   Future<void> _connectGoogleAccount() async {
+    final decryptionKey = _decryptionKeyController.text.trim();
+
     setState(() {
       _isConnecting = true;
       _errorMessage = null;
@@ -47,16 +55,15 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
 
     final authenticationManager = GoogleAuthenticationManager();
     try {
-      await authenticationManager.init();
-      await authenticationManager.signIn();
+      // Invoke the backend operation to validate cloud ownership and decryption
+      // before it saves Google credentials or associates the email with this user.
+      final connection = GoogleAccountConnection(
+        widget.user,
+        authenticationManager,
+      );
+      await connection.execute(decryptionKey.isEmpty ? null : decryptionKey);
 
       if (!mounted) return;
-      await widget.database.init();
-      await widget.database.updateUserEmail(
-        widget.user,
-        authenticationManager.email!,
-      );
-      await widget.database.closeDatabase();
       setState(() {
         _connectedEmail = authenticationManager.email;
       });
@@ -140,8 +147,9 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                     const SizedBox(height: 16),
                     Text(
                       connectedEmail == null
-                          ? 'Vuoi collegare il tuo account Google per usare le funzionalità cloud? '
-                                'Puoi farlo ora oppure saltare questo passaggio.'
+                          ? 'Collega Google per verificare lo spazio cloud. '
+                                'La chiave di decifratura sarà necessaria solo '
+                                'se esistono già dati cloud o altri dispositivi collegati.'
                           : 'È stato collegato l\'account $connectedEmail.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -159,6 +167,31 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                       ),
                     ],
                     const SizedBox(height: 32),
+                    if (connectedEmail == null) ...[
+                      TextField(
+                        controller: _decryptionKeyController,
+                        obscureText: true,
+                        enabled: !_isConnecting,
+                        decoration: InputDecoration(
+                          labelText: 'Chiave di decifratura (se richiesta)',
+                          hintText: 'Necessaria solo per dati cloud esistenti',
+                          prefixIcon: const Icon(Icons.key, color: Colors.teal),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.teal.shade300,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (connectedEmail == null && canConnectGoogle)
                       ElevatedButton.icon(
                         onPressed: _isConnecting ? null : _connectGoogleAccount,

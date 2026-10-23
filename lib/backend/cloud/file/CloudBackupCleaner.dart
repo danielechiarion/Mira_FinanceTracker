@@ -3,6 +3,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackup.dart';
+import 'package:mira_finance_tracker/backend/cloud/file/CloudFileService.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 
@@ -12,8 +13,9 @@ import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart
 /// confirmation before calling [execute], since the deletion cannot be undone.
 /// Backups created by older versions in the regular Drive space are not included.
 class CloudBackupCleaner extends CloudBackup {
-  static const String _DEVICEREGISTERFILEPATH = "device_register.json"; // static attribute to indicate the path of the device register
-  
+  static const String _DEVICEREGISTERFILEPATH =
+      "device_register.json"; // static attribute to indicate the path of the device register
+
   /* define attributes */
   User _user;
 
@@ -23,8 +25,8 @@ class CloudBackupCleaner extends CloudBackup {
     User user, {
     GoogleAuthenticationManager? authentication,
     DriveHttpHandler? handler,
-  }): _user = user,
-    super(user, authentication: authentication, handler: handler);
+  }) : _user = user,
+       super(user, authentication: authentication, handler: handler);
 
   /// Function to init the cleaner
   /// using authentication
@@ -33,12 +35,13 @@ class CloudBackupCleaner extends CloudBackup {
     return super.initAuthentication();
   }
 
-  /// Function to execute the cleaning of 
+  /// Function to execute the cleaning of
   /// the directory leaving only the entry point,
   /// which cannot be deleted.
   @override
   Future<void> execute() async {
-    if(!(await _checkIfCleaningIsAvailable())) return; // first control if it's possible to clean the drive
+    if (!(await _checkIfCleaningIsAvailable()))
+      return; // first control if it's possible to clean the drive
     return super.fileService.deleteAppDataFolderContents();
   }
 
@@ -48,22 +51,36 @@ class CloudBackupCleaner extends CloudBackup {
   Future<bool> _checkIfCleaningIsAvailable() async {
     drive.File? file = await super.fileService.findByName(
       _DEVICEREGISTERFILEPATH,
+      spaces: CloudFileService.appDataFolderId,
     ); // try to find the file
 
     /* if the file is not found it's possible to delete,
     otherwise control if there are other devices 
     connected to the cloud */
-    if(file == null) return true;
+    if (file == null) return true;
 
-    Map<String, dynamic> fileContent = await super.fileService.readJson(file.id!);
-    List<CurrentSession> registeredDevices = (fileContent['devices'] as List<Map<String, dynamic>>).map((device) {
+    Map<String, dynamic> fileContent = await super.fileService.readJson(
+      file.id!,
+    );
+    final devices = fileContent['devices'];
+    if (devices is! List) {
+      throw const FormatException(
+        'The cloud device register does not contain a valid device list.',
+      );
+    }
+    List<CurrentSession> registeredDevices = devices.map((device) {
+      if (device is! Map) {
+        throw const FormatException(
+          'The cloud device register contains an invalid entry.',
+        );
+      }
       return CurrentSession.fromMap(Map<String, dynamic>.from(device));
     }).toList();
 
     /* if there is more than one registered
     device it's not possible to delete,
     otherwise proceed */
-    if(registeredDevices.length <= 1) return true;
+    if (registeredDevices.length <= 1) return true;
 
     /* get current session from the 
     shared preferences */
@@ -73,9 +90,12 @@ class CloudBackupCleaner extends CloudBackup {
 
     Map<String, dynamic> updatedContent = {
       "Object": "Device register",
-      "devices": registeredDevices.map((element) => element.toMap())
+      "devices": registeredDevices.map((element) => element.toMap()).toList(),
     };
-    await super.fileService.updateText(fileId: file.id!, content: updatedContent.toString());
+    await super.fileService.updateJson(
+      fileId: file.id!,
+      content: updatedContent,
+    );
     return false;
   }
 

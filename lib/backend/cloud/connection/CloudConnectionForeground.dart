@@ -5,6 +5,7 @@ import 'package:mira_finance_tracker/backend/service/session/BackgroundSession.d
 import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.dart';
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
+import 'package:mira_finance_tracker/backend/cloud/file/CloudFileService.dart';
 
 /// Class extending [CloudConnection] to manage connection
 /// when the application is used in foreground
@@ -41,7 +42,9 @@ class CloudConnectionForeground extends CloudConnection {
       BackgroundSession backgroundSession = BackgroundSession.fromMap(
         await super.fileService.readJson(backgroundFile.id!),
       );
-      if (!backgroundSession.channelAvailable()) return CloudConnectionStatus.wait_till_update; // return the status to wait till background is finished
+      if (!backgroundSession.channelAvailable())
+        return CloudConnectionStatus
+            .wait_till_update; // return the status to wait till background is finished
     }
 
     /* then add the information
@@ -76,35 +79,56 @@ class CloudConnectionForeground extends CloudConnection {
   Future<void> _checkIfUpdateDeviceRegister() async {
     drive.File? file = await super.fileService.findByName(
       super.DEVICEREGISTERFILEPATH,
+      spaces: CloudFileService.appDataFolderId,
     ); // try to find the file
 
     /* if the file is not found add a new 
     file with the information about the device,
     which is the first session to be registered */
-    if(file == null){
-      await super.fileService.createJson(fileName: super.DEVICEREGISTERFILEPATH, 
+    if (file == null) {
+      await super.fileService.createJson(
+        fileName: super.DEVICEREGISTERFILEPATH,
         content: {
           "Object": "Device register",
-          "devices": [super.session.toMap()]
-      });
+          "devices": [super.session.toMap()],
+        },
+        parentFolderId: CloudFileService.appDataFolderId,
+      );
       return;
     }
 
     /* otherwise try to read the file 
     and understand if the device has already been registered before */
-    Map<String, dynamic> fileContent = await super.fileService.readJson(file.id!);
-    List<CurrentSession> registeredDevices = (fileContent['devices'] as List<Map<String, dynamic>>).map((device) {
+    Map<String, dynamic> fileContent = await super.fileService.readJson(
+      file.id!,
+    );
+    final devices = fileContent['devices'];
+    if (devices is! List) {
+      throw const FormatException(
+        'The cloud device register does not contain a valid device list.',
+      );
+    }
+    final registeredDevices = devices.map((device) {
+      if (device is! Map) {
+        throw const FormatException(
+          'The cloud device register contains an invalid entry.',
+        );
+      }
       return CurrentSession.fromMap(Map<String, dynamic>.from(device));
     }).toList();
 
     /* understand if the device is missing,
     otherwise register it */
-    if(registeredDevices.contains(super.session)) return;
+    if (registeredDevices.contains(super.session)) return;
+    registeredDevices.add(super.session);
     Map<String, dynamic> updatedContent = {
       "Object": "Device register",
-      "devices": registeredDevices.map((element) => element.toMap())
+      "devices": registeredDevices.map((element) => element.toMap()).toList(),
     };
-    await super.fileService.updateText(fileId: file.id!, content: updatedContent.toString());
+    await super.fileService.updateJson(
+      fileId: file.id!,
+      content: updatedContent,
+    );
   }
 
   /// Function to disconnect the application

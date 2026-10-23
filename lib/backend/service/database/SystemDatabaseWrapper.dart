@@ -8,10 +8,10 @@ import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.dart';
 
-/// Class which wrapps the secure database class 
+/// Class which wrapps the secure database class
 /// in order to manage the most common system functionalities,
 /// which works not depending on the user connected
-class SystemDatabaseWrapper{
+class SystemDatabaseWrapper {
   /* define static attributes for
   info about the database to follow */
   static final String _DATABASENAME = "system_database";
@@ -25,18 +25,25 @@ class SystemDatabaseWrapper{
 
   /// Constructor of the database wrapper for system functionalities
   /// in order to manage custom functions
-  SystemDatabaseWrapper() 
-    :  systemKeyManager = KeyManager(), database = EncryptedDatabase();
-  
+  SystemDatabaseWrapper()
+    : systemKeyManager = KeyManager(),
+      database = EncryptedDatabase();
+
   /// Function to initialize the databse
   /// for system purposes
-  Future<void> init() async{
+  Future<void> init() async {
     await systemKeyManager.init();
     String? key = await systemKeyManager.stringKey;
     if (key == null) {
-      throw Exception('Unable to initialize system database: encryption key unavailable');
+      throw Exception(
+        'Unable to initialize system database: encryption key unavailable',
+      );
     }
-    await database.openAppDatabase(dbName: _DATABASENAME, password: key, onCreate: defineTables);
+    await database.openAppDatabase(
+      dbName: _DATABASENAME,
+      password: key,
+      onCreate: defineTables,
+    );
   }
 
   /// Method used to define tables of the database
@@ -44,7 +51,7 @@ class SystemDatabaseWrapper{
   /// [db] input database
   /// [version] version of the database
   @protected
-  Future<void> defineTables(Database db, int version) async{
+  Future<void> defineTables(Database db, int version) async {
     /* the only operation to do is to 
     dedicate a database only for user accounting */
     await db.execute('''
@@ -70,7 +77,7 @@ class SystemDatabaseWrapper{
         server_auth_code TEXT,
         updated_at DATETIME
       )
-    '''); 
+    ''');
   }
 
   /// Function to check if the user who tries
@@ -78,24 +85,31 @@ class SystemDatabaseWrapper{
   /// * [username] input username
   /// * [password] input clear password
   /// * [close] optional flag to close the database after the operation
-  Future<User?> userLogin(String username, String password, {close = false}) async {
+  Future<User?> userLogin(
+    String username,
+    String password, {
+    close = false,
+  }) async {
     /* check inside the database
     if the user is present */
     Map<String, dynamic> result = {};
-    try{
-      result = (await database.query(sql: 'SELECT id,username,name,surname,email,password FROM User WHERE username = ?',
-                    arguments: [username])).first;
-    }on StateError{
+    try {
+      result = (await database.query(
+        sql:
+            'SELECT id,username,name,surname,email,password FROM User WHERE username = ?',
+        arguments: [username],
+      )).first;
+    } on StateError {
       return null;
     }
 
     /* compare the password with the one given, otherwise 
     return null */
-    if(!BCrypt.checkpw(password, result['password'])){
+    if (!BCrypt.checkpw(password, result['password'])) {
       return null;
     }
 
-    if(close){
+    if (close) {
       database.close();
     }
 
@@ -107,20 +121,30 @@ class SystemDatabaseWrapper{
   /// * [user] user to be added
   /// * [passwordHashed] flag to indicate if the password has already been hashed
   /// * [close] flag to indicate if the database has to be closed at the end of the operation
-  /// 
+  ///
   /// The function returns the new id of the user, which has already been set in the object
   /// which was passed as argument
-  Future<int> addUser(User user, {bool passwordHashed = false, bool close = false}) async{
+  Future<int> addUser(
+    User user, {
+    bool passwordHashed = false,
+    bool close = false,
+  }) async {
     /* if the password is not hashed just hash it 
     before being saved into the database */
-    if(!passwordHashed){
+    if (!passwordHashed) {
       user.hashCurrentPassword();
     }
 
     int newId;
-    try{
+    try {
       // Ensure argument order matches the INSERT column order
-      final args = [user.username, user.name, user.surname, user.password, user.email];
+      final args = [
+        user.username,
+        user.name,
+        user.surname,
+        user.password,
+        user.email,
+      ];
       newId = await database.execute(
         sql: '''INSERT INTO User (username,name,surname,password,email) 
                             VALUES(?,?,?,?,?)''',
@@ -129,39 +153,44 @@ class SystemDatabaseWrapper{
       user.id = newId; // set the id returned by rawInsert
     } on DatabaseException catch (e) {
       final message = e.toString();
-      if (message.contains('UNIQUE') || message.contains('unique') || message.contains('UNIQUE constraint failed')) {
+      if (message.contains('UNIQUE') ||
+          message.contains('unique') ||
+          message.contains('UNIQUE constraint failed')) {
         throw Exception('USERNAME_ALREADY_EXISTS');
       }
       rethrow;
     } catch (e) {
       throw Exception(e);
-    } finally{
-      if(close){
+    } finally {
+      if (close) {
         database.close();
       }
     }
     return newId; // return it anyway
   }
 
-  /// Function to remove the data of the user inside the 
+  /// Function to remove the data of the user inside the
   /// system and the personal database
   /// * [user] user to be removed
   /// * [close] flag to indicated if the database has to be closed after the operation
-  Future<void> removeUser(User user, {bool close = false}) async{
-    try{
-      await database.execute(sql: 'DELETE FROM User WHERE username = ?', arguments: [user.username]);
+  Future<void> removeUser(User user, {bool close = false}) async {
+    try {
+      await database.execute(
+        sql: 'DELETE FROM User WHERE username = ?',
+        arguments: [user.username],
+      );
       /* delete also the database 
       dedicated to the user operations. 
       if this one was not created, make the operation non fatal */
-      try{
+      try {
         await database.deleteAppDatabase('$USERDATABASEPREFIX${user.username}');
-      }catch(_){}
-    } on DatabaseException{
+      } catch (_) {}
+    } on DatabaseException {
       rethrow;
-    }catch(e){
+    } catch (e) {
       throw Exception(e);
-    }finally{
-      if(close){
+    } finally {
+      if (close) {
         database.close();
       }
     }
@@ -170,42 +199,52 @@ class SystemDatabaseWrapper{
   /// Function to update the data of the user
   /// * [user] user to be updated
   /// * [close] flag to indicated if the database has to be closed after the operation
-  Future<void> updateUser(User user, {bool close = false}) async { 
-    try{
-      await database.execute(sql: ''' UPDATE User
+  Future<void> updateUser(User user, {bool close = false}) async {
+    try {
+      await database.execute(
+        sql: ''' UPDATE User
                                     SET name = ?, surname = ?, email = ?, password = ?
                                     WHERE username = ? ''',
-                          arguments: [user.name, user.surname, user.email, user.password, user.username]);
+        arguments: [
+          user.name,
+          user.surname,
+          user.email,
+          user.password,
+          user.username,
+        ],
+      );
     } on DatabaseException {
       rethrow;
-    }catch(e){
+    } catch (e) {
       throw Exception(e);
-    }finally{
-      if(close){
+    } finally {
+      if (close) {
         database.close();
       }
     }
   }
 
-  /// Function to return the list of users 
+  /// Function to return the list of users
   /// registered inside the database
   /// * [close] flag to indicated if the database has to be closed after the operation
-  Future<List<User>> userList({bool close = false}) async{
-    try{
-      List<Map<String, dynamic>> mapList = await database.query(sql: 'SELECT id,username,name,surname,password,email FROM User');
+  Future<List<User>> userList({bool close = false}) async {
+    try {
+      List<Map<String, dynamic>> mapList = await database.query(
+        sql: 'SELECT id,username,name,surname,password,email FROM User',
+      );
       /* now convert all the map
       into user objects */
       List<User> userList = [];
-      for(Map<String, dynamic> singleMap in mapList){
+      for (Map<String, dynamic> singleMap in mapList) {
         userList.add(User.fromMap(singleMap));
       }
       return userList;
-    } on DatabaseException{
+    } on DatabaseException {
       rethrow;
-    }catch(e){
+    } catch (e) {
       throw Exception(e);
-    }finally{
-      if(close){
+    } finally {
+      if (close) {
         await database.close();
       }
     }
@@ -214,30 +253,41 @@ class SystemDatabaseWrapper{
   /// Function to add or replace a google [account] inside the database,
   /// in order to save the tokens
   /// * [close] flag to close the database
-  Future<void> addGoogleAccount(GoogleAccount account, {bool close = false}) async {
-    await database.executeWithMap(sql: '''INSERT OR REPLACE INTO GoogleAuthSession
+  Future<void> addGoogleAccount(
+    GoogleAccount account, {
+    bool close = false,
+  }) async {
+    await database.executeWithMap(
+      sql: '''INSERT OR REPLACE INTO GoogleAuthSession
       (email, display_name, access_token, refresh_token, server_auth_code, updated_at) 
       VALUES (:email, :display_name, :access_token, :refresh_token, :server_auth_code, :updated_at)''',
-      parameters: account.toMap());
+      parameters: account.toMap(),
+    );
 
-    if(close){
+    if (close) {
       await database.close();
     }
   }
 
   /// Function to get the google account by its [email]
   /// * [close] flag to close the database
-  Future<GoogleAccount?> getGoogleAccountByEmail(String email, {bool close = false}) async {
-    final result = await database.query(sql: '''
+  Future<GoogleAccount?> getGoogleAccountByEmail(
+    String email, {
+    bool close = false,
+  }) async {
+    final result = await database.query(
+      sql: '''
       SELECT id, email, display_name, access_token, refresh_token, server_auth_code, updated_at
-      FROM GoogleAuthSession WHERE email = ?''', arguments: [email]);
+      FROM GoogleAuthSession WHERE email = ?''',
+      arguments: [email],
+    );
 
-    if(result.isEmpty){
+    if (result.isEmpty) {
       return null;
     }
     final account = GoogleAccount.fromMap(result.first);
 
-    if(close){
+    if (close) {
       await database.close();
     }
 
@@ -247,9 +297,12 @@ class SystemDatabaseWrapper{
   /// Function to remove a google account from the database
   /// * [close] flag to close the database
   Future<void> removeGoogleAccount(String email, {bool close = false}) async {
-    await database.execute(sql: 'DELETE FROM GoogleAuthSession WHERE email = ?', arguments: [email]);
+    await database.execute(
+      sql: 'DELETE FROM GoogleAuthSession WHERE email = ?',
+      arguments: [email],
+    );
 
-    if(close){
+    if (close) {
       await database.close();
     }
   }
@@ -257,11 +310,13 @@ class SystemDatabaseWrapper{
   /// Function to get all google accounts from the database
   /// * [close] flag to close the database
   Future<List<GoogleAccount>> getAllGoogleAccounts({bool close = false}) async {
-    final result = await database.query(sql: '''SELECT 
+    final result = await database.query(
+      sql: '''SELECT
       id, email, display_name, access_token, refresh_token, server_auth_code, updated_at
-      FROM GoogleAuthSession ORDER BY updated_at DESC''');
+      FROM GoogleAuthSession ORDER BY updated_at DESC''',
+    );
 
-    if(close){
+    if (close) {
       await database.close();
     }
 
@@ -271,12 +326,13 @@ class SystemDatabaseWrapper{
   /// Method to check the user validity
   /// in order to add it correctly inside the database
   /// * [username] username to be checked
-  Future<bool> userValidity(String username) async{
+  Future<bool> userValidity(String username) async {
     /* the only check to pass
     is to have a user which username has
     not been added before */
     final result = await database.query(
-      sql: 'SELECT EXISTS(SELECT 1 FROM User WHERE username = ?) AS user_exists',
+      sql:
+          'SELECT EXISTS(SELECT 1 FROM User WHERE username = ?) AS user_exists',
       arguments: [username],
     );
 
@@ -291,19 +347,80 @@ class SystemDatabaseWrapper{
   /// Function to update user on general table
   /// saving email connected to the google account
   Future<void> updateUserEmail(User user, String email) async {
-    await database.execute(sql: '''UPDATE User SET email=? WHERE username=?''',
-      arguments: [email, user.username]);
+    await database.execute(
+      sql: '''UPDATE User SET email=? WHERE username=?''',
+      arguments: [email, user.username],
+    );
   }
 
-  /// Function to remove user email 
+  /// Function to remove user email
   /// connected to the cloud settings
   Future<void> removeUserEmail(User user) async {
-    await database.execute(sql: '''UPDATE User SET email=? WHERE username=?''',
-      arguments: [null, user.username]);
+    await database.execute(
+      sql: '''UPDATE User SET email=? WHERE username=?''',
+      arguments: [null, user.username],
+    );
+  }
+
+  /// Checks whether [email] is already assigned to a different local user.
+  Future<bool> isGoogleEmailAssignedToAnotherUser(
+    String email,
+    String username,
+  ) async {
+    final result = await database.query(
+      sql:
+          'SELECT username FROM User WHERE email = ? AND username != ? LIMIT 1',
+      arguments: [email, username],
+    );
+    return result.isNotEmpty;
+  }
+
+  /// Saves Google credentials and associates them with [user] atomically.
+  Future<void> saveGoogleAccountForUser(
+    GoogleAccount account,
+    User user,
+  ) async {
+    await database.transaction((transaction) async {
+      final otherUsers = await transaction.query(
+        'User',
+        columns: ['username'],
+        where: 'email = ? AND username != ?',
+        whereArgs: [account.email, user.username],
+        limit: 1,
+      );
+      if (otherUsers.isNotEmpty) {
+        throw StateError(
+          'Questo account Google è già associato a un altro account Mira.',
+        );
+      }
+
+      final userRows = await transaction.query(
+        'User',
+        columns: ['username'],
+        where: 'username = ?',
+        whereArgs: [user.username],
+        limit: 1,
+      );
+      if (userRows.isEmpty) {
+        throw StateError('L\'account Mira non è più presente nel database.');
+      }
+
+      await transaction.insert(
+        'GoogleAuthSession',
+        account.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await transaction.update(
+        'User',
+        {'email': account.email},
+        where: 'username = ?',
+        whereArgs: [user.username],
+      );
+    });
   }
 
   /// Function to close definitely the database
-  Future<void> closeDatabase() async{
+  Future<void> closeDatabase() async {
     await database.close();
   }
 

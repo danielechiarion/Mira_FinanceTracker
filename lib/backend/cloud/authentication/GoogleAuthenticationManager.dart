@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.dart';
+import 'package:mira_finance_tracker/classes/account/User.dart';
 
 /// Class to handle authentication management
 /// with google account in order to access into drive resource
@@ -25,6 +26,7 @@ class GoogleAuthenticationManager {
   following operations */
   late final GoogleSignIn _googleSignIn;
   String? _currentEmail;
+  GoogleAccount? _pendingAccount;
 
   /* define constants for the use of the application */
   static const String _apiDataFile = "assets/data/credentials.json";
@@ -67,8 +69,8 @@ class GoogleAuthenticationManager {
       TargetPlatform.macOS ||
       TargetPlatform.linux => 'desktop',
       _ => throw UnsupportedError(
-          'Google sign-in is not configured for this platform.',
-        ),
+        'Google sign-in is not configured for this platform.',
+      ),
     };
   }
 
@@ -87,7 +89,9 @@ class GoogleAuthenticationManager {
     final jsonData = jsonDecode(contents) as Map<String, dynamic>;
     final prefix = _credentialPrefix;
     final legacyWindowsConfig =
-        prefix == 'desktop' && _isWindows && !jsonData.containsKey('desktop_client_id');
+        prefix == 'desktop' &&
+        _isWindows &&
+        !jsonData.containsKey('desktop_client_id');
     final clientIdKey = legacyWindowsConfig
         ? 'windows_client_id'
         : '${prefix}_client_id';
@@ -119,9 +123,9 @@ class GoogleAuthenticationManager {
   String? get email => _currentEmail;
 
   /// Function to sign in the user with google account
-  Future<void> signIn() async {
+  Future<void> signIn({bool persistAccount = true}) async {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
-      await _signInWithWindowsBrowser();
+      await _signInWithWindowsBrowser(persistAccount: persistAccount);
       return;
     }
 
@@ -153,8 +157,38 @@ class GoogleAuthenticationManager {
       updatedAt: DateTime.now().toUtc(),
     );
 
-    await _database.addGoogleAccount(newAccount);
+    await _setAuthenticatedAccount(newAccount, persistAccount: persistAccount);
+  }
+
+  /// Saves the authenticated account only after pre-connection checks succeed.
+  Future<void> persistAuthenticatedAccount({User? user}) async {
+    final account = _pendingAccount;
+    if (account == null) {
+      throw StateError('No pending Google account is available to save.');
+    }
+
+    if (user == null) {
+      await _database.addGoogleAccount(account);
+    } else {
+      await _database.saveGoogleAccountForUser(account, user);
+    }
+    _pendingAccount = null;
+  }
+
+  Future<void> _setAuthenticatedAccount(
+    GoogleAccount account, {
+    required bool persistAccount,
+  }) async {
     _currentEmail = account.email;
+    _pendingAccount = account;
+    if (persistAccount) {
+      await persistAuthenticatedAccount();
+    }
+  }
+
+  Future<GoogleAccount?> _getAccount(String email) async {
+    if (_pendingAccount?.email == email) return _pendingAccount;
+    return _database.getGoogleAccountByEmail(email);
   }
 
   /// Function to get the account from the database
@@ -176,7 +210,7 @@ class GoogleAuthenticationManager {
         'Nessun account attivo. Effettua il login o switchAccount.',
       );
     }
-    final account = await _database.getGoogleAccountByEmail(target);
+    final account = await _getAccount(target);
     if (account == null) {
       throw Exception('Account $target non trovato');
     }
@@ -194,7 +228,7 @@ class GoogleAuthenticationManager {
       throw Exception('Nessun account attivo.');
     }
 
-    var account = await _database.getGoogleAccountByEmail(target);
+    var account = await _getAccount(target);
     if (account == null) {
       throw Exception('Account $target non trovato');
     }
@@ -213,7 +247,11 @@ class GoogleAuthenticationManager {
         );
       }
 
-      await _database.addGoogleAccount(refreshed);
+      if (_pendingAccount?.email == target) {
+        _pendingAccount = refreshed;
+      } else {
+        await _database.addGoogleAccount(refreshed);
+      }
       account = refreshed;
 
       response = await request({
@@ -236,11 +274,15 @@ class GoogleAuthenticationManager {
       }
       _currentEmail = null;
     }
+    if (_pendingAccount?.email == target) {
+      _pendingAccount = null;
+      return;
+    }
     await _database.removeGoogleAccount(target);
   }
 
   /// Authenticates a Windows user through the system browser and a loopback callback.
-  Future<void> _signInWithWindowsBrowser() async {
+  Future<void> _signInWithWindowsBrowser({required bool persistAccount}) async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final redirectUri = 'http://127.0.0.1:${server.port}';
     final codeVerifier = _generateSecureValue();
@@ -327,8 +369,7 @@ class GoogleAuthenticationManager {
         updatedAt: DateTime.now().toUtc(),
       );
 
-      await _database.addGoogleAccount(account);
-      _currentEmail = email;
+      await _setAuthenticatedAccount(account, persistAccount: persistAccount);
     } finally {
       await server.close(force: true);
     }
@@ -468,13 +509,17 @@ class GoogleAuthenticationManager {
   /// with the given [email], letting the class extracting the
   /// corresponing record from the database and updating it
   Future<String?> refreshAccessToken(String email) async {
-    final account = await _database.getGoogleAccountByEmail(email);
+    final account = await _getAccount(email);
     if (account == null) return null;
 
     final refreshed = await _refreshAccessToken(account);
     if (refreshed == null) return null;
 
-    await _database.addGoogleAccount(refreshed);
+    if (_pendingAccount?.email == email) {
+      _pendingAccount = refreshed;
+    } else {
+      await _database.addGoogleAccount(refreshed);
+    }
     return refreshed.accessToken;
   }
 
