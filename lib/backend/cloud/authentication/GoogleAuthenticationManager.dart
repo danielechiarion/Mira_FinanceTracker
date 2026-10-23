@@ -17,7 +17,7 @@ import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAccount.
 class GoogleAuthenticationManager {
   /* define attributes */
   late final String _clientID;
-  String? _windowsClientSecret;
+  String? _clientSecret;
   final List<String> _scopes;
   final SystemDatabaseWrapper _database;
 
@@ -57,6 +57,21 @@ class GoogleAuthenticationManager {
     );
   }
 
+  String get _credentialPrefix {
+    if (kIsWeb) return 'web';
+
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android => 'android',
+      TargetPlatform.iOS => 'ios',
+      TargetPlatform.windows ||
+      TargetPlatform.macOS ||
+      TargetPlatform.linux => 'desktop',
+      _ => throw UnsupportedError(
+          'Google sign-in is not configured for this platform.',
+        ),
+    };
+  }
+
   bool get _isWindows =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
 
@@ -70,27 +85,32 @@ class GoogleAuthenticationManager {
   Future<String> _getClientID() async {
     final contents = await rootBundle.loadString(_apiDataFile);
     final jsonData = jsonDecode(contents) as Map<String, dynamic>;
-    final isWindows =
-        !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
-    final clientId = jsonData[isWindows ? 'windows_client_id' : 'client_id'];
+    final prefix = _credentialPrefix;
+    final legacyWindowsConfig =
+        prefix == 'desktop' && _isWindows && !jsonData.containsKey('desktop_client_id');
+    final clientIdKey = legacyWindowsConfig
+        ? 'windows_client_id'
+        : '${prefix}_client_id';
+    final clientSecretKey = legacyWindowsConfig
+        ? 'windows_client_secret'
+        : '${prefix}_client_secret';
+    final clientId = jsonData[clientIdKey];
     if (clientId is! String || clientId.isEmpty) {
       throw const FormatException(
-        'Google OAuth client ID is missing from credentials. Windows '
-        'requires a Desktop app client ID in "windows_client_id"; other '
-        'platforms require "client_id".',
+        'Google OAuth client ID is missing from credentials. Add the '
+        'platform-specific client ID, for example "desktop_client_id", '
+        '"android_client_id", or "ios_client_id".',
       );
     }
 
-    if (isWindows) {
-      final clientSecret = jsonData['windows_client_secret'];
-      if (clientSecret != null &&
-          (clientSecret is! String || clientSecret.isEmpty)) {
-        throw const FormatException(
-          'The Windows OAuth client secret must be a non-empty string.',
-        );
-      }
-      _windowsClientSecret = clientSecret as String?;
+    final clientSecret = jsonData[clientSecretKey];
+    if (clientSecret != null &&
+        (clientSecret is! String || clientSecret.isEmpty)) {
+      throw FormatException(
+        'The OAuth client secret "$clientSecretKey" must be a non-empty string.',
+      );
     }
+    _clientSecret = clientSecret as String?;
 
     return clientId;
   }
@@ -369,7 +389,7 @@ class GoogleAuthenticationManager {
       'redirect_uri': redirectUri,
       'grant_type': 'authorization_code',
       'code_verifier': ?codeVerifier,
-      if (_isWindows) 'client_secret': ?_windowsClientSecret,
+      'client_secret': ?_clientSecret,
     };
     final response = await http.post(
       Uri.parse('https://oauth2.googleapis.com/token'),
@@ -404,8 +424,8 @@ class GoogleAuthenticationManager {
             'Desktop app.',
       'invalid_request'
           when errorDescription?.contains('client_secret') ?? false =>
-        'Add the matching "windows_client_secret" to credentials.json or '
-            'replace the Windows client with a Desktop app OAuth client.',
+        'Add the matching platform-specific client secret to credentials.json, '
+            'or replace the Windows client with a Desktop app OAuth client.',
       'invalid_grant' =>
         'The authorization code may have expired, or the redirect URI or '
             'PKCE verifier did not match. Retry the Google sign-in.',
@@ -428,7 +448,7 @@ class GoogleAuthenticationManager {
       body: {
         'refresh_token': account.refreshToken,
         'client_id': _clientID,
-        if (_isWindows) 'client_secret': ?_windowsClientSecret,
+        'client_secret': ?_clientSecret,
         'grant_type': 'refresh_token',
       },
     );
