@@ -15,6 +15,7 @@ import 'package:mira_finance_tracker/backend/cloud/file/CloudFileService.dart';
 class CloudBackupReader extends CloudBackup {
   /* attributes definition */
   String? _keyPassword;
+  bool _requireKey;
 
   /// Constructor of the cloud backup reader
   /// passing data to the superclass constructor
@@ -23,6 +24,7 @@ class CloudBackupReader extends CloudBackup {
     this._keyPassword,
     GoogleAuthenticationManager? authentication,
     DriveHttpHandler? handler,
+    this._requireKey = true
   }) : super(user, authentication: authentication, handler: handler);
 
   /// Override function of [CloudBackup] class to initialize resources.
@@ -79,11 +81,23 @@ class CloudBackupReader extends CloudBackup {
         throw ArgumentError(
           "[CloudBackupError] key reading operation didn't end successfully",
         );
-    } else {
+    } else if(!_requireKey){
       throw StateError(
         "[CloudBackupReader] cannot recover key not saved and with no password given",
       );
     }
+  }
+
+  /// Function to undestand if the 
+  /// drive is empty, so no values has been saved inside
+  Future<bool> isDriveEmpty() async {
+    /* control if the directory is empty,
+    otherwise check the list inside */
+    drive.File? directory = await super.fileService.findFolderByName(super.DATABASEDIRECTORY);
+    if(directory == null) return true;
+
+    List<drive.File?> files = await super.fileService.listFiles(folderId: directory.id);
+    return files.length == 0;
   }
 
   /// Function to perform reading from the drive selected,

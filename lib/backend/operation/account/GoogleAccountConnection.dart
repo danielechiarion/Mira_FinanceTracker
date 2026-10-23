@@ -4,14 +4,16 @@ import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenti
 import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudFileService.dart';
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
-import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
 /// Validates cloud key ownership and decryption before saving Google credentials.
 class GoogleAccountConnection {
   final User _user;
   final GoogleAuthenticationManager _authentication;
-  final SystemDatabaseWrapper _systemDatabase;
+  late final CloudBackupReader _cloudReader;
+  late final UserDatabaseWrapper _systemDatabase;
 
   static const String _keyDirectory = 'crypto/';
   static const String _keyFileName = 'crypto_key.json';
@@ -20,13 +22,16 @@ class GoogleAccountConnection {
   GoogleAccountConnection(
     this._user,
     GoogleAuthenticationManager authentication, {
-    SystemDatabaseWrapper? systemDatabase,
-  }) : _authentication = authentication,
-       _systemDatabase = systemDatabase ?? SystemDatabaseWrapper();
+    UserDatabaseWrapper? systemDatabase,
+  }) : _authentication = authentication {
+    _systemDatabase = UserDatabaseWrapper(_user);
+    _cloudReader = CloudBackupReader(_user, authentication: authentication);
+  }
 
   /// Connects Google, validates the cloud key, then persists the account.
   Future<void> execute([String? decryptionKey]) async {
     await _authentication.init();
+    await _cloudReader.init();
 
     DriveHttpHandler? handler;
     KeyManager? keyManager;
@@ -82,6 +87,9 @@ class GoogleAccountConnection {
           );
         }
 
+        if(!(await _systemDatabase.isEmpty()) && !(await _cloudReader.isDriveEmpty())){
+          throw StateError('Impossibile connettersi al cloud con dati già salvati da ambo le parti');
+        }
         if (keyData != null &&
             !await keyManager.importKeyData(password, dataToValidate)) {
           throw StateError('Impossibile ripristinare la chiave crittografica.');

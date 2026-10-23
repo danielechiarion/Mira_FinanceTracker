@@ -10,9 +10,14 @@ import 'package:mira_finance_tracker/classes/account/User.dart';
 /// The user can skip this step and continue to the login page.
 class GoogleConnectionPage extends StatefulWidget {
   final User user;
+  final bool returnToSettings;
 
   /// Creates a [GoogleConnectionPage] widget instance.
-  const GoogleConnectionPage({super.key, required this.user});
+  const GoogleConnectionPage({
+    super.key,
+    required this.user,
+    this.returnToSettings = false,
+  });
 
   @override
   State<GoogleConnectionPage> createState() => _GoogleConnectionPageState();
@@ -92,6 +97,11 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
 
   /// Replaces this page with the login page.
   void _continueToLogin() {
+    if (widget.returnToSettings) {
+      Navigator.of(context).pop(_connectedEmail != null);
+      return;
+    }
+
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
       (route) => false,
@@ -135,7 +145,9 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                     const SizedBox(height: 24),
                     Text(
                       connectedEmail == null
-                          ? 'Account creato!'
+                          ? widget.returnToSettings
+                                ? 'Collega Google'
+                                : 'Account creato!'
                           : 'Account Google collegato',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
@@ -147,9 +159,13 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                     const SizedBox(height: 16),
                     Text(
                       connectedEmail == null
-                          ? 'Collega Google per verificare lo spazio cloud. '
-                                'La chiave di decifratura sarà necessaria solo '
-                                'se esistono già dati cloud o altri dispositivi collegati.'
+                          ? widget.returnToSettings
+                                ? 'Collega Google Drive al tuo account Mira. '
+                                      'La chiave di decifratura sarà richiesta '
+                                      'solo se lo spazio cloud contiene già dati.'
+                                : 'Collega Google per verificare lo spazio cloud. '
+                                      'La chiave di decifratura sarà necessaria solo '
+                                      'se esistono già dati cloud o altri dispositivi collegati.'
                           : 'È stato collegato l\'account $connectedEmail.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -238,7 +254,7 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: const Text(
-                          'CONTINUA AL LOGIN',
+                          'CONTINUA',
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -254,8 +270,10 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text(
-                          'SALTA E TORNA AL LOGIN',
+                        child: Text(
+                          widget.returnToSettings
+                              ? 'TORNA ALLE IMPOSTAZIONI'
+                              : 'SALTA E TORNA AL LOGIN',
                           style: TextStyle(fontSize: 16),
                         ),
                       ),

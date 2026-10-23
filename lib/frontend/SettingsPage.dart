@@ -11,6 +11,7 @@ import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/frontend/account/GoogleConnectionPage.dart';
 
 /// Main entry point for the Settings feature.
 /// Displays the account shortcut and the application-wide preferences
@@ -110,6 +111,22 @@ class _SettingsPageState extends State<SettingsPage> {
         _currentUser = updatedUser;
       });
     }
+  }
+
+  /// Opens the optional Google connection flow and refreshes the account banner.
+  Future<void> _connectGoogleAccount() async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            GoogleConnectionPage(user: _currentUser, returnToSettings: true),
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _googleAccountAssociated = _currentUser.email.isNotEmpty;
+    });
   }
 
   /// Shows the local encryption key only after device authentication succeeds.
@@ -344,6 +361,37 @@ class _SettingsPageState extends State<SettingsPage> {
                             color: Colors.redAccent,
                           ),
                         ),
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.teal,
+                    child: Icon(Icons.cloud_outlined, color: Colors.white),
+                  ),
+                  title: const Text(
+                    'Collega un account Google',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'Connetti Google Drive per usare backup e sincronizzazione cloud.',
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.teal,
+                  ),
+                  onTap: _connectGoogleAccount,
                 ),
               ),
             ],

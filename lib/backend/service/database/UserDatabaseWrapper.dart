@@ -489,6 +489,35 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         )''');
   }
 
+  /// Function to control if the database is empty,
+  /// that means there is no financial value saved inside. 
+  /// This method is pretty useful to understand if the account is proper to 
+  /// connect to the cloud page. 
+  Future<bool> isEmpty() async {
+    /* it is not necessary to check all the tables. 
+    The function just checks the essential tables which 
+    the other entities depends from or are which are 
+    independent from anything else */
+    if(!(await _isTableEmpty('BankAccount'))) return false;
+    if(!(await _isTableEmpty('CounterParty'))) return false;
+    if(!(await _isTableEmpty('FinancialInstitute'))) return false;
+    if(!(await _isTableEmpty('BondModel'))) return false;
+    if(!(await _isTableEmpty('TimeDepositModel'))) return false;
+    
+    return true;
+  }
+
+  /* function to understand if a 
+  database table is empty */
+  Future<bool> _isTableEmpty(String table) async {
+    /* execute counting query
+    and extract integer value from the result */
+    final result = await appDatabase.query(sql:'SELECT COUNT(*) FROM ?', arguments: [table]);
+    int? count = Sqflite.firstIntValue(result);
+    
+    return (count ?? 0) == 0;
+  }
+
   /* *** DEPRECATED METHODS ***
   Deprecate methods available only on the system database
   and not on the custom user one */
