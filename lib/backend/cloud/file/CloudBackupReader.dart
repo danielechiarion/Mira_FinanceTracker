@@ -123,17 +123,13 @@ class CloudBackupReader extends CloudBackup {
       parentFolderId: CloudFileService.appDataFolderId,
       spaces: 'appDataFolder',
     );
-    if (directory == null)
-      throw Exception("During user preferences reading directory not found");
+    if (directory == null) throw Exception("During user preferences reading directory not found");
     drive.File? file = await super.fileService.findByName(
       super.PREFERENCEFILENAME,
       folderId: directory.id,
       spaces: 'appDataFolder',
     );
-    if (file == null)
-      throw Exception(
-        "During user preferences reading file has not been found",
-      );
+    if (file == null) throw Exception("During user preferences reading file has not been found",);
 
     await super.userPreferences.importPreferences(
       await _readEncryptedData(
