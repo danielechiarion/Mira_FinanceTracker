@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
+import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
+import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupCleaner.dart';
+import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/frontend/account/AccountSettingsPage.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 
 /// Main entry point for the Settings feature.
 /// Displays the account shortcut and the application-wide preferences
@@ -24,6 +29,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// refreshed immediately after coming back from the account subpage.
   late User _currentUser;
   late UserPreferences _preferences;
+  late SystemDatabaseWrapper _database;
   bool _isLoading = true;
 
   /// Whether the periodic background activity is enabled
@@ -37,11 +43,19 @@ class _SettingsPageState extends State<SettingsPage> {
   /// Number of years the user can go backwards to edit past movements
   /// and the window used for incremental backups.
   late int _changingPeriodYears;
+  bool _googleAccountAssociated = false;
+  bool _isDisconnectingGoogle = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _database.closeDatabase();
   }
 
   /// Function to load all data from session
@@ -52,6 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
     CurrentSession session = (await CurrentSession.getFromMemory())!;
     setState(() {
       _currentUser = session.user;
+      _googleAccountAssociated = session.user.email.isNotEmpty;
     });
 
     /* initialize user preferences 
@@ -62,11 +77,21 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       /* then read the values from 
       the user preferences */
-      _backgroundActivityEnabled = _preferences.getPreference('enableBackground').currentValue;
-      _notificationsEnabled = _preferences.getPreference('enableNotifications').currentValue;
-      _changingPeriodYears = _preferences.getPreference('backupTime').currentValue;
+      _backgroundActivityEnabled = _preferences
+          .getPreference('enableBackground')
+          .currentValue;
+      _notificationsEnabled = _preferences
+          .getPreference('enableNotifications')
+          .currentValue;
+      _changingPeriodYears = _preferences
+          .getPreference('backupTime')
+          .currentValue;
       _isLoading = false;
     });
+
+    /* instantiate and initialize the database */
+    _database = SystemDatabaseWrapper();
+    await _database.init();
   }
 
   /// Opens the account subpage and refreshes the displayed user data
@@ -87,21 +112,163 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  /// Shows the local encryption key only after device authentication succeeds.
+  Future<void> _showEncryptionKey() async {
+    final localAuth = LocalAuthentication();
+    try {
+      if (!await localAuth.isDeviceSupported()) {
+        _showMessage('Lo sblocco del dispositivo non è disponibile.');
+        return;
+      }
+      final authenticated = await localAuth.authenticate(
+        localizedReason: 'Sblocca per visualizzare la chiave di crittografia',
+        persistAcrossBackgrounding: true,
+      );
+      if (!authenticated || !mounted) return;
+
+      final keyManager = KeyManager(user: _currentUser);
+      String? encryptionKey;
+      try {
+        await keyManager.init();
+        encryptionKey = await keyManager.stringKey;
+      } finally {
+        keyManager.clearSession();
+      }
+      if (!mounted) return;
+      final keyToDisplay = encryptionKey;
+      if (keyToDisplay == null || keyToDisplay.isEmpty) {
+        _showMessage('La chiave di crittografia non è disponibile.');
+        return;
+      }
+
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Chiave di crittografia'),
+          content: SelectableText(
+            keyToDisplay,
+            style: const TextStyle(fontFamily: 'monospace'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Chiudi'),
+            ),
+          ],
+        ),
+      );
+    } on LocalAuthException {
+      if (mounted) _showMessage('Sblocco del dispositivo non riuscito.');
+    } catch (error) {
+      if (mounted) {
+        _showMessage('Impossibile visualizzare la chiave: $error');
+      }
+    }
+  }
+
+  /// Confirms and disconnects Google, cleaning cloud data when permitted.
+  Future<void> _disconnectGoogleAccount() async {
+    final email = _currentUser.email;
+    if (email.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Disconnettere Google?'),
+        content: const Text(
+          'I dati presenti nello spazio cloud verranno eliminati se non ci '
+          'sono altri dispositivi registrati. Questa operazione non è reversibile.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annulla'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Disconnetti'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isDisconnectingGoogle = true);
+    final authentication = GoogleAuthenticationManager();
+    CloudBackupCleaner? cleaner;
+    var cloudDataDeleted = false;
+    try {
+      await authentication.init();
+      if (!await authentication.restoreAccount(email)) {
+        throw StateError('La sessione Google non è presente nel database.');
+      }
+
+      cleaner = CloudBackupCleaner(
+        _currentUser,
+        authentication: authentication,
+      );
+      await cleaner.init();
+      cloudDataDeleted = await cleaner.clean();
+      await cleaner.dispose();
+      cleaner = null;
+
+      await authentication.signOut(email: email);
+      /* function to disassociate the google account
+      with the user in database connected by the email */
+      await _database.removeUserEmail(_currentUser);
+
+      if (!mounted) return;
+      setState(() {
+        _googleAccountAssociated = false;
+        _isDisconnectingGoogle = false;
+        _currentUser.eraseEmail(); // erase email and update it immediately
+      });
+      _showMessage(
+        cloudDataDeleted
+            ? 'Account Google disconnesso e dati cloud eliminati.'
+            : 'Account Google disconnesso. I dati cloud sono stati mantenuti '
+                  'perché risultano registrati altri dispositivi.',
+      );
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isDisconnectingGoogle = false);
+        _showMessage('Disconnessione Google non riuscita: $error');
+      }
+    } finally {
+      if (cleaner != null) {
+        await cleaner.dispose();
+      }
+      try {
+        await authentication.close();
+      } catch (error) {
+        if (mounted) {
+          _showMessage('Errore durante la chiusura della sessione: $error');
+        }
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     /* if the content is still loading
     put a circular progress indicator */
     if (_isLoading) {
       return ResponsiveScaffold(
-        currentRoute: AppRoutes.settings, 
+        currentRoute: AppRoutes.settings,
         title: 'Impostazioni',
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return ResponsiveScaffold(
-      currentRoute: AppRoutes.settings, 
-      title: 'Impostazioni', 
+      currentRoute: AppRoutes.settings,
+      title: 'Impostazioni',
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20.0),
@@ -110,33 +277,95 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 8),
             Card(
               elevation: 1,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 leading: const CircleAvatar(
                   backgroundColor: Colors.teal,
                   child: Icon(Icons.person, color: Colors.white),
                 ),
-                title: const Text('Account e profilo', style: TextStyle(fontWeight: FontWeight.bold)),
+                title: const Text(
+                  'Account e profilo',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(_currentUser.username),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.teal),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.teal,
+                ),
                 onTap: _openAccountSettings,
               ),
             ),
+            if (_googleAccountAssociated) ...[
+              const SizedBox(height: 8),
+              Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.g_mobiledata,
+                      color: Colors.teal,
+                      size: 32,
+                    ),
+                  ),
+                  title: const Text(
+                    'Account Google collegato',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(_currentUser.email),
+                  trailing: _isDisconnectingGoogle
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.teal,
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: 'Disconnetti Google e pulisci il cloud',
+                          onPressed: _disconnectGoogleAccount,
+                          icon: const Icon(
+                            Icons.link_off,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                ),
+              ),
+            ],
             const SizedBox(height: 28),
 
             _buildSectionTitle('Applicazione'),
             const SizedBox(height: 8),
             Card(
               elevation: 1,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Column(
                 children: [
                   // --- BACKGROUND ACTIVITY TOGGLE ---
                   SwitchListTile(
                     secondary: const Icon(Icons.sync, color: Colors.teal),
                     activeThumbColor: Colors.teal,
-                    title: const Text('Attività in background', style: TextStyle(fontWeight: FontWeight.bold)),
+                    title: const Text(
+                      'Attività in background',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     subtitle: const Text(
                       'Controlla periodicamente i conti per calcolare in automatico entrate, '
                       'uscite e revisioni mensili. Se disattivata, i pagamenti e le entrate '
@@ -151,16 +380,25 @@ class _SettingsPageState extends State<SettingsPage> {
                         if (!value) _notificationsEnabled = false;
                       });
 
-                      await _preferences.updatePreferenceValue('enableBackground', value);
+                      await _preferences.updatePreferenceValue(
+                        'enableBackground',
+                        value,
+                      );
                     },
                   ),
                   const Divider(height: 1),
 
                   // --- NOTIFICATIONS TOGGLE ---
                   SwitchListTile(
-                    secondary: const Icon(Icons.notifications_none, color: Colors.teal),
+                    secondary: const Icon(
+                      Icons.notifications_none,
+                      color: Colors.teal,
+                    ),
                     activeThumbColor: Colors.teal,
-                    title: const Text('Notifiche', style: TextStyle(fontWeight: FontWeight.bold)),
+                    title: const Text(
+                      'Notifiche',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     subtitle: Text(
                       _backgroundActivityEnabled
                           ? 'Ricevi notifiche sulle revisioni mensili e sui pagamenti periodici in scadenza.'
@@ -175,7 +413,10 @@ class _SettingsPageState extends State<SettingsPage> {
                               _notificationsEnabled = value;
                             });
 
-                            await _preferences.updatePreferenceValue('enableNotifications', value);
+                            await _preferences.updatePreferenceValue(
+                              'enableNotifications',
+                              value,
+                            );
                           }
                         : null,
                   ),
@@ -192,12 +433,18 @@ class _SettingsPageState extends State<SettingsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Finestra di modifica', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text(
+                                'Finestra di modifica',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                               const SizedBox(height: 4),
                               Text(
                                 'Anni per cui è possibile modificare i movimenti passati e '
                                 'generare i backup incrementali.',
-                                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade700,
+                                ),
                               ),
                             ],
                           ),
@@ -222,7 +469,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                 _changingPeriodYears = value.round();
                               });
 
-                              await _preferences.updatePreferenceValue('backupTime', value.round());
+                              await _preferences.updatePreferenceValue(
+                                'backupTime',
+                                value.round(),
+                              );
                             },
                           ),
                         ),
@@ -231,13 +481,44 @@ class _SettingsPageState extends State<SettingsPage> {
                           child: Text(
                             '$_changingPeriodYears anni',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            _buildSectionTitle('Sicurezza'),
+            const SizedBox(height: 8),
+            Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                leading: const CircleAvatar(
+                  backgroundColor: Colors.teal,
+                  child: Icon(Icons.key, color: Colors.white),
+                ),
+                title: const Text(
+                  'Chiave di crittografia',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Visualizza la chiave dopo aver sbloccato il dispositivo.',
+                ),
+                trailing: const Icon(Icons.lock_outline, color: Colors.teal),
+                onTap: _showEncryptionKey,
               ),
             ),
           ],
@@ -252,7 +533,12 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.only(left: 4.0),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.black54,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }

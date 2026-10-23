@@ -40,9 +40,15 @@ class CloudBackupCleaner extends CloudBackup {
   /// which cannot be deleted.
   @override
   Future<void> execute() async {
-    if (!(await _checkIfCleaningIsAvailable()))
-      return; // first control if it's possible to clean the drive
-    return super.fileService.deleteAppDataFolderContents();
+    await clean();
+  }
+
+  /// Permanently deletes cloud data if no other devices are registered.
+  /// Returns false when another device prevents the cleanup.
+  Future<bool> clean() async {
+    if (!(await _checkIfCleaningIsAvailable())) return false;
+    await super.fileService.deleteAppDataFolderContents();
+    return true;
   }
 
   /* function to control if cleaning is available

@@ -62,6 +62,12 @@ class User{
     _password = hashPassword(newPassword);
   }
 
+  /// Function to erase email from the account given
+  /// in order to let the user free from the previous google account
+  void eraseEmail() {
+    _email = '';
+  }
+
   /// Method to hash current password of the 
   /// user to keep it private
   void hashCurrentPassword(){
