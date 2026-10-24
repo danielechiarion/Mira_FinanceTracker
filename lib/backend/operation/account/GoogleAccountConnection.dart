@@ -4,6 +4,7 @@ import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenti
 import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudFileService.dart';
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
+import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
@@ -13,7 +14,8 @@ class GoogleAccountConnection {
   final User _user;
   final GoogleAuthenticationManager _authentication;
   late final CloudBackupReader _cloudReader;
-  late final UserDatabaseWrapper _systemDatabase;
+  final SystemDatabaseWrapper _systemDatabase;
+  late final UserDatabaseWrapper _userDatabase;
 
   static const String _keyDirectory = 'crypto/';
   static const String _keyFileName = 'crypto_key.json';
@@ -23,8 +25,8 @@ class GoogleAccountConnection {
     this._user,
     GoogleAuthenticationManager authentication, {
     UserDatabaseWrapper? systemDatabase,
-  }) : _authentication = authentication {
-    _systemDatabase = UserDatabaseWrapper(_user);
+  }) : _authentication = authentication, _systemDatabase = systemDatabase ?? SystemDatabaseWrapper() {
+    _userDatabase = UserDatabaseWrapper(_user);
     _cloudReader = CloudBackupReader(_user, authentication: authentication);
   }
 
@@ -36,7 +38,10 @@ class GoogleAccountConnection {
     DriveHttpHandler? handler;
     KeyManager? keyManager;
     try {
+      /* initialize the two database
+      resources in order to be operative */
       await _systemDatabase.init();
+      await _userDatabase.init();
       // Keep the Google credentials in memory until every validation succeeds.
       await _authentication.signIn(persistAccount: false);
       final googleEmail = _authentication.email;
@@ -87,7 +92,7 @@ class GoogleAccountConnection {
           );
         }
 
-        if(!(await _systemDatabase.isEmpty()) && !(await _cloudReader.isDriveEmpty())){
+        if(!(await _userDatabase.isEmpty()) && !(await _cloudReader.isDriveEmpty())){
           throw StateError('Impossibile connettersi al cloud con dati già salvati da ambo le parti');
         }
         if (keyData != null &&
@@ -103,6 +108,7 @@ class GoogleAccountConnection {
       keyManager?.clearSession();
       handler?.close();
       await _systemDatabase.closeDatabase();
+      await _userDatabase.closeDatabase();
     }
   }
 
