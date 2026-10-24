@@ -97,7 +97,7 @@ class CloudBackupReader extends CloudBackup {
     if(directory == null) return true;
 
     List<drive.File?> files = await super.fileService.listFiles(folderId: directory.id);
-    return files.length == 0;
+    return files.isEmpty;
   }
 
   /// Function to perform reading from the drive selected,

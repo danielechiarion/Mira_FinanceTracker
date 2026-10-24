@@ -46,6 +46,8 @@ class _HomePageState extends State<HomePage> {
     _database.closeDatabase();
   }
 
+  /* function to load session data in order to display
+  them inside the home page */
   Future<HomePageData> _loadSession() async {
     final session = await CurrentSession.getFromMemory();
     if (session == null) {
