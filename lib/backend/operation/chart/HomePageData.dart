@@ -64,6 +64,8 @@ class HomePageData{
         _cardsBalance += account.availableBalance;
       }
     }
+
+    await database.closeDatabase();
   }
 
   /* *** GETTER METHODS *** */

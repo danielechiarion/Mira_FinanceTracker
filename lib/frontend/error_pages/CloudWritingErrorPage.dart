@@ -9,13 +9,13 @@ class CloudWritingErrorPage extends StatelessWidget {
   final String errorText;
 
   /// Callback executed when the user presses the reload button
-  final VoidCallback onReload;
+  final VoidCallback? onReload;
 
   /// Creates a [CloudWritingErrorPage] widget instance.
   const CloudWritingErrorPage({
     super.key,
     required this.errorText,
-    required this.onReload,
+    this.onReload,
   });
 
   @override

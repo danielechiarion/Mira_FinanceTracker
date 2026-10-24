@@ -42,9 +42,9 @@ class CloudConnectionForeground extends CloudConnection {
       BackgroundSession backgroundSession = BackgroundSession.fromMap(
         await super.fileService.readJson(backgroundFile.id!),
       );
-      if (!backgroundSession.channelAvailable())
-        return CloudConnectionStatus
-            .wait_till_update; // return the status to wait till background is finished
+      if (!backgroundSession.channelAvailable()) {
+        return CloudConnectionStatus.wait_till_update; // return the status to wait till background is finished
+      } 
     }
 
     /* then add the information

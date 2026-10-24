@@ -30,6 +30,7 @@ class User{
   String get surname => _surname;
   String get email => _email;
   String get password => _password; // for privacy reasons call it only when hashed
+  bool get isUserConnected => _email != '';
 
   /* *** SETTER METHODS *** */
   set name (String name) => _name = name;
