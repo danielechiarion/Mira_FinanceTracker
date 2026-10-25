@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
-import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
-import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupCleaner.dart';
+import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountDisconnection.dart';
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/frontend/account/AccountSettingsPage.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
-import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/frontend/account/GoogleConnectionPage.dart';
 
 /// Main entry point for the Settings feature.
@@ -30,7 +28,6 @@ class _SettingsPageState extends State<SettingsPage> {
   /// refreshed immediately after coming back from the account subpage.
   late User _currentUser;
   late UserPreferences _preferences;
-  late SystemDatabaseWrapper _database;
   bool _isLoading = true;
 
   /// Whether the periodic background activity is enabled
@@ -51,12 +48,6 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _loadData();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _database.closeDatabase();
   }
 
   /// Function to load all data from session
@@ -89,10 +80,6 @@ class _SettingsPageState extends State<SettingsPage> {
           .currentValue;
       _isLoading = false;
     });
-
-    /* instantiate and initialize the database */
-    _database = SystemDatabaseWrapper();
-    await _database.init();
   }
 
   /// Opens the account subpage and refreshes the displayed user data
@@ -211,56 +198,22 @@ class _SettingsPageState extends State<SettingsPage> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _isDisconnectingGoogle = true);
-    final authentication = GoogleAuthenticationManager();
-    CloudBackupCleaner? cleaner;
-    var cloudDataDeleted = false;
     try {
-      await authentication.init();
-      if (!await authentication.restoreAccount(email)) {
-        throw StateError('La sessione Google non è presente nel database.');
-      }
-
-      cleaner = CloudBackupCleaner(
-        _currentUser,
-        authentication: authentication,
-      );
-      await cleaner.init();
-      cloudDataDeleted = await cleaner.clean();
-      await cleaner.dispose();
-      cleaner = null;
-
-      await authentication.signOut(email: email);
-      /* function to disassociate the google account
-      with the user in database connected by the email */
-      await _database.removeUserEmail(_currentUser);
+      final result = await GoogleAccountDisconnection(_currentUser).execute();
 
       if (!mounted) return;
       setState(() {
         _googleAccountAssociated = false;
         _isDisconnectingGoogle = false;
-        _currentUser.eraseEmail(); // erase email and update it immediately
       });
-      _showMessage(
-        cloudDataDeleted
-            ? 'Account Google disconnesso e dati cloud eliminati.'
-            : 'Account Google disconnesso. I dati cloud sono stati mantenuti '
-                  'perché risultano registrati altri dispositivi.',
-      );
+      _showMessage(result.message);
     } catch (error) {
       if (mounted) {
-        setState(() => _isDisconnectingGoogle = false);
+        setState(() {
+          _googleAccountAssociated = _currentUser.email.isNotEmpty;
+          _isDisconnectingGoogle = false;
+        });
         _showMessage('Disconnessione Google non riuscita: $error');
-      }
-    } finally {
-      if (cleaner != null) {
-        await cleaner.dispose();
-      }
-      try {
-        await authentication.close();
-      } catch (error) {
-        if (mounted) {
-          _showMessage('Errore durante la chiusura della sessione: $error');
-        }
       }
     }
   }

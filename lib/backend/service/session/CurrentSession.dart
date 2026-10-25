@@ -157,6 +157,14 @@ class CurrentSession{
     return session;
   }
 
+  /// Function to save the current user in secure storage
+  Future<void> saveUser() async {
+    await _secureStorage.write(
+      key: '${_SECURESTORAGEPREFIX}user',
+      value: jsonEncode(_user.toMap()),
+    );
+  }
+
   /* *** GETTER METHODS *** */
   User get user => _user;
   @protected
