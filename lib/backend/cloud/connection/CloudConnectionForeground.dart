@@ -139,8 +139,7 @@ class CloudConnectionForeground extends CloudConnection {
     drive.File? file = await super.findSessionFile(
       super.FOREGROUNDSESSIONFILEPATH,
     ); // try to find the file
-    if (file == null)
-      return true; // if file has not found it means that the session has already been deleted
+    if (file == null) return true; // if file has not found it means that the session has already been deleted
 
     /* otherwise try to delete the file.
     Possible errors must be signaled with the boolean flag */

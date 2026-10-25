@@ -1,7 +1,9 @@
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/session/BackgroundSession.dart';
 
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionForeground.dart';
+import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionBackground.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 
 /// Class to handle general file import
@@ -10,15 +12,16 @@ import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 class CloudFileImport{
   /* define attributes to import */
   final CurrentSession _session;
-  late CloudConnectionForeground _connection;
+  late CloudConnection _connection;
   late CloudBackupReader? _reader;
   final Future<void> Function(dynamic error)? _showErrorFunction;
 
   /// Constructor to require attributes to make it possible
   /// to import files starting from the [_session].
   /// Add the possibility to add an [_showErrorFunction] to display errors.
-  CloudFileImport(this._session, {this._showErrorFunction}){
-    _connection = CloudConnectionForeground(_session);
+  /// Use the flag foreground to select either foregroud or background connection. TRUE means foreground.
+  CloudFileImport(this._session, {bool foreground = true, this._showErrorFunction}){
+    _connection = foreground ? CloudConnectionForeground(_session) : CloudConnectionBackground(_session as BackgroundSession);
   }
 
   /* *** GETTER METHODS *** */
@@ -33,6 +36,10 @@ class CloudFileImport{
   /// Function to execute the process
   /// of importing files from the drive
   Future<void> execute() async {
+    /* first understand if the user 
+    has the google account connected, otherwise finish the function */
+    if(!_session.user.isUserConnected) return;
+
     /* see the return of the connection, 
     then understands what to throw */
     CloudConnectionStatus connectionStatus; 
