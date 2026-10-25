@@ -16,9 +16,8 @@ import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrappe
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
+import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.dart';
-import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionForeground.dart';
-import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/frontend/error_pages/AuthenticationFailedPage.dart';
 import 'package:mira_finance_tracker/frontend/error_pages/CloudReadingErrorPage.dart';
 import 'package:mira_finance_tracker/frontend/error_pages/LineBusyPage.dart';
@@ -80,59 +79,12 @@ class _HomePageState extends State<HomePage> {
   update the database or return possible errors from 
   the execution */
   Future<void> _downloadCloudData(CurrentSession session) async {
-    /* define the connection to the 
-    drive in order to understand if it has succeeded */
-    CloudConnectionForeground connection = CloudConnectionForeground(session);
-    await connection.init();
-
-    /* see the return of the connection, 
-    then understands what to throw */
-    CloudConnectionStatus connectionStatus; 
-    var attempts = 0;
-    const maxAttempts = 30;
-
-    /* define a number of attemps to 
-    make sure the wait for the background doesn't last for long  */
-    do {
-      connectionStatus = await connection.connect();
-
-      if (connectionStatus == CloudConnectionStatus.wait_till_update) {
-        await Future<void>.delayed(const Duration(seconds: 1));
-        attempts++;
-      }
-    } while (
-      connectionStatus == CloudConnectionStatus.wait_till_update &&
-      attempts < maxAttempts
-    );
-
-    /* if there is a connection time out return the 
-    error page, otherwise return the connection status if it's different from
-    the correct one */
-    if(connectionStatus == CloudConnectionStatus.wait_till_update){
-      await connection.dispose();
-      await _redirectToErrorPage("ERROR [Connection Timeout]! Cloud connection locked by background session");
-    }else if(connectionStatus != CloudConnectionStatus.connection_established){
-      await connection.dispose();
-      await _redirectToErrorPage(connectionStatus);
-    }
-
-    /* then try to read the files from the cloud
-    if the database is not empty, then catch possible errors */
-    CloudBackupReader reader = CloudBackupReader(session.user);
-    await reader.init();
-
-    try{
-      if(await reader.isDriveEmpty()){
-        await reader.dispose();
-        return;
-      }
-
-      await reader.execute();
-      await reader.dispose();
-    }catch (e){
-      await reader.dispose();
-      await _redirectToErrorPage(e.toString());
-    }
+    /* call the class to manage all
+    file import operation */
+    CloudFileImport operation = CloudFileImport(session, showErrorFunction: _redirectToErrorPage);
+    await operation.init();
+    await operation.execute();
+    await operation.dispose();
   }
 
   /* function to reload the home page to
