@@ -4,6 +4,9 @@ import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrappe
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 
+import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
+import 'package:mira_finance_tracker/frontend/error_pages/ErrorManager.dart';
+
 /// Class to handle correctly logout
 /// operation when user goes out of the
 /// application
@@ -19,22 +22,29 @@ class Logout{
   /// of logout for the user,
   /// erasing personal data shared in common memories
   Future<void> execute() async {
-    /* first log out from the database
-    which has not to be used again */
-    UserDatabaseWrapper database = UserDatabaseWrapper(_user.clone());
-    await database.init();
-    await database.closeCompletelyDatabase();
-
     /* then get the current session 
     and erase the current user logged */
     CurrentSession session = (await CurrentSession.getFromMemory())!;
     await session.init();
-    await session.disconnect();
+
+    /* when session has been initialized, 
+    start the export operation */
+    CloudFileExport exporter = CloudFileExport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
+    await exporter.init();
+    await exporter.execute();
+    await exporter.dispose();
+
+    await session.disconnect(); // then disconnect from the session
 
     /* then erase from the current shared preferences
     the one of the user logged */
     UserPreferences preferences = UserPreferences(_user);
     await preferences.init();
-    await preferences.disconnect();
+
+    /* only when the cloud operation has been finished close 
+    completely the database */
+    UserDatabaseWrapper database = UserDatabaseWrapper(_user.clone());
+    await database.init();
+    await database.closeCompletelyDatabase();
   }
 }
