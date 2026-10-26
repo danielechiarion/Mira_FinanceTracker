@@ -17,11 +17,7 @@ import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
-import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.dart';
-import 'package:mira_finance_tracker/frontend/error_pages/AuthenticationFailedPage.dart';
-import 'package:mira_finance_tracker/frontend/error_pages/CloudReadingErrorPage.dart';
-import 'package:mira_finance_tracker/frontend/error_pages/LineBusyPage.dart';
-import 'package:mira_finance_tracker/frontend/error_pages/NetworkErrorPage.dart';
+import 'package:mira_finance_tracker/frontend/error_pages/ErrorManager.dart';
 
 /// REVIEW page from the functional analysis: summary of income, expenses,
 /// and charts (asset distribution pie chart + monthly trend).
@@ -81,40 +77,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _downloadCloudData(CurrentSession session) async {
     /* call the class to manage all
     file import operation */
-    CloudFileImport operation = CloudFileImport(session, showErrorFunction: _redirectToErrorPage);
+    CloudFileImport operation = CloudFileImport(session, showErrorFunction: ErrorManager.redirectToErrorPageImport);
     await operation.init();
     await operation.execute();
     await operation.dispose();
-  }
-
-  /* function to reload the home page to
-  another one in case of error,
-  especially during background operations */
-  Future<void> _redirectToErrorPage(dynamic error) async {
-    if (!mounted) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) {
-            if(error is CloudConnectionStatus) {
-              switch(error){
-                case CloudConnectionStatus.authentication_failed:
-                  return AuthenticationFailedPage();
-                case CloudConnectionStatus.line_busy:
-                  return LineBusyPage();
-                default:
-                  return NetworkErrorPage();
-              }
-            }else{
-              return CloudReadingErrorPage(errorText: error.toString());
-            }
-          }
-        ),
-      );
-    });
   }
 
   Future<void> _reload() async {
