@@ -66,9 +66,11 @@ class CloudFileImport{
     if(connectionStatus == CloudConnectionStatus.wait_till_update && _isErrorFunctionProvided){
       await _connection.dispose();
       await _showErrorFunction!("ERROR [Connection Timeout]! Cloud connection locked by background session");
+      return;
     }else if(connectionStatus != CloudConnectionStatus.connection_established && _isErrorFunctionProvided){
       await _connection.dispose();
       await _showErrorFunction!(connectionStatus);
+      return;
     }else if(connectionStatus != CloudConnectionStatus.connection_established && !_isErrorFunctionProvided){
       return;
     }

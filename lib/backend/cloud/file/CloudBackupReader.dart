@@ -93,10 +93,24 @@ class CloudBackupReader extends CloudBackup {
   Future<bool> isDriveEmpty() async {
     /* control if the directory is empty,
     otherwise check the list inside */
-    drive.File? directory = await super.fileService.findFolderByName(super.DATABASEDIRECTORY);
-    if(directory == null) return true;
+    drive.File? directory = await super.fileService.findFolderByName(
+      super.DATABASEDIRECTORY,
+      parentFolderId: CloudFileService.appDataFolderId,
+      spaces: 'appDataFolder',
+    );
+    if(directory == null) {
+      print('Cartella database non trovata');
+      return true;
+    }
 
-    List<drive.File?> files = await super.fileService.listFiles(folderId: directory.id);
+    List<drive.File> files = await super.fileService.listFiles(
+      folderId: directory.id,
+      spaces: 'appDataFolder',
+    );
+    print('File nella cartella database: ${files.length}');
+    for (final file in files) {
+      print('name=${file.name}, id=${file.id}, mimeType=${file.mimeType}');
+    }
     return files.isEmpty;
   }
 
