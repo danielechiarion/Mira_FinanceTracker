@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:googleapis/drive/v3.dart' as drive;
 
 import 'package:mira_finance_tracker/backend/service/session/BackgroundSession.dart';
@@ -42,7 +43,7 @@ class CloudConnectionBackground extends CloudConnection {
     else {
       await super.fileService.updateText(
         fileId: file.id!,
-        content: super.session.toMap().toString(),
+        content: jsonEncode(super.session.toMap()),
       );
     } // otherwise update the existing file
 
@@ -70,7 +71,7 @@ class CloudConnectionBackground extends CloudConnection {
     else {
       await super.fileService.updateText(
         fileId: file.id!,
-        content: super.session.toMap().toString(),
+        content: jsonEncode(super.session.toMap()),
       );
     } // otherwise update the existing file
     return true;
