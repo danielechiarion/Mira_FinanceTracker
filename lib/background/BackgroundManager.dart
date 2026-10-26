@@ -4,7 +4,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 
+import 'package:mira_finance_tracker/frontend/error_pages/ErrorManager.dart';
+
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
+import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
+import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 
 /* entry point required for 
 mobile background workmanager */
@@ -22,6 +27,26 @@ void callbackDispatcher() {
         // print("[BG] init OK, execute...");
         await service.execute();
         // print("[BG] execute OK");
+      }else if(taskName == "mira.importCloud"){
+        CurrentSession? session = await CurrentSession.getFromMemory();
+        if(session == null) return false; // return if the session has not been found
+
+        /* create the importing trying 
+        to connect to drive */
+        CloudFileImport importer = CloudFileImport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
+        await importer.init();
+        await importer.execute();
+        await importer.dispose();
+      }else if(taskName == "mira.exportCloud"){
+        CurrentSession? session = await CurrentSession.getFromMemory();
+        if(session == null) return false; // return if the session has not been found
+
+        /* create the exporter and 
+        complete the operation, allowing disconnection */
+        CloudFileExport exporter = CloudFileExport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
+        await exporter.init();
+        await exporter.execute();
+        await exporter.dispose();
       }
       // print("[BG] END ok");
       return Future.value(true);

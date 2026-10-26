@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mira_finance_tracker/globals.dart';
+import 'package:mira_finance_tracker/AppCycleWrapper.dart';
 
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/notification/NotificationManager.dart';
@@ -65,6 +67,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'La Mia App',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -72,7 +75,7 @@ class MainApp extends StatelessWidget {
       ),
       /* sets login page as the 
       page opened on first access */
-      home: isLogged ? const HomePage() : const LoginPage(),
+      home: isLogged ? AppLifecycleWrapper(child: const HomePage()) : AppLifecycleWrapper(child: const LoginPage()),
       routes: {
         AppRoutes.home:(context) => const HomePage(),
         AppRoutes.check:(context) => const CustomCheckPage(),
