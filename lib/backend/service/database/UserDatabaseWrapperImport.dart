@@ -321,8 +321,9 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
 
   /// Function to import step interests coming from a file [content]
   /// and save them in their own tables inside the database
+  /// * [notModels] flag to indicate there is not interest on importing step interest related to bond models
   /// * [close] flag to close the database
-  Future<void> importStepInterests(Map<String, dynamic> content, {bool close = false}) async {
+  Future<void> importStepInterests(Map<String, dynamic> content, {bool notModels = false, bool close = false}) async {
     /* the first interests to save are the one
     related to bond models */
     for(Map<String, dynamic> interest in content['bondModels']){
@@ -331,9 +332,11 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
     }
 
     /* then do the same for the ones related to bonds */
-    for(Map<String, dynamic> interest in content['bonds']){
-      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO StepInterest (position, interestRate, duration, bond)
-        VALUES (:position, :interestRate, :duration, :bond)''', parameters: interest);
+    if(!notModels) {
+      for(Map<String, dynamic> interest in content['bonds']){
+        await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO StepInterest (position, interestRate, duration, bond)
+          VALUES (:position, :interestRate, :duration, :bond)''', parameters: interest);
+      }
     }
 
     if(close) await appDatabase.close();

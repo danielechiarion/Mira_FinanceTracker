@@ -16,6 +16,7 @@ class CloudFileExport{
   late CloudBackupWriter _writer;
   final Future<void> Function(dynamic error)? _showErrorFunction;
   final bool _enableDisconnection;
+  final bool _foreground;
 
   /// Constructor to instantiate the resources
   /// of the export operation starting from the [_session]. 
@@ -23,9 +24,9 @@ class CloudFileExport{
   /// Use the flag [_enableDisconnection] to allow the disconnection from the drive in order
   /// to free the resources. 
   /// Use the flag [foreground] to select whether to use either foreground or background connection. TRUE means foreground.
-  CloudFileExport(this._session, {bool foreground = true, this._showErrorFunction, this._enableDisconnection = true}){
+  CloudFileExport(this._session, {bool foreground = true, this._showErrorFunction, this._enableDisconnection = true}): _foreground = foreground {
     _connection = foreground ? CloudConnectionForeground(_session) : CloudConnectionBackground(_session as BackgroundSession);
-    _writer = CloudBackupWriter(_session.user);
+    _writer = CloudBackupWriter(_session.user, financialControl: !_foreground);
   }
 
   /* *** GETTER METHODS *** */

@@ -15,12 +15,13 @@ class CloudFileImport{
   late CloudConnection _connection;
   late CloudBackupReader? _reader;
   final Future<void> Function(dynamic error)? _showErrorFunction;
+  final bool _foreground;
 
   /// Constructor to require attributes to make it possible
   /// to import files starting from the [_session].
   /// Add the possibility to add an [_showErrorFunction] to display errors.
   /// Use the flag foreground to select either foregroud or background connection. TRUE means foreground.
-  CloudFileImport(this._session, {bool foreground = true, this._showErrorFunction}){
+  CloudFileImport(this._session, {bool foreground = true, this._showErrorFunction}): _foreground = foreground {
     _connection = foreground ? CloudConnectionForeground(_session) : CloudConnectionBackground(_session as BackgroundSession);
   }
 
@@ -86,7 +87,7 @@ class CloudFileImport{
 
     /* then try to read the files from the cloud
     if the database is not empty, then catch possible errors */
-    _reader = CloudBackupReader(_session.user);
+    _reader = CloudBackupReader(_session.user, financialControl: !_foreground);
     await _reader!.init();
 
     try{

@@ -24,8 +24,9 @@ class CloudBackupReader extends CloudBackup {
     this._keyPassword,
     GoogleAuthenticationManager? authentication,
     DriveHttpHandler? handler,
-    this._requireKey = true
-  }) : super(user, authentication: authentication, handler: handler);
+    this._requireKey = true,
+    bool financialControl = false
+  }) : super(user, authentication: authentication, handler: handler, financialControl: financialControl);
 
   /// Override function of [CloudBackup] class to initialize resources.
   /// Change, in particular, the set of instructions to recover key
@@ -77,10 +78,7 @@ class CloudBackupReader extends CloudBackup {
         _keyPassword!,
         await super.fileService.readJson(file.id!),
       );
-      if (!keyResult)
-        throw ArgumentError(
-          "[CloudBackupError] key reading operation didn't end successfully",
-        );
+      if (!keyResult) throw ArgumentError("[CloudBackupError] key reading operation didn't end successfully",);
     } else if(!_requireKey){
       throw StateError(
         "[CloudBackupReader] cannot recover key not saved and with no password given",
@@ -99,7 +97,7 @@ class CloudBackupReader extends CloudBackup {
       spaces: 'appDataFolder',
     );
     if(directory == null) {
-      print('Cartella database non trovata');
+      // print('Cartella database non trovata');
       return true;
     }
 
@@ -107,10 +105,10 @@ class CloudBackupReader extends CloudBackup {
       folderId: directory.id,
       spaces: 'appDataFolder',
     );
-    print('File nella cartella database: ${files.length}');
+    /* print('File nella cartella database: ${files.length}');
     for (final file in files) {
       print('name=${file.name}, id=${file.id}, mimeType=${file.mimeType}');
-    }
+    }*/
     return files.isEmpty;
   }
 
@@ -120,9 +118,11 @@ class CloudBackupReader extends CloudBackup {
   @override
   Future<void> execute() async {
     /* read user preferences */
-    try {
-      await _readUserPreferences();
-    } on Exception {}
+    if(!super.financialControl){  
+      try {
+        await _readUserPreferences();
+      } on Exception {}
+    }
 
     /* function import data from the database */
     await _readDatabaseData();
@@ -193,20 +193,22 @@ class CloudBackupReader extends CloudBackup {
     import inside the database.
     Use try catch to avoid exceptions during conversion
     or when the file is not found. */
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.COUNTERPARTIESFILENAME,
-      );
-      await super.database.importCounterparties(content);
-    } on Exception {}
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.FINANCIALINSTITUTESFILENAME,
-      );
-      await super.database.importFinancialInstitutes(content);
-    } on Exception {}
+    if(!super.financialControl){
+      try {
+        content = await _readEncryptedData(
+          super.DATABASEDIRECTORY,
+          super.COUNTERPARTIESFILENAME,
+        );
+        await super.database.importCounterparties(content);
+      } on Exception {}
+      try {
+        content = await _readEncryptedData(
+          super.DATABASEDIRECTORY,
+          super.FINANCIALINSTITUTESFILENAME,
+        );
+        await super.database.importFinancialInstitutes(content);
+      } on Exception {}
+    }
     try {
       content = await _readEncryptedData(
         super.DATABASEDIRECTORY,
@@ -235,13 +237,15 @@ class CloudBackupReader extends CloudBackup {
       );
       await super.database.importPeriodicTransactions(content);
     } on Exception {}
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.FINANCIALMODELSFILENAME,
-      );
-      await super.database.importFinancialInstrumentModels(content);
-    } on Exception {}
+    if(!super.financialControl){
+      try {
+        content = await _readEncryptedData(
+          super.DATABASEDIRECTORY,
+          super.FINANCIALMODELSFILENAME,
+        );
+        await super.database.importFinancialInstrumentModels(content);
+      } on Exception {} 
+    }
     try {
       content = await _readEncryptedData(
         super.DATABASEDIRECTORY,
@@ -254,7 +258,7 @@ class CloudBackupReader extends CloudBackup {
         super.DATABASEDIRECTORY,
         super.STEPINTERESTSFILENAME,
       );
-      await super.database.importStepInterests(content);
+      await super.database.importStepInterests(content, notModels: super.financialControl);
     } on Exception {}
   }
 }

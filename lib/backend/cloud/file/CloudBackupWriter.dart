@@ -19,29 +19,32 @@ class CloudBackupWriter extends CloudBackup {
     User user, {
     GoogleAuthenticationManager? authentication,
     DriveHttpHandler? handler,
-  }) : super(user, authentication: authentication, handler: handler);
+    bool financialControl = false
+  }) : super(user, authentication: authentication, handler: handler, financialControl: financialControl);
 
   /// Function to execute the process of writing
   /// the data inside the drive
   @override
   Future<void> execute() async {
-    final keyDirectory = await super.fileService.findFolderByName(
-      super.KEYDIRECTORY,
-      parentFolderId: CloudFileService.appDataFolderId,
-      spaces: 'appDataFolder',
-    );
-    final keyFile = keyDirectory == null
-        ? null
-        : await super.fileService.findByName(
-            super.CRYPTOFILENAME,
-            folderId: keyDirectory.id,
-            spaces: 'appDataFolder',
-          );
-    if (keyFile == null) await _saveCryptographyKey();
+    if(!super.financialControl){
+      final keyDirectory = await super.fileService.findFolderByName(
+        super.KEYDIRECTORY,
+        parentFolderId: CloudFileService.appDataFolderId,
+        spaces: 'appDataFolder',
+      );
+      final keyFile = keyDirectory == null
+          ? null
+          : await super.fileService.findByName(
+              super.CRYPTOFILENAME,
+              folderId: keyDirectory.id,
+              spaces: 'appDataFolder',
+            );
+      if (keyFile == null) await _saveCryptographyKey();
+    }
 
     /* then save the user preferences
     and database data */
-    await _saveUserPrefecences();
+    if(!super.financialControl) await _saveUserPrefecences();
     await _saveDatabaseData();
   }
 
@@ -134,24 +137,27 @@ class CloudBackupWriter extends CloudBackup {
         .currentValue; // extract interest user preference
 
     /* save files for all the categories */
-    byteContent = await super.keyManager.encryptData(
-      utf8.encode(jsonEncode(await super.database.exportCounterparties())),
-    );
-    await _saveEncryptedData(
-      byteContent,
-      super.DATABASEDIRECTORY,
-      super.COUNTERPARTIESFILENAME,
-    );
-    byteContent = await super.keyManager.encryptData(
-      utf8.encode(
-        jsonEncode(await super.database.exportFinancialInstitutes()),
-      ),
-    );
-    await _saveEncryptedData(
-      byteContent,
-      super.DATABASEDIRECTORY,
-      super.FINANCIALINSTITUTESFILENAME,
-    );
+    if(!super.financialControl){
+      byteContent = await super.keyManager.encryptData(
+        utf8.encode(jsonEncode(await super.database.exportCounterparties())),
+      );
+      await _saveEncryptedData(
+        byteContent,
+        super.DATABASEDIRECTORY,
+        super.COUNTERPARTIESFILENAME,
+      );
+      byteContent = await super.keyManager.encryptData(
+        utf8.encode(
+          jsonEncode(await super.database.exportFinancialInstitutes()),
+        ),
+      );
+      await _saveEncryptedData(
+        byteContent,
+        super.DATABASEDIRECTORY,
+        super.FINANCIALINSTITUTESFILENAME,
+      );
+    }
+    
     byteContent = await super.keyManager.encryptData(
       utf8.encode(
         jsonEncode(await super.database.exportBankAccounts(yearLimit)),
@@ -192,16 +198,18 @@ class CloudBackupWriter extends CloudBackup {
       super.DATABASEDIRECTORY,
       super.PERIODICTRANSACTIONSFILENAME,
     );
-    byteContent = await super.keyManager.encryptData(
-      utf8.encode(
-        jsonEncode(await super.database.exportFinancialInstrumentModels()),
-      ),
-    );
-    await _saveEncryptedData(
-      byteContent,
-      super.DATABASEDIRECTORY,
-      super.FINANCIALMODELSFILENAME,
-    );
+    if(!super.financialControl){
+      byteContent = await super.keyManager.encryptData(
+        utf8.encode(
+          jsonEncode(await super.database.exportFinancialInstrumentModels()),
+        ),
+      );
+      await _saveEncryptedData(
+        byteContent,
+        super.DATABASEDIRECTORY,
+        super.FINANCIALMODELSFILENAME,
+      );
+    }
     byteContent = await super.keyManager.encryptData(
       utf8.encode(
         jsonEncode(await super.database.exportFinancialInstruments(yearLimit)),
@@ -214,7 +222,7 @@ class CloudBackupWriter extends CloudBackup {
     );
     byteContent = await super.keyManager.encryptData(
       utf8.encode(
-        jsonEncode(await super.database.exportStepInterests(yearLimit)),
+        jsonEncode(await super.database.exportStepInterests(yearLimit, notModels: super.financialControl)),
       ),
     );
     await _saveEncryptedData(

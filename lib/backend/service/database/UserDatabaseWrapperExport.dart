@@ -362,10 +362,12 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
   /// Function to export step interests related to bonds and bond models
   /// running within a specific [yearLimit] windows
   /// * [close] flag to close database
-  Future<Map<String, dynamic>> exportStepInterests(int yearLimit, {bool close = false}) async {
+  /// * [notModels] flag to indicate if there is not interest on exporting step interests related to bond models
+  Future<Map<String, dynamic>> exportStepInterests(int yearLimit, {bool notModels = false, bool close = false}) async {
     /* first export step interests related to bond models. 
     In this case there is no year limit filter required */
-    List<Map<String, dynamic>> bondModels = await appDatabase.query(sql: '''SELECT position, interestRate, duration, bond FROM StepInterestModel''');
+    List<Map<String, dynamic>> bondModels = [];
+    if(!notModels) await appDatabase.query(sql: '''SELECT position, interestRate, duration, bond FROM StepInterestModel''');
 
     /* in the case of bonds we have to export only step interests 
     which are related to current selected bond models */

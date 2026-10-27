@@ -24,6 +24,7 @@ abstract class CloudBackup {
   have been given in input or created inside the instance */
   late bool _givenAuthentication;
   late bool _givenHandler;
+  bool _financialControl;
 
   /* define constants for folders 
   inside the drive space reserved */
@@ -50,8 +51,10 @@ abstract class CloudBackup {
   /// * [user] user to make the backup for
   /// * [authentication] (optional) authentication manager for Google
   /// * [handler] (optional) handler for HTTP requests to Drive
+  /// * [_financialControl] flag to indicate that the operations needed are the ones that are connected
+  ///   only to the financial resources owned by the user
   /// Then all the other attributes are instanced, then initialize them. 
-  CloudBackup(User user, {GoogleAuthenticationManager? authentication, DriveHttpHandler? handler}):
+  CloudBackup(User user, {GoogleAuthenticationManager? authentication, DriveHttpHandler? handler, this._financialControl = false}):
     _authenticationManager = authentication ?? GoogleAuthenticationManager(),
     _email = user.email,
     _database = UserDatabaseWrapper(user),
@@ -155,4 +158,6 @@ abstract class CloudBackup {
   bool get givenHandler => _givenHandler;
   @protected
   String get email => _email;
+  @protected
+  bool get financialControl => _financialControl;
 }
