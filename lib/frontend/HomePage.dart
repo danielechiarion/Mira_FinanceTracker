@@ -34,6 +34,9 @@ class HomePage extends StatefulWidget {
 enum _AccountSection { checking, deposit, cards }
 
 class _HomePageState extends State<HomePage> {
+  static String? _cloudImportSessionIdentity;
+  static Future<void>? _cloudImportFuture;
+
   late Future<HomePageData> _summaryFuture;
   UserDatabaseWrapper? _database;
   Future<void>? _databaseInitialization;
@@ -53,7 +56,7 @@ class _HomePageState extends State<HomePage> {
 
   /* function to load session data in order to display
   them inside the home page */
-  Future<HomePageData> _loadSession() async {
+  Future<HomePageData> _loadSession({bool refreshCloud = false}) async {
     final session = await CurrentSession.getFromMemory();
     if (session == null) {
       throw StateError('Nessuna sessione attiva.');
@@ -61,25 +64,21 @@ class _HomePageState extends State<HomePage> {
 
     if (mounted) {
       setState(() {
-        _loadingMessage = session.user.isUserConnected
-            ? 'Importazione dei dati da Google Drive in corso...'
-            : 'Caricamento dei dati locali in corso...';
+        _loadingMessage = 'Caricamento dei dati...';
       });
     }
 
     /* initialize the database once; loading the home page can be repeated */
     await _initializeDatabase(session);
 
-    if(session.user.isUserConnected){
-      await _downloadCloudData(session); // then download data from the cloud before loading home page data
-    }
+    await _downloadCloudDataOnce(session, force: refreshCloud);
 
     if (mounted) {
       setState(() => _loadingMessage = 'Preparazione del riepilogo...');
     }
     final data = HomePageData(session.user);
     await data.init();
-    
+
     return data;
   }
 
@@ -100,20 +99,62 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _downloadCloudDataOnce(
+    CurrentSession session, {
+    bool force = false,
+  }) async {
+    final user = session.user;
+    final sessionIdentity =
+        '${user.username}\u0000${user.email}\u0000${session.toMap()['accessTime']}';
+
+    if (_cloudImportSessionIdentity != sessionIdentity) {
+      _cloudImportSessionIdentity = sessionIdentity;
+      _cloudImportFuture = null;
+    }
+
+    if (!user.isUserConnected) return;
+
+    final currentImport = _cloudImportFuture;
+    if (!force && currentImport != null) {
+      await currentImport;
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _loadingMessage = 'Importazione dei dati da Google Drive in corso...';
+      });
+    }
+
+    final import = _downloadCloudData(session);
+    _cloudImportFuture = import;
+    try {
+      await import;
+    } catch (_) {
+      if (identical(_cloudImportFuture, import)) {
+        _cloudImportFuture = null;
+      }
+      rethrow;
+    }
+  }
+
   /* function to download data from cloud and 
   update the database or return possible errors from 
   the execution */
   Future<void> _downloadCloudData(CurrentSession session) async {
     /* call the class to manage all
     file import operation */
-    CloudFileImport operation = CloudFileImport(session, showErrorFunction: ErrorManager.redirectToErrorPageImport);
+    CloudFileImport operation = CloudFileImport(
+      session,
+      showErrorFunction: ErrorManager.redirectToErrorPageImport,
+    );
     await operation.init();
     await operation.execute();
     await operation.dispose();
   }
 
   Future<void> _reload() async {
-    final future = _loadSession();
+    final future = _loadSession(refreshCloud: true);
     setState(() {
       _summaryFuture = future;
       _loadingMessage = 'Aggiornamento dei dati...';
@@ -146,7 +187,9 @@ class _HomePageState extends State<HomePage> {
             );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Errore nel caricamento dei dati: ${snapshot.error}'));
+            return Center(
+              child: Text('Errore nel caricamento dei dati: ${snapshot.error}'),
+            );
           }
 
           final data = snapshot.data!;
@@ -173,7 +216,10 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 32),
                           _buildAccountsOverview(data, isWide),
                           const SizedBox(height: 32),
-                          _sectionCard('Ultimi movimenti', _buildRecentOperations(data)),
+                          _sectionCard(
+                            'Ultimi movimenti',
+                            _buildRecentOperations(data),
+                          ),
                         ],
                       ),
                     ),
@@ -192,11 +238,18 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Patrimonio totale', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+        Text(
+          'Patrimonio totale',
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
         const SizedBox(height: 4),
         Text(
           formatter.format(data.totalBalance),
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
       ],
     );
@@ -227,14 +280,18 @@ class _HomePageState extends State<HomePage> {
         ],
       );
     }
-    return Column(
-      children: [income, const SizedBox(height: 12), outcome],
-    );
+    return Column(children: [income, const SizedBox(height: 12), outcome]);
   }
 
   Widget _buildCharts(HomePageData data, bool isWide) {
-    final pie = _sectionCard('Disposizione del patrimonio', PatrimonyPieChart(distribution: data.patrimonyDistribution));
-    final trend = _sectionCard('Andamento entrate / uscite', MonthlyTrendChart(data: data.monthlyTrend));
+    final pie = _sectionCard(
+      'Disposizione del patrimonio',
+      PatrimonyPieChart(distribution: data.patrimonyDistribution),
+    );
+    final trend = _sectionCard(
+      'Andamento entrate / uscite',
+      MonthlyTrendChart(data: data.monthlyTrend),
+    );
 
     if (isWide) {
       return Row(
@@ -246,9 +303,7 @@ class _HomePageState extends State<HomePage> {
         ],
       );
     }
-    return Column(
-      children: [pie, const SizedBox(height: 16), trend],
-    );
+    return Column(children: [pie, const SizedBox(height: 16), trend]);
   }
 
   /// Accounts overview section: one card per account type (checking,
@@ -304,7 +359,10 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('I tuoi conti', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          'I tuoi conti',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         cardsRow,
       ],
@@ -339,13 +397,28 @@ class _HomePageState extends State<HomePage> {
   void _openAccountsOfType(_AccountSection section) {
     switch (section) {
       case _AccountSection.checking:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CurrentAccountPage(database: _database!)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CurrentAccountPage(database: _database!),
+          ),
+        );
         break;
       case _AccountSection.deposit:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => SavingsAccountPage(database: _database!,)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SavingsAccountPage(database: _database!),
+          ),
+        );
         break;
       case _AccountSection.cards:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CardAccountPage(database: _database!,)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CardAccountPage(database: _database!),
+          ),
+        );
         break;
     }
   }
@@ -362,7 +435,10 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           child,
         ],
@@ -378,13 +454,15 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: data.recentOperations.map((op) {
         return TransactionOperationOutput(
-          reference: op.reference, 
-          accountName: '', 
-          amount: op.amount, 
-          isIncome: op is Income, 
-          category: op is Income ? op.category.name : (op as Outcome).category.name, 
-          executionDate: op.executionDate, 
-          accountingDate: op.accountingDate
+          reference: op.reference,
+          accountName: '',
+          amount: op.amount,
+          isIncome: op is Income,
+          category: op is Income
+              ? op.category.name
+              : (op as Outcome).category.name,
+          executionDate: op.executionDate,
+          accountingDate: op.accountingDate,
         ).build();
       }).toList(),
     );
