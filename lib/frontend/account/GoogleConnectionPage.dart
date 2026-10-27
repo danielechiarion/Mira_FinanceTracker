@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
+import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountConnection.dart';
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
@@ -29,6 +30,7 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
   bool _isConnecting = false;
   String? _connectedEmail;
   String? _errorMessage;
+  String? _importStatus;
 
   /// Checks whether Google account connection is available on this platform.
   bool get _canConnectGoogle {
@@ -56,6 +58,7 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
     setState(() {
       _isConnecting = true;
       _errorMessage = null;
+      _importStatus = null;
     });
 
     final authenticationManager = GoogleAuthenticationManager();
@@ -68,10 +71,33 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
       );
       await connection.execute(decryptionKey.isEmpty ? null : decryptionKey);
 
+      final email = authenticationManager.email;
+      if (email == null || email.isEmpty) {
+        throw StateError('Google non ha restituito un indirizzo email.');
+      }
+
       if (!mounted) return;
       setState(() {
-        _connectedEmail = authenticationManager.email;
+        _connectedEmail = email;
+        _importStatus = 'Controllo dei dati su Google Drive...';
       });
+
+      try {
+        final hasBackup = await _importInitialBackup(authenticationManager);
+        if (!mounted) return;
+        setState(() {
+          _importStatus = hasBackup
+              ? 'Importazione iniziale completata.'
+              : 'Account collegato. Non è stato trovato un backup da importare.';
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage =
+              'Account collegato, ma importazione iniziale non riuscita: $error';
+          _importStatus = null;
+        });
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -92,6 +118,25 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
           _isConnecting = false;
         });
       }
+    }
+  }
+
+  Future<bool> _importInitialBackup(
+    GoogleAuthenticationManager authenticationManager,
+  ) async {
+    final reader = CloudBackupReader(
+      widget.user,
+      authentication: authenticationManager,
+      strictImport: true,
+    );
+    try {
+      await reader.init();
+      if (await reader.isDriveEmpty()) return false;
+
+      await reader.execute();
+      return true;
+    } finally {
+      await reader.dispose();
     }
   }
 
@@ -174,6 +219,22 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                         color: Colors.grey.shade700,
                       ),
                     ),
+                    if (_importStatus != null) ...[
+                      const SizedBox(height: 20),
+                      if (_isConnecting)
+                        const Center(
+                          child: CircularProgressIndicator(color: Colors.teal),
+                        ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _importStatus!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     if (_errorMessage != null) ...[
                       const SizedBox(height: 20),
                       Text(
@@ -247,7 +308,7 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
                       ),
                     if (connectedEmail != null)
                       ElevatedButton(
-                        onPressed: _continueToLogin,
+                        onPressed: _isConnecting ? null : _continueToLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal,
                           foregroundColor: Colors.white,

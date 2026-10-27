@@ -16,6 +16,7 @@ class CloudBackupReader extends CloudBackup {
   /* attributes definition */
   String? _keyPassword;
   bool _requireKey;
+  final bool _strictImport;
 
   /// Constructor of the cloud backup reader
   /// passing data to the superclass constructor
@@ -25,8 +26,10 @@ class CloudBackupReader extends CloudBackup {
     GoogleAuthenticationManager? authentication,
     DriveHttpHandler? handler,
     this._requireKey = true,
-    bool financialControl = false
-  }) : super(user, authentication: authentication, handler: handler, financialControl: financialControl);
+    bool financialControl = false,
+    bool strictImport = false,
+  }) : _strictImport = strictImport,
+       super(user, authentication: authentication, handler: handler, financialControl: financialControl);
 
   /// Override function of [CloudBackup] class to initialize resources.
   /// Change, in particular, the set of instructions to recover key
@@ -121,7 +124,9 @@ class CloudBackupReader extends CloudBackup {
     if(!super.financialControl){  
       try {
         await _readUserPreferences();
-      } on Exception {}
+      } on Exception {
+        if (_strictImport) rethrow;
+      }
     }
 
     /* function import data from the database */
@@ -200,14 +205,18 @@ class CloudBackupReader extends CloudBackup {
           super.COUNTERPARTIESFILENAME,
         );
         await super.database.importCounterparties(content);
-      } on Exception {}
+      } on Exception {
+        if (_strictImport) rethrow;
+      }
       try {
         content = await _readEncryptedData(
           super.DATABASEDIRECTORY,
           super.FINANCIALINSTITUTESFILENAME,
         );
         await super.database.importFinancialInstitutes(content);
-      } on Exception {}
+      } on Exception {
+        if (_strictImport) rethrow;
+      }
     }
     try {
       content = await _readEncryptedData(
@@ -215,28 +224,36 @@ class CloudBackupReader extends CloudBackup {
         super.BANKACCOUNTSFILENAME,
       );
       await super.database.importBankAccounts(content);
-    } on Exception {}
+    } on Exception {
+      if (_strictImport) rethrow;
+    }
     try {
       content = await _readEncryptedData(
         super.DATABASEDIRECTORY,
         super.TRANSACTIONSFILENAME,
       );
       await super.database.importTransactions(content);
-    } on Exception {}
+    } on Exception {
+      if (_strictImport) rethrow;
+    }
     try {
       content = await _readEncryptedData(
         super.DATABASEDIRECTORY,
         super.BILLINGSFILENAME,
       );
       await super.database.importPeriodicAccountBillings(content);
-    } on Exception {}
+    } on Exception {
+      if (_strictImport) rethrow;
+    }
     try {
       content = await _readEncryptedData(
         super.DATABASEDIRECTORY,
         super.PERIODICTRANSACTIONSFILENAME,
       );
       await super.database.importPeriodicTransactions(content);
-    } on Exception {}
+    } on Exception {
+      if (_strictImport) rethrow;
+    }
     if(!super.financialControl){
       try {
         content = await _readEncryptedData(
@@ -244,7 +261,9 @@ class CloudBackupReader extends CloudBackup {
           super.FINANCIALMODELSFILENAME,
         );
         await super.database.importFinancialInstrumentModels(content);
-      } on Exception {} 
+      } on Exception {
+        if (_strictImport) rethrow;
+      }
     }
     try {
       content = await _readEncryptedData(
@@ -252,7 +271,9 @@ class CloudBackupReader extends CloudBackup {
         super.FINANCIALINSTRUMENTSFILENAME,
       );
       await super.database.importFinancialInstruments(content);
-    } on Exception {}
+    } on Exception {
+      if (_strictImport) rethrow;
+    }
     try {
       content = await _readEncryptedData(
         super.DATABASEDIRECTORY,

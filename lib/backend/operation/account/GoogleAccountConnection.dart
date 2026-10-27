@@ -107,6 +107,7 @@ class GoogleAccountConnection {
     } finally {
       keyManager?.clearSession();
       handler?.close();
+      await _cloudReader.dispose();
       await _systemDatabase.closeDatabase();
       await _userDatabase.closeDatabase();
     }
