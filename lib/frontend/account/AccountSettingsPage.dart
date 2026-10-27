@@ -36,6 +36,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   /// Its "username" field is only displayed here, it is not editable from this page.
   late User _updatedUser;
   late ProfileChanges _profileOperations;
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -97,24 +98,32 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
   /// Executes the logout operations and brings the user back to the login page.
   Future<void> _logout() async {
-    /* create a logout instance
-    for the user and execute it */
-    Logout logoutProcedure = Logout(_updatedUser);
-    final logoutSucceeded = await logoutProcedure.execute();
+    if (_isLoggingOut) return;
+    setState(() => _isLoggingOut = true);
+    try {
+      /* create a logout instance
+      for the user and execute it */
+      Logout logoutProcedure = Logout(_updatedUser);
+      final logoutSucceeded = await logoutProcedure.execute();
 
-    if (!mounted || !logoutSucceeded) return;
+      if (!mounted || !logoutSucceeded) return;
 
-    // Clear the whole navigation stack so the user cannot go "back" into the app
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-      (route) => false,
-    );
+      // Clear the whole navigation stack so the user cannot go "back" into the app
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoggingOut = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       appBar: AppBar(
         title: const Text('Account', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -224,9 +233,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
                       // --- LOGOUT ---
                       OutlinedButton.icon(
-                        onPressed: () async {
-                          await _logout(); // call the logout function
-                        },
+                        onPressed: _isLoggingOut ? null : _logout,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
                           side: const BorderSide(color: Colors.red, width: 1.5),
@@ -243,6 +250,36 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
           ),
         ),
       ),
+        ),
+        if (_isLoggingOut)
+          Positioned.fill(
+            child: ColoredBox(
+              color: Colors.black54,
+              child: Center(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 320),
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: Colors.teal),
+                          SizedBox(height: 20),
+                          Text(
+                            'Esportazione del backup su Google Drive in corso. '
+                            'Attendi e non chiudere l\'app.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

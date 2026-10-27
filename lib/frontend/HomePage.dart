@@ -35,7 +35,9 @@ enum _AccountSection { checking, deposit, cards }
 
 class _HomePageState extends State<HomePage> {
   late Future<HomePageData> _summaryFuture;
-  late final UserDatabaseWrapper _database;
+  UserDatabaseWrapper? _database;
+  Future<void>? _databaseInitialization;
+  String _loadingMessage = 'Caricamento dei dati...';
 
   @override
   void initState() {
@@ -45,8 +47,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _database?.closeDatabase();
     super.dispose();
-    _database.closeDatabase();
   }
 
   /* function to load session data in order to display
@@ -57,18 +59,45 @@ class _HomePageState extends State<HomePage> {
       throw StateError('Nessuna sessione attiva.');
     }
 
-    /* create and initialize the database */
-    _database = UserDatabaseWrapper(session.user);
-    await _database.init();
+    if (mounted) {
+      setState(() {
+        _loadingMessage = session.user.isUserConnected
+            ? 'Importazione dei dati da Google Drive in corso...'
+            : 'Caricamento dei dati locali in corso...';
+      });
+    }
+
+    /* initialize the database once; loading the home page can be repeated */
+    await _initializeDatabase(session);
 
     if(session.user.isUserConnected){
       await _downloadCloudData(session); // then download data from the cloud before loading home page data
     }
 
+    if (mounted) {
+      setState(() => _loadingMessage = 'Preparazione del riepilogo...');
+    }
     final data = HomePageData(session.user);
     await data.init();
     
     return data;
+  }
+
+  Future<void> _initializeDatabase(CurrentSession session) async {
+    if (_database != null) return;
+
+    final initialization = _databaseInitialization ??= () async {
+      final database = UserDatabaseWrapper(session.user);
+      await database.init();
+      _database = database;
+    }();
+
+    try {
+      await initialization;
+    } catch (_) {
+      _databaseInitialization = null;
+      rethrow;
+    }
   }
 
   /* function to download data from cloud and 
@@ -85,7 +114,10 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _reload() async {
     final future = _loadSession();
-    setState(() => _summaryFuture = future);
+    setState(() {
+      _summaryFuture = future;
+      _loadingMessage = 'Aggiornamento dei dati...';
+    });
     await future;
   }
 
@@ -98,7 +130,20 @@ class _HomePageState extends State<HomePage> {
         future: _summaryFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator(color: Colors.teal));
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(color: Colors.teal),
+                  const SizedBox(height: 16),
+                  Text(
+                    _loadingMessage,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ],
+              ),
+            );
           }
           if (snapshot.hasError) {
             return Center(child: Text('Errore nel caricamento dei dati: ${snapshot.error}'));
@@ -294,13 +339,13 @@ class _HomePageState extends State<HomePage> {
   void _openAccountsOfType(_AccountSection section) {
     switch (section) {
       case _AccountSection.checking:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CurrentAccountPage(database: _database)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CurrentAccountPage(database: _database!)));
         break;
       case _AccountSection.deposit:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => SavingsAccountPage(database: _database,)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => SavingsAccountPage(database: _database!,)));
         break;
       case _AccountSection.cards:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CardAccountPage(database: _database,)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CardAccountPage(database: _database!,)));
         break;
     }
   }
