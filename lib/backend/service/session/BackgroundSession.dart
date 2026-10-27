@@ -32,15 +32,15 @@ class BackgroundSession extends CurrentSession {
     if(this == another) return false; // if the two sessions are equal it must be time
 
     /* if the other session is not finished but the starting time
-    has been registered more than 30 mins ago, return true */
+    has been registered more than 30 mins ago, let the background execute */
     DateTime currentDate = DateTime.now();
-    if(another._endingTime == null && currentDate.difference(another.accessTime) < Duration(minutes: 30)) return true;
+    if(another._endingTime == null && currentDate.difference(another.accessTime) < Duration(minutes: 30)) return false;
 
     /* if the other session is finished and more than 20 hours has passed from last control, 
-    return true and let the background execute */
-    if(another._endingTime != null && currentDate.difference(another._endingTime!) < Duration(hours: 20)) return true;
+    let the background execute */
+    if(another._endingTime != null && currentDate.difference(another._endingTime!) < Duration(hours: 20)) return false;
 
-    return false; // otherwise return false
+    return true; // otherwise return false
   }
 
   /// Function to check if the current background session is finished
@@ -60,6 +60,9 @@ class BackgroundSession extends CurrentSession {
     };
   }
 
+  /// Method to get the session from a [map] object
+  /// saved somewhere in order to use it for comparison
+  /// or other operations
   factory BackgroundSession.fromMap(Map<String, dynamic> map){
     BackgroundSession session = BackgroundSession(User.fromMap(map['user']), accessTime: DateTime.parse(map['accessTime']));
     session.deviceModel = map['deviceModel'];

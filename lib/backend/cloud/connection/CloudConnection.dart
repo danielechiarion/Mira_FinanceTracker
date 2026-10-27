@@ -78,8 +78,7 @@ abstract class CloudConnection {
   /// for the cloud connection, such as the authentication manager,
   /// which is used then by the http handler
   Future<void> init() async {
-    if (_givenAuthentication)
-      return; // return if the authentication has been given, which means it has initialized already
+    if (_givenAuthentication) return; // return if the authentication has been given, which means it has initialized already
 
     await _authenticationManager
         .init(); // initialize the google authentication manager

@@ -35,10 +35,14 @@ class CloudFileImport{
 
   /// Function to execute the process
   /// of importing files from the drive
-  Future<void> execute() async {
+  /// Returns a bool to understand if the operation has been executed
+  /// for the real users connected to the account. 
+  /// TRUE is used for expected conditions, FALSE means it's not a good response,
+  /// which suggests the programmer to run the function one more time.
+  Future<bool> execute() async {
     /* first understand if the user 
     has the google account connected, otherwise finish the function */
-    if(!_session.user.isUserConnected) return;
+    if(!_session.user.isUserConnected) return true;
 
     /* see the return of the connection, 
     then understands what to throw */
@@ -66,13 +70,18 @@ class CloudFileImport{
     if(connectionStatus == CloudConnectionStatus.wait_till_update && _isErrorFunctionProvided){
       await _connection.dispose();
       await _showErrorFunction!("ERROR [Connection Timeout]! Cloud connection locked by background session");
-      return;
+      return false;
     }else if(connectionStatus != CloudConnectionStatus.connection_established && _isErrorFunctionProvided){
       await _connection.dispose();
       await _showErrorFunction!(connectionStatus);
-      return;
+      return false;
+    }else if(_session is BackgroundSession && connectionStatus == CloudConnectionStatus.line_busy){
+      /* if the background session the line busy it means the someone else
+      has done the job, so it's not necessary to repeat the execution.
+      It is an expected result */
+      return true;
     }else if(connectionStatus != CloudConnectionStatus.connection_established && !_isErrorFunctionProvided){
-      return;
+      return false;
     }
 
     /* then try to read the files from the cloud
@@ -82,7 +91,7 @@ class CloudFileImport{
 
     try{
       if(await _reader!.isDriveEmpty()){
-        return;
+        return true;
       }
 
       await _reader!.execute();
@@ -90,6 +99,8 @@ class CloudFileImport{
       await _reader!.dispose();
       if(_isErrorFunctionProvided) await _showErrorFunction!(e.toString());
     }
+    
+    return true;
   }
 
   /// Function used to dispose resources
