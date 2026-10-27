@@ -47,17 +47,17 @@ class ErrorManager {
   /* function to redirect error during export */
   static Future<void> redirectToErrorPageExport(dynamic error) async {
     final context = navigatorKey.currentContext;
-    if (context == null || context.mounted) return;
+    if (context == null || !context.mounted) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.mounted) return;
+      if (!context.mounted) return;
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) {
             return CloudWritingErrorPage(errorText: error.toString());
-          }
-        )
+          },
+        ),
       );
     });
   }

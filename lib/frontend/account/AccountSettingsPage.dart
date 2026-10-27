@@ -100,9 +100,9 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     /* create a logout instance
     for the user and execute it */
     Logout logoutProcedure = Logout(_updatedUser);
-    await logoutProcedure.execute();
+    final logoutSucceeded = await logoutProcedure.execute();
 
-    if (!mounted) return;
+    if (!mounted || !logoutSucceeded) return;
 
     // Clear the whole navigation stack so the user cannot go "back" into the app
     Navigator.pushAndRemoveUntil(

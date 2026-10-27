@@ -40,10 +40,11 @@ class CloudFileExport{
 
   /// Function to execute the exporting procedure
   /// to the Google Drive space selected
-  Future<void> execute() async {
+  /// Returns false if writing the backup fails.
+  Future<bool> execute() async {
     /* understand if the user is connected to the google account,
     otherwise return it */
-    if(!_session.user.isUserConnected) return;
+    if(!_session.user.isUserConnected) return true;
 
     /* start at first with writing the data 
     inside the drive */
@@ -53,15 +54,18 @@ class CloudFileExport{
       /* if an error is catched
       show it inside a page, if it is possible */
       if(_isErrorFunctionProvided) {
-        await _writer.dispose();
         await _showErrorFunction!(e.toString());
       }
+      if(_enableDisconnection) await _connection.disconnect();
+      if(!_isErrorFunctionProvided) rethrow;
+      return false;
     }
 
     /* then understand if it's possible to disconnect
     the user and possibly disconnect it from drive,
     in order to remove the lock for other applications listening */
     if(_enableDisconnection) await _connection.disconnect();
+    return true;
   }
 
   /// Function to dispose resources inside the class

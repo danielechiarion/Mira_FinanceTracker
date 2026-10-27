@@ -21,7 +21,7 @@ class Logout{
   /// Function to complete the whole procedure
   /// of logout for the user,
   /// erasing personal data shared in common memories
-  Future<void> execute() async {
+  Future<bool> execute() async {
     /* then get the current session 
     and erase the current user logged */
     CurrentSession session = (await CurrentSession.getFromMemory())!;
@@ -30,9 +30,14 @@ class Logout{
     /* when session has been initialized, 
     start the export operation */
     CloudFileExport exporter = CloudFileExport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
-    await exporter.init();
-    await exporter.execute();
-    await exporter.dispose();
+    var exportSucceeded = false;
+    try {
+      await exporter.init();
+      exportSucceeded = await exporter.execute();
+    } finally {
+      await exporter.dispose();
+    }
+    if (!exportSucceeded) return false;
 
     await session.disconnect(); // then disconnect from the session
 
@@ -46,5 +51,6 @@ class Logout{
     UserDatabaseWrapper database = UserDatabaseWrapper(_user.clone());
     await database.init();
     await database.closeCompletelyDatabase();
+    return true;
   }
 }
