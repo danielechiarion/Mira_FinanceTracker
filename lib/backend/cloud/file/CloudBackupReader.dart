@@ -177,10 +177,10 @@ class CloudBackupReader extends CloudBackup {
     if (file == null)
       throw Exception("During reading procedure file has not been found");
 
-    /* then try to read bytes from content 
-    and then decrypt it*/
-    List<int> content = await super.fileService.readBytes(file.id!);
-    return jsonDecode(base64Encode(content));
+    /* decrypt the stored bytes and parse the original JSON */
+    final encryptedContent = await super.fileService.readBytes(file.id!);
+    final content = await super.keyManager.decryptData(encryptedContent);
+    return jsonDecode(utf8.decode(content)) as Map<String, dynamic>;
   }
 
   /* function to read data from the files 

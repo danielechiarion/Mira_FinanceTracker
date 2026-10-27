@@ -38,7 +38,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
 
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT CurrentAccount.id, CurrentAccount.name, 
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
+            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
             FROM CurrentAccount JOIN BankAccount ON CurrentAccount.id = BankAccount.id WHERE endingDate IS NULL OR endingDate >= ?''',
             arguments: [limitDate.toIso8601String()]);
 
@@ -59,7 +59,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
 
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT SavingsAccount.id, SavingsAccount.name, ledgerBalance,
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
+            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity
             FROM SavingsAccount JOIN BankAccount ON SavingsAccount.id = BankAccount.id WHERE endingDate IS NULL OR endingDate >= ?''',
             arguments: [limitDate.toIso8601String()]);
 
@@ -81,7 +81,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     List<Map<String, dynamic>> result =  await appDatabase.query(sql: ''' SELECT Card.id, Card.name,
             financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
             startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            cardType, dayOfMonthCredit, lastDateActivityCredit,
+            cardType, dayOfMonthCredit, lastDateActivityCredit
             FROM Card JOIN BankAccount ON Card.id = BankAccount.id WHERE endingDate IS NULL OR endingDate >= ?''',
             arguments: [limitDate.toIso8601String()]);
 
@@ -161,7 +161,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
   /// Function to exports cashbacks related to a current account
   /// * [close] flag to close the database
   Future<Map<String, dynamic>> exportCashbacks({bool close = false}) async {
-    Map<String, dynamic> result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency, 
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency,
       dayOfMonth, monthOfYear, lastDateActivity, bankAccount FROM Cashback''');
 
     return {
@@ -173,7 +173,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
   /// Function to exports fees related to a current account
   /// * [close] flag to close the database
   Future<Map<String, dynamic>> exportBankFees({bool close = false}) async {
-    Map<String, dynamic> result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency, 
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT id, name, description, amount, startingDate, includeStart, timeFrequency,
       dayOfMonth, monthOfYear, lastDateActivity, bankAccount FROM BankFee''');
 
     return {
@@ -213,7 +213,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
   /// Function to get the periodic incomes related to the current accounts
   /// * [close] flag to close the database
   Future<Map<String, dynamic>> exportPeriodicIncomes({bool close = false}) async {
-    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT id, Domiciliation.name, description, amount, 
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT id, name, description, amount, 
       startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, bankAccount, counterParty FROM PeriodicIncome''');
 
     if(close) await appDatabase.close();
@@ -287,7 +287,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     DateTime currentDate = DateTime.now();
     DateTime limitDate = DateTime(currentDate.year-yearLimit, currentDate.month, currentDate.day);
 
-    Map<String, dynamic> result = await appDatabase.query(sql: '''TimeDeposit.id, TimeDeposit.name,
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDeposit.id, TimeDeposit.name,
       provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, interestRate, earlyWithdrawalInterestRate, isCashable,
       startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd, bankAccount
       FROM TimeDeposit WHERE endingDate IS NULL OR endingDate >= ?''', 
@@ -308,7 +308,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     DateTime currentDate = DateTime.now();
     DateTime limitDate = DateTime(currentDate.year-yearLimit, currentDate.month, currentDate.day);
 
-    Map<String, dynamic> result = await appDatabase.query(sql: '''SELECT Bond.id, Bond.name,
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Bond.id, Bond.name,
       provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, purchasePrice, interestType, minimumDenomination,
       startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd, bankAccount
       FROM Bond WHERE endingDate IS NULL OR endingDate >= ?''', 
@@ -329,7 +329,7 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     DateTime currentDate = DateTime.now();
     DateTime limitDate = DateTime(currentDate.year-yearLimit, currentDate.month, currentDate.day);
 
-    Map<String, dynamic> result = await appDatabase.query(sql: '''SELECT Stock.id, Stock.name,
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Stock.id, Stock.name,
       provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, ticker, totalShares, 
       averagePurchasePrice, currency, totalDividends, startingDate, endingDate, bankAccount
       FROM Stock WHERE endingDate IS NULL OR endingDate >= ?''', 

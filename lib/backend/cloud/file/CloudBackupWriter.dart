@@ -77,7 +77,7 @@ class CloudBackupWriter extends CloudBackup {
     /* first use cypher data 
     and then save in into drive */
     List<int> cryptoData = await super.keyManager.encryptData(
-      base64Decode(jsonEncode(super.userPreferences.exportPreferences())),
+      utf8.encode(jsonEncode(super.userPreferences.exportPreferences())),
     );
     await _saveEncryptedData(
       cryptoData,
@@ -135,7 +135,7 @@ class CloudBackupWriter extends CloudBackup {
 
     /* save files for all the categories */
     byteContent = await super.keyManager.encryptData(
-      base64Decode(jsonEncode(await super.database.exportCounterparties())),
+      utf8.encode(jsonEncode(await super.database.exportCounterparties())),
     );
     await _saveEncryptedData(
       byteContent,
@@ -143,7 +143,7 @@ class CloudBackupWriter extends CloudBackup {
       super.COUNTERPARTIESFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportFinancialInstitutes()),
       ),
     );
@@ -153,7 +153,7 @@ class CloudBackupWriter extends CloudBackup {
       super.FINANCIALINSTITUTESFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportBankAccounts(yearLimit)),
       ),
     );
@@ -163,7 +163,7 @@ class CloudBackupWriter extends CloudBackup {
       super.BANKACCOUNTSFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportTransactions(yearLimit)),
       ),
     );
@@ -173,7 +173,7 @@ class CloudBackupWriter extends CloudBackup {
       super.TRANSACTIONSFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportPeriodicAccountBillings()),
       ),
     );
@@ -183,7 +183,7 @@ class CloudBackupWriter extends CloudBackup {
       super.BILLINGSFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportPeriodicTransactions()),
       ),
     );
@@ -193,7 +193,7 @@ class CloudBackupWriter extends CloudBackup {
       super.PERIODICTRANSACTIONSFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportFinancialInstrumentModels()),
       ),
     );
@@ -203,7 +203,7 @@ class CloudBackupWriter extends CloudBackup {
       super.FINANCIALMODELSFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportFinancialInstruments(yearLimit)),
       ),
     );
@@ -213,7 +213,7 @@ class CloudBackupWriter extends CloudBackup {
       super.FINANCIALINSTRUMENTSFILENAME,
     );
     byteContent = await super.keyManager.encryptData(
-      base64Decode(
+      utf8.encode(
         jsonEncode(await super.database.exportStepInterests(yearLimit)),
       ),
     );
