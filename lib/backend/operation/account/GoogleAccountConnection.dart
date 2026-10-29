@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:googleapis/drive/v3.dart' as drive;
 
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
@@ -13,7 +15,7 @@ import 'package:mira_finance_tracker/classes/account/User.dart';
 class GoogleAccountConnection {
   final User _user;
   final GoogleAuthenticationManager _authentication;
-  late final CloudBackupReader _cloudReader;
+  CloudBackupReader? _cloudReader;
   final SystemDatabaseWrapper _systemDatabase;
   late final UserDatabaseWrapper _userDatabase;
 
@@ -28,13 +30,11 @@ class GoogleAccountConnection {
   }) : _authentication = authentication,
        _systemDatabase = systemDatabase ?? SystemDatabaseWrapper() {
     _userDatabase = UserDatabaseWrapper(_user);
-    _cloudReader = CloudBackupReader(_user, authentication: authentication);
   }
 
   /// Connects Google, validates the cloud key, then persists the account.
   Future<void> execute([String? decryptionKey]) async {
     await _authentication.init();
-    await _cloudReader.init();
 
     DriveHttpHandler? handler;
     KeyManager? keyManager;
@@ -49,6 +49,13 @@ class GoogleAccountConnection {
       if (googleEmail == null || googleEmail.isEmpty) {
         throw StateError('Google non ha restituito un indirizzo email.');
       }
+
+      _cloudReader = CloudBackupReader(
+        _user,
+        authentication: _authentication,
+        email: googleEmail,
+      );
+      await _cloudReader!.init();
 
       if (await _systemDatabase.isGoogleEmailAssignedToAnotherUser(
         googleEmail,
@@ -94,14 +101,46 @@ class GoogleAccountConnection {
         }
 
         if (!(await _userDatabase.isEmpty()) &&
-            !(await _cloudReader.isDriveEmpty())) {
+            !(await _cloudReader!.isDriveEmpty())) {
           throw StateError(
             'Impossibile connettersi al cloud con dati già salvati da ambo le parti',
           );
         }
-        if (keyData != null &&
-            !await keyManager.importKeyData(password, dataToValidate)) {
-          throw StateError('Impossibile ripristinare la chiave crittografica.');
+        if (keyData != null) {
+          final localKey = await keyManager.stringKey;
+          if (localKey == null) {
+            throw StateError(
+              'La chiave crittografica locale non è disponibile.',
+            );
+          }
+
+          final importedKey = base64Encode(decryptedKey);
+          final requiresRekey = localKey != importedKey;
+          if (requiresRekey) {
+            await _userDatabase.rekeyEncryptionKey(importedKey);
+          }
+
+          try {
+            if (!await keyManager.importKeyData(password, dataToValidate)) {
+              throw StateError(
+                'Impossibile ripristinare la chiave crittografica.',
+              );
+            }
+          } catch (error) {
+            if (requiresRekey) {
+              try {
+                await _userDatabase.rekeyEncryptionKey(localKey);
+              } catch (rollbackError) {
+                throw StateError(
+                  'Il salvataggio della chiave cloud è fallito ($error) e '
+                  'il ripristino della chiave precedente è fallito '
+                  '($rollbackError). Il database è ancora aperto: non '
+                  'chiudere l’app e contattare l’assistenza.',
+                );
+              }
+            }
+            rethrow;
+          }
         }
       }
 
@@ -111,7 +150,7 @@ class GoogleAccountConnection {
     } finally {
       keyManager?.clearSession();
       handler?.close();
-      await _cloudReader.dispose();
+      await _cloudReader?.dispose();
       await _systemDatabase.closeDatabase();
       await _userDatabase.closeDatabase();
     }

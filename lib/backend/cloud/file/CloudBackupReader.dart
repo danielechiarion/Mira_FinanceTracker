@@ -28,8 +28,15 @@ class CloudBackupReader extends CloudBackup {
     this._requireKey = true,
     bool financialControl = false,
     bool strictImport = false,
+    String? email,
   }) : _strictImport = strictImport,
-       super(user, authentication: authentication, handler: handler, financialControl: financialControl);
+       super(
+         user,
+         authentication: authentication,
+         handler: handler,
+         email: email,
+         financialControl: financialControl,
+       );
 
   /// Override function of [CloudBackup] class to initialize resources.
   /// Change, in particular, the set of instructions to recover key
@@ -60,7 +67,7 @@ class CloudBackupReader extends CloudBackup {
         parentFolderId: CloudFileService.appDataFolderId,
         spaces: 'appDataFolder',
       );
-      if (directory == null){
+      if (directory == null) {
         throw StateError(
           "[CloudBackupReader] cannot recover key because dedicated folder in cloud has not been created.",
         );
@@ -81,15 +88,18 @@ class CloudBackupReader extends CloudBackup {
         _keyPassword!,
         await super.fileService.readJson(file.id!),
       );
-      if (!keyResult) throw ArgumentError("[CloudBackupError] key reading operation didn't end successfully",);
-    } else if(!_requireKey){
+      if (!keyResult)
+        throw ArgumentError(
+          "[CloudBackupError] key reading operation didn't end successfully",
+        );
+    } else if (!_requireKey) {
       throw StateError(
         "[CloudBackupReader] cannot recover key not saved and with no password given",
       );
     }
   }
 
-  /// Function to undestand if the 
+  /// Function to undestand if the
   /// drive is empty, so no values has been saved inside
   Future<bool> isDriveEmpty() async {
     /* control if the directory is empty,
@@ -99,7 +109,7 @@ class CloudBackupReader extends CloudBackup {
       parentFolderId: CloudFileService.appDataFolderId,
       spaces: 'appDataFolder',
     );
-    if(directory == null) {
+    if (directory == null) {
       // print('Cartella database non trovata');
       return true;
     }
@@ -121,7 +131,7 @@ class CloudBackupReader extends CloudBackup {
   @override
   Future<void> execute() async {
     /* read user preferences */
-    if(!super.financialControl){  
+    if (!super.financialControl) {
       try {
         await _readUserPreferences();
       } on Exception {
@@ -142,13 +152,17 @@ class CloudBackupReader extends CloudBackup {
       parentFolderId: CloudFileService.appDataFolderId,
       spaces: 'appDataFolder',
     );
-    if (directory == null) throw Exception("During user preferences reading directory not found");
+    if (directory == null)
+      throw Exception("During user preferences reading directory not found");
     drive.File? file = await super.fileService.findByName(
       super.PREFERENCEFILENAME,
       folderId: directory.id,
       spaces: 'appDataFolder',
     );
-    if (file == null) throw Exception("During user preferences reading file has not been found",);
+    if (file == null)
+      throw Exception(
+        "During user preferences reading file has not been found",
+      );
 
     await super.userPreferences.importPreferences(
       await _readEncryptedData(
@@ -198,7 +212,7 @@ class CloudBackupReader extends CloudBackup {
     import inside the database.
     Use try catch to avoid exceptions during conversion
     or when the file is not found. */
-    if(!super.financialControl){
+    if (!super.financialControl) {
       try {
         content = await _readEncryptedData(
           super.DATABASEDIRECTORY,
@@ -254,7 +268,7 @@ class CloudBackupReader extends CloudBackup {
     } on Exception {
       if (_strictImport) rethrow;
     }
-    if(!super.financialControl){
+    if (!super.financialControl) {
       try {
         content = await _readEncryptedData(
           super.DATABASEDIRECTORY,
@@ -279,7 +293,10 @@ class CloudBackupReader extends CloudBackup {
         super.DATABASEDIRECTORY,
         super.STEPINTERESTSFILENAME,
       );
-      await super.database.importStepInterests(content, notModels: super.financialControl);
+      await super.database.importStepInterests(
+        content,
+        notModels: super.financialControl,
+      );
     } on Exception {}
   }
 }

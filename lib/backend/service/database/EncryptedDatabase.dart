@@ -60,7 +60,7 @@ class EncryptedDatabase {
     required String password,
     int version = 1,
     FutureOr<void> Function(Database, int)? onCreate,
-    bool extensionAdded = false
+    bool extensionAdded = false,
   }) async {
     /* check if database is already opened */
     if (isOpen) {
@@ -68,7 +68,7 @@ class EncryptedDatabase {
     }
 
     try {
-      if(!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
+      if (!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
         dbName += _DATABASEEXTENSION;
       }
 
@@ -88,6 +88,27 @@ class EncryptedDatabase {
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Changes the encryption key of the open SQLCipher database in place.
+  ///
+  /// This operation is supported on Android and iOS, where the database is
+  /// encrypted with SQLCipher. The current connection remains open.
+  Future<void> rekey(String newPassword) async {
+    if (!isOpen) {
+      throw StateError('Cannot rekey a database that is not open.');
+    }
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      throw UnsupportedError(
+        'Changing the database encryption key is supported only on mobile.',
+      );
+    }
+    if (newPassword.isEmpty) {
+      throw ArgumentError.value(newPassword, 'newPassword', 'Cannot be empty.');
+    }
+
+    final escapedPassword = newPassword.replaceAll("'", "''");
+    await _database!.execute("PRAGMA rekey = '$escapedPassword'");
   }
 
   /// Closes the active database connection.
@@ -119,7 +140,7 @@ class EncryptedDatabase {
 
   /// Function to close all the instances of the database
   Future<void> forcedClosure() async {
-    if(_database == null || _connectionPath == null){
+    if (_database == null || _connectionPath == null) {
       return;
     }
     await _database!.close();
@@ -127,8 +148,8 @@ class EncryptedDatabase {
     /* reset all the registers
     about the database */
     _sharedConnections.remove(_connectionPath);
-    _referenceCounters[_connectionPath!] = (_referenceCounters[_connectionPath] ?? 1) - 1;
-    
+    _referenceCounters[_connectionPath!] =
+        (_referenceCounters[_connectionPath] ?? 1) - 1;
   }
 
   /* *** QUERY EXECUTION METHODS *** */
@@ -136,10 +157,7 @@ class EncryptedDatabase {
   /// Executes a custom read query (SELECT) on the database
   /// * [sql] custom SQL query string
   /// * [arguments] optional list of positional parameters for query sanitization
-  Future<dynamic> query({
-    required String sql,
-    List<dynamic>? arguments,
-  }) async {
+  Future<dynamic> query({required String sql, List<dynamic>? arguments}) async {
     /* verify database connection state before executing query */
     _checkDbOpen();
     return await _database!.rawQuery(sql, arguments);
@@ -148,10 +166,7 @@ class EncryptedDatabase {
   /// Executes a write operation (INSERT, UPDATE, DELETE) or schema definition statement
   /// * [sql] custom SQL statement string
   /// * [arguments] optional list of positional parameters
-  Future<int> execute({
-    required String sql,
-    List<dynamic>? arguments,
-  }) async {
+  Future<int> execute({required String sql, List<dynamic>? arguments}) async {
     /* verify database connection state before executing statement */
     _checkDbOpen();
     return await _database!.rawInsert(sql, arguments);
@@ -276,7 +291,7 @@ class EncryptedDatabase {
       path: path,
       password: password,
       version: version,
-      onCreate: onCreate
+      onCreate: onCreate,
     );
     _pendingOpenings[path] = openingFuture;
 
@@ -307,7 +322,7 @@ class EncryptedDatabase {
           onCreate: onCreate,
           onConfigure: (db) async {
             await db.execute('PRAGMA foreign_keys = ON');
-          }
+          },
         ),
       );
     } else {
@@ -318,13 +333,15 @@ class EncryptedDatabase {
         onCreate: onCreate,
         onConfigure: (db) async {
           await db.execute('PRAGMA foreign_keys = ON');
-        }
+        },
       );
     }
   }
 
   _ConvertedSqlResult _convertNamedParameters(
-      String sql, Map<String, dynamic>? parameters) {
+    String sql,
+    Map<String, dynamic>? parameters,
+  ) {
     if (parameters == null || parameters.isEmpty) {
       return _ConvertedSqlResult(sql, null);
     }

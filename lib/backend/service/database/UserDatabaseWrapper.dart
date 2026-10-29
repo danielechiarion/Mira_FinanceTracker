@@ -38,33 +38,36 @@ part 'UserDatabaseWrapperUpdate.dart';
 part 'UserDatabaseWrapperImport.dart';
 part 'UserDatabaseWrapperExport.dart';
 
-/// Class to handle personal database belonging to 
-/// the user registered inside the application. 
+/// Class to handle personal database belonging to
+/// the user registered inside the application.
 /// Extending class of [SystemDatabaseWrapper].
-class UserDatabaseWrapper extends SystemDatabaseWrapper{
+class UserDatabaseWrapper extends SystemDatabaseWrapper {
   /* define attributes */
   User _user;
   KeyManager _userKeyManager;
-  
-  /// Constructor of the user database wrapper 
-  /// starting from user information 
-  /// * [user] user owner of the database
-  UserDatabaseWrapper(User user): _user = user, _userKeyManager = KeyManager(user: user),
-    super();
 
-  /// Function to initialize the database 
-  /// defining the tables. 
-  /// Defining also the system database if it has not done before. 
+  /// Constructor of the user database wrapper
+  /// starting from user information
+  /// * [user] user owner of the database
+  UserDatabaseWrapper(User user)
+    : _user = user,
+      _userKeyManager = KeyManager(user: user),
+      super();
+
+  /// Function to initialize the database
+  /// defining the tables.
+  /// Defining also the system database if it has not done before.
   @override
   Future<void> init() async {
     await super.init(); // first start to initialize the system database
     /* then try to add the user, 
     if it has not been done before */
-    try{
+    try {
       await super.addUser(_user);
-    }on Exception{}
-    finally{
-      await database.close(); // close system database after finishing operations
+    } on Exception {
+    } finally {
+      await database
+          .close(); // close system database after finishing operations
     }
 
     /* get the secret key of the user
@@ -80,9 +83,20 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
     user and initialize it if necessary */
     final String? key = await _userKeyManager.stringKey;
     if (key == null) {
-      throw Exception('Chiave di cifratura utente non disponibile per ${_user.username}');
+      throw Exception(
+        'Chiave di cifratura utente non disponibile per ${_user.username}',
+      );
     }
-    await database.openAppDatabase(dbName: '${SystemDatabaseWrapper.USERDATABASEPREFIX}${_user.username}', password: key, onCreate: defineTables);
+    await database.openAppDatabase(
+      dbName: '${SystemDatabaseWrapper.USERDATABASEPREFIX}${_user.username}',
+      password: key,
+      onCreate: defineTables,
+    );
+  }
+
+  /// Changes the encryption key of the currently open user database.
+  Future<void> rekeyEncryptionKey(String newKey) {
+    return database.rekey(newKey);
   }
 
   /* *** GETTER METHODS *** */
@@ -91,7 +105,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
   @protected
   @override
-  Future<void> defineTables(Database db, int version) async{
+  Future<void> defineTables(Database db, int version) async {
     /* call all the private methods used
     to define tables of a single user database */
     await _defineSubjects(db);
@@ -107,7 +121,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
   /* function to define subjects
   inside the banking application */
-  Future<void> _defineSubjects(Database db) async{
+  Future<void> _defineSubjects(Database db) async {
     /* define counterparty member */
     await db.execute('''CREATE TABLE IF NOT EXISTS CounterParty(
                         id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -123,7 +137,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
   }
 
   /* function to define tables for bank accounts */
-  Future<void> _defineBankAccounts(Database db) async{
+  Future<void> _defineBankAccounts(Database db) async {
     /* create general table bank account, with all
     the tables for each extended class, in order
     to manage correctly common fields
@@ -156,7 +170,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         FOREIGN KEY (id) REFERENCES BankAccount(id) 
                           ON DELETE CASCADE 
                         )''');
-    
+
     /* define table for savings account */
     await db.execute('''CREATE TABLE IF NOT EXISTS SavingsAccount(
                         id INTEGER PRIMARY KEY,
@@ -166,7 +180,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                         FOREIGN KEY (id) REFERENCES BankAccount(id) 
                           ON DELETE CASCADE 
                         )''');
-    
+
     /* define table for cards */
     await db.execute('''CREATE TABLE IF NOT EXISTS Card(
                         id INTEGER PRIMARY KEY,
@@ -219,7 +233,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
   /* function to define periodic account billings
   for every kind of bank account */
-  Future<void> _definePeriodicAccountBillings(Database db) async{
+  Future<void> _definePeriodicAccountBillings(Database db) async {
     /* first define cashbacks, 
     the bank fee will follow the same format */
     await db.execute('''CREATE TABLE IF NOT EXISTS Cashback(
@@ -415,7 +429,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
                           ON DELETE RESTRICT
                           ON UPDATE CASCADE
                         )''');
-    
+
     /* define stock */
     await db.execute('''CREATE TABLE IF NOT EXISTS Stock(
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -448,7 +462,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
 
   /* function to define interest in bank accounts, 
   especially in bonds activated inside a savings account */
-  Future<void> _defineInterests(Database db) async{
+  Future<void> _defineInterests(Database db) async {
     /* define step interest for bonds */
     await db.execute('''CREATE TABLE IF NOT EXISTS StepInterest(
                           position INTEGER,
@@ -490,20 +504,20 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
   }
 
   /// Function to control if the database is empty,
-  /// that means there is no financial value saved inside. 
-  /// This method is pretty useful to understand if the account is proper to 
-  /// connect to the cloud page. 
+  /// that means there is no financial value saved inside.
+  /// This method is pretty useful to understand if the account is proper to
+  /// connect to the cloud page.
   Future<bool> isEmpty() async {
     /* it is not necessary to check all the tables. 
     The function just checks the essential tables which 
     the other entities depends from or are which are 
     independent from anything else */
-    if(!(await _isTableEmpty('BankAccount'))) return false;
-    if(!(await _isTableEmpty('CounterParty'))) return false;
-    if(!(await _isTableEmpty('FinancialInstitute'))) return false;
-    if(!(await _isTableEmpty('BondModel'))) return false;
-    if(!(await _isTableEmpty('TimeDepositModel'))) return false;
-    
+    if (!(await _isTableEmpty('BankAccount'))) return false;
+    if (!(await _isTableEmpty('CounterParty'))) return false;
+    if (!(await _isTableEmpty('FinancialInstitute'))) return false;
+    if (!(await _isTableEmpty('BondModel'))) return false;
+    if (!(await _isTableEmpty('TimeDepositModel'))) return false;
+
     return true;
   }
 
@@ -512,9 +526,9 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
   Future<bool> _isTableEmpty(String table) async {
     /* execute counting query
     and extract integer value from the result */
-    final result = await appDatabase.query(sql:'SELECT COUNT(*) FROM $table');
+    final result = await appDatabase.query(sql: 'SELECT COUNT(*) FROM $table');
     int? count = Sqflite.firstIntValue(result);
-    
+
     return (count ?? 0) == 0;
   }
 
@@ -522,32 +536,56 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
   Deprecate methods available only on the system database
   and not on the custom user one */
   @override
-  @Deprecated("Method not supported for user database instance. Try system database one.")
-  Future<int> addUser(User user, {bool passwordHashed = false, bool close = false}) async {
-    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+  @Deprecated(
+    "Method not supported for user database instance. Try system database one.",
+  )
+  Future<int> addUser(
+    User user, {
+    bool passwordHashed = false,
+    bool close = false,
+  }) async {
+    throw UnimplementedError(
+      "Method not supported for user database instance. Try system database one.",
+    );
   }
 
   @override
-  @Deprecated("Method not supported for user database instance. Try system database one.")
+  @Deprecated(
+    "Method not supported for user database instance. Try system database one.",
+  )
   Future<void> removeUser(User user, {bool close = false}) async {
-    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+    throw UnimplementedError(
+      "Method not supported for user database instance. Try system database one.",
+    );
   }
 
   @override
-  @Deprecated("Method not supported for user database instance. Try system database one.")
+  @Deprecated(
+    "Method not supported for user database instance. Try system database one.",
+  )
   Future<void> updateUser(User user, {bool close = false}) async {
-    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+    throw UnimplementedError(
+      "Method not supported for user database instance. Try system database one.",
+    );
   }
 
   @override
-  @Deprecated("Method not supported for user database instance. Try system database one.")
+  @Deprecated(
+    "Method not supported for user database instance. Try system database one.",
+  )
   Future<List<User>> userList({bool close = false}) async {
-    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+    throw UnimplementedError(
+      "Method not supported for user database instance. Try system database one.",
+    );
   }
 
   @override
-  @Deprecated("Method not supported for user database instance. Try system database one.")
+  @Deprecated(
+    "Method not supported for user database instance. Try system database one.",
+  )
   Future<bool> userValidity(String username) async {
-    throw UnimplementedError("Method not supported for user database instance. Try system database one.");
+    throw UnimplementedError(
+      "Method not supported for user database instance. Try system database one.",
+    );
   }
 }
