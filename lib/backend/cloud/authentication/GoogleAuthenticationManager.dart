@@ -18,6 +18,7 @@ import 'package:mira_finance_tracker/classes/account/User.dart';
 class GoogleAuthenticationManager {
   /* define attributes */
   late final String _clientID;
+  String? _serverClientID;
   String? _clientSecret;
   final List<String> _scopes;
   final SystemDatabaseWrapper _database;
@@ -53,11 +54,15 @@ class GoogleAuthenticationManager {
     and start the google sign in instance */
     _clientID = await _getClientID();
     _googleSignIn = GoogleSignIn(
-      clientId: _clientID,
+      clientId: _isAndroid ? null : _clientID,
+      serverClientId: _isAndroid ? _serverClientID : null,
       scopes: _scopes,
       forceCodeForRefreshToken: true, // to get the refresh token
     );
   }
+
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   String get _credentialPrefix {
     if (kIsWeb) return 'web';
@@ -95,7 +100,9 @@ class GoogleAuthenticationManager {
     final clientIdKey = legacyWindowsConfig
         ? 'windows_client_id'
         : '${prefix}_client_id';
-    final clientSecretKey = legacyWindowsConfig
+    final clientSecretKey = _isAndroid
+        ? 'web_client_secret'
+        : legacyWindowsConfig
         ? 'windows_client_secret'
         : '${prefix}_client_secret';
     final clientId = jsonData[clientIdKey];
@@ -105,6 +112,17 @@ class GoogleAuthenticationManager {
         'platform-specific client ID, for example "desktop_client_id", '
         '"android_client_id", or "ios_client_id".',
       );
+    }
+
+    if (_isAndroid) {
+      final serverClientID = jsonData['web_client_id'];
+      if (serverClientID is! String || serverClientID.isEmpty) {
+        throw const FormatException(
+          'Google OAuth server client ID is missing from credentials. '
+          'Add the Web application client ID as "web_client_id".',
+        );
+      }
+      _serverClientID = serverClientID;
     }
 
     final clientSecret = jsonData[clientSecretKey];
@@ -120,6 +138,8 @@ class GoogleAuthenticationManager {
 
     return clientId;
   }
+
+  String get _tokenExchangeClientID => _serverClientID ?? _clientID;
 
   /* *** GETTER METHODS *** */
   String? get email => _currentEmail;
@@ -428,7 +448,7 @@ class GoogleAuthenticationManager {
   }) async {
     final body = <String, String>{
       'code': code,
-      'client_id': _clientID,
+      'client_id': _tokenExchangeClientID,
       'redirect_uri': redirectUri,
       'grant_type': 'authorization_code',
       'code_verifier': ?codeVerifier,
@@ -490,7 +510,7 @@ class GoogleAuthenticationManager {
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {
         'refresh_token': account.refreshToken,
-        'client_id': _clientID,
+        'client_id': _tokenExchangeClientID,
         'client_secret': ?_clientSecret,
         'grant_type': 'refresh_token',
       },
