@@ -116,8 +116,8 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  /// Shows the local encryption key only after device authentication succeeds.
-  Future<void> _showEncryptionKey() async {
+  /// Shows the saved encryption passkey after device authentication succeeds.
+  Future<void> _showEncryptionPasskey() async {
     final localAuth = LocalAuthentication();
     try {
       if (!await localAuth.isDeviceSupported()) {
@@ -125,32 +125,32 @@ class _SettingsPageState extends State<SettingsPage> {
         return;
       }
       final authenticated = await localAuth.authenticate(
-        localizedReason: 'Sblocca per visualizzare la chiave di crittografia',
+        localizedReason: 'Sblocca per visualizzare la passkey di crittografia',
         persistAcrossBackgrounding: true,
       );
       if (!authenticated || !mounted) return;
 
       final keyManager = KeyManager(user: _currentUser);
-      String? encryptionKey;
+      String? encryptionPasskey;
       try {
         await keyManager.init();
-        encryptionKey = await keyManager.stringKey;
+        encryptionPasskey = await keyManager.encryptionPasskey;
       } finally {
         keyManager.clearSession();
       }
       if (!mounted) return;
-      final keyToDisplay = encryptionKey;
-      if (keyToDisplay == null || keyToDisplay.isEmpty) {
-        _showMessage('La chiave di crittografia non è disponibile.');
+      final passkeyToDisplay = encryptionPasskey;
+      if (passkeyToDisplay == null || passkeyToDisplay.isEmpty) {
+        _showMessage('La passkey di crittografia non è disponibile.');
         return;
       }
 
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Chiave di crittografia'),
+          title: const Text('Passkey di crittografia'),
           content: SelectableText(
-            keyToDisplay,
+            passkeyToDisplay,
             style: const TextStyle(fontFamily: 'monospace'),
           ),
           actions: [
@@ -512,14 +512,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Icon(Icons.key, color: Colors.white),
                 ),
                 title: const Text(
-                  'Chiave di crittografia',
+                  'Passkey di crittografia',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: const Text(
-                  'Visualizza la chiave dopo aver sbloccato il dispositivo.',
+                  'Visualizza la passkey di backup dopo aver sbloccato il dispositivo.',
                 ),
                 trailing: const Icon(Icons.lock_outline, color: Colors.teal),
-                onTap: _showEncryptionKey,
+                onTap: _showEncryptionPasskey,
               ),
             ),
           ],

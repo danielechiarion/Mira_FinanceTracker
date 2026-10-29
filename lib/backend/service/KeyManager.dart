@@ -55,6 +55,27 @@ class KeyManager {
     return base64Encode(await _activeKey!.extractBytes());
   }
 
+  /// Returns the saved passkey used to protect the user's encryption key.
+  Future<String?> get encryptionPasskey async {
+    if (!isAuthenticated) {
+      throw StateError('A user account is required to retrieve its passkey.');
+    }
+
+    final storedValue = await _secureStorage.read(
+      key: "$_USERKEYPREFIX$_username",
+    );
+    if (storedValue == null || storedValue.isEmpty) return null;
+
+    final decodedData = jsonDecode(storedValue);
+    if (decodedData is! Map<String, dynamic>) {
+      throw const FormatException('Stored key data is not valid.');
+    }
+
+    final passkey = decodedData['password'];
+    if (passkey is! String || passkey.isEmpty) return null;
+    return passkey;
+  }
+
   /// Function to clear the session
   /// erasing username and active user key
   void clearSession() {

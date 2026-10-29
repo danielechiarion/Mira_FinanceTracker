@@ -378,7 +378,8 @@ class _SignupPageState extends State<SignupPage> {
                         decoration: InputDecoration(
                           hintText: 'Chiave segreta per i dati',
                           helperText:
-                              'Verrà usata per proteggere il database locale.',
+                              'Protegge i dati cloud. Conservala: puoi '
+                              'visualizzarla in Impostazioni > Sicurezza.',
                           prefixIcon: const Icon(Icons.key, color: Colors.teal),
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
