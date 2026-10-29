@@ -367,7 +367,11 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     /* first export step interests related to bond models. 
     In this case there is no year limit filter required */
     List<Map<String, dynamic>> bondModels = [];
-    if(!notModels) await appDatabase.query(sql: '''SELECT position, interestRate, duration, bond FROM StepInterestModel''');
+    if(!notModels) {
+      bondModels = await appDatabase.query(
+        sql: '''SELECT position, interestRate, duration, bond FROM StepInterestModel''',
+      );
+    }
 
     /* in the case of bonds we have to export only step interests 
     which are related to current selected bond models */

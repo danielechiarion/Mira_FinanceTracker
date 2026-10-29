@@ -32,10 +32,10 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   Future<void> importCurrentAccounts(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> bankAccount in content['content']) {
       await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO BankAccount (id,
-            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity) 
-            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate, 
-            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, 
+            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
+            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
+            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear,
             :lastDateActivity)''', parameters: bankAccount);
       await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO CurrentAccount
             (id, name) VALUES (:id, :name)''', parameters: bankAccount);
@@ -50,11 +50,11 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   Future<void> importSavingsAccounts(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> bankAccount in content['content']) {
       await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO BankAccount (id,
-            subscriptionDate, interest, endingDate, availableBalance, active, 
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity,
-            financialInstitute) VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate, 
-            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, 
-            :lastDateActivity,)''', parameters: bankAccount);
+            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
+            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
+            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear,
+            :lastDateActivity)''', parameters: bankAccount);
       await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO SavingsAccount
             (id, name, ledgerBalance) VALUES (:id, :name, :ledgerBalance)''', parameters: bankAccount);
     }
@@ -67,10 +67,10 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close database
   Future<void> importCardAccounts(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> bankAccount in content['content']) {
-      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO Card (id,
-            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active, 
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity) 
-            VALUES (:id, :name, :financialInstitute, :subscriptionDate, :interest, :endingDate, 
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO BankAccount (id,
+            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
+            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
             :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''', 
             parameters: bankAccount);
       await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO Card
@@ -99,8 +99,8 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close the database
   Future<void> importIncomes(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> transaction in content['content']){
-      await appDatabase.executeWithMap(sql: '''INSERT INTO OR REPLACE INTO Income 
-        (Income.id, reference, amount, executionDate, accountingDate, category, bankAccount, counterParty)
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO Income
+        (id, reference, amount, executionDate, accountingDate, category, bankAccount, counterParty)
         VALUES (:id, :reference, :amount, :executionDate, :accountingDate, :category, :bankAccount, :counterParty)''',
         parameters: transaction);
     }
@@ -113,7 +113,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close the database
   Future<void> importOutcomes(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> transaction in content['content']){
-      await appDatabase.executeWithMap(sql: '''INSERT INTO OR REPLACE INTO Outcome
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO Outcome
         (id, reference, amount, executionDate, accountingDate, category, bankAccount, counterParty)
         VALUES (:id, :reference, :amount, :executionDate, :accountingDate, :category, :bankAccount, :counterParty)''',
         parameters: transaction);
@@ -193,7 +193,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close the database
   Future<void> importDomiciliations(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> domiciliation in content['content']){
-      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO Domiciliation (Domiciliation.id, Domiciliation.name, description, amount, fee,
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO Domiciliation (id, name, description, amount, fee,
         startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, bankAccount, counterParty)
         VALUES (:id, :name, :description, :amount, :fee, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear,
         :lastDateActivity, :bankAccount, :counterParty)''', parameters: domiciliation);
@@ -219,7 +219,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close database
   Future<void> importBondModels(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> bondModel in content['content']){
-      await appDatabase.queryWithMap(sql: '''INSERT OR REPLACE INTO BondModel (BondModel.id, BondModel.name,
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO BondModel (id, name,
         provider, providerType, payoutFrequency, description, duration, taxRate, interestType)
         VALUES (:id, :name, :provider, :providerType, :payoutFrequency, :description, :duration, :taxRate, :interestType)''',
         parameters: bondModel);
@@ -233,7 +233,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close database
   Future<void> importTimeDepositModels(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> timeDepositModel in content['content']){
-      await appDatabase.queryWithMap(sql: '''INSERT OR REPLACE INTO TimeDepositModel (id, name,
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO TimeDepositModel (id, name,
         provider, providerType, payoutFrequency, description, duration, taxRate, 
         interestRate, earlyWithdrawalInterestRate, isCashable)
         VALUES (:id, :name, :provider, :providerType, :payoutFrequency, :description, :duration, :taxRate,
@@ -262,7 +262,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper{
   /// * [close] flag to close the database
   Future<void> importTimeDeposits(Map<String, dynamic> content, {bool close = false}) async {
     for(Map<String, dynamic> timeDeposit in content['content']){
-      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO TimeDeposit (TimeDeposit.id, TimeDeposit.name,
+      await appDatabase.executeWithMap(sql: '''INSERT OR REPLACE INTO TimeDeposit (id, name,
         provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, interestRate, earlyWithdrawalInterestRate, isCashable,
         startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd, bankAccount)
         VALUES (:id, :name, :provider, :providerType, :instrumentUsed, :initialValue, :currentValue, :taxRate, :status, 
