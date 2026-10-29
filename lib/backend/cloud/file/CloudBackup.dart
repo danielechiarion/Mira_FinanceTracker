@@ -51,19 +51,26 @@ abstract class CloudBackup {
   /// * [user] user to make the backup for
   /// * [authentication] (optional) authentication manager for Google
   /// * [handler] (optional) handler for HTTP requests to Drive
+  /// * [email] (optional) Google account email override
   /// * [_financialControl] flag to indicate that the operations needed are the ones that are connected
   ///   only to the financial resources owned by the user
-  /// Then all the other attributes are instanced, then initialize them. 
-  CloudBackup(User user, {GoogleAuthenticationManager? authentication, DriveHttpHandler? handler, this._financialControl = false}):
+  /// Then all the other attributes are instanced, then initialize them.
+  CloudBackup(
+    User user, {
+    GoogleAuthenticationManager? authentication,
+    DriveHttpHandler? handler,
+    String? email,
+    this._financialControl = false,
+  }) :
     _authenticationManager = authentication ?? GoogleAuthenticationManager(),
-    _email = user.email,
+    _email = email ?? user.email,
     _database = UserDatabaseWrapper(user),
     _userPreferences = UserPreferences(user),
     _keyManager = KeyManager(user: user) {
-      /* first initialize handler and 
+      /* first initialize handler and
       cloud file service */
-      _handler = handler ?? DriveHttpHandler(auth: _authenticationManager, email: user.email);
-      _fileService = CloudFileService(email: user.email, client: _handler);
+      _handler = handler ?? DriveHttpHandler(auth: _authenticationManager, email: _email);
+      _fileService = CloudFileService(email: _email, client: _handler);
 
       /* understand if the authentication and handler
       is given or not */

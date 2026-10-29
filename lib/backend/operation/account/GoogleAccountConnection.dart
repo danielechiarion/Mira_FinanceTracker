@@ -25,7 +25,8 @@ class GoogleAccountConnection {
     this._user,
     GoogleAuthenticationManager authentication, {
     UserDatabaseWrapper? systemDatabase,
-  }) : _authentication = authentication, _systemDatabase = systemDatabase ?? SystemDatabaseWrapper() {
+  }) : _authentication = authentication,
+       _systemDatabase = systemDatabase ?? SystemDatabaseWrapper() {
     _userDatabase = UserDatabaseWrapper(_user);
     _cloudReader = CloudBackupReader(_user, authentication: authentication);
   }
@@ -92,8 +93,11 @@ class GoogleAccountConnection {
           );
         }
 
-        if(!(await _userDatabase.isEmpty()) && !(await _cloudReader.isDriveEmpty())){
-          throw StateError('Impossibile connettersi al cloud con dati già salvati da ambo le parti');
+        if (!(await _userDatabase.isEmpty()) &&
+            !(await _cloudReader.isDriveEmpty())) {
+          throw StateError(
+            'Impossibile connettersi al cloud con dati già salvati da ambo le parti',
+          );
         }
         if (keyData != null &&
             !await keyManager.importKeyData(password, dataToValidate)) {
@@ -138,9 +142,7 @@ class GoogleAccountConnection {
       );
     }
     if (owner != _user.username) {
-      throw StateError(
-        'Lo spazio Google è già riservato all\'account Mira "$owner".',
-      );
+      throw CloudAccountOwnershipException(owner);
     }
 
     return keyData;
@@ -176,4 +178,16 @@ class GoogleAccountConnection {
 
     return devices.isNotEmpty;
   }
+}
+
+/// Indicates that the selected Google Drive contains data owned by another
+/// Mira account.
+class CloudAccountOwnershipException implements Exception {
+  final String ownerUsername;
+
+  const CloudAccountOwnershipException(this.ownerUsername);
+
+  @override
+  String toString() =>
+      'Lo spazio Google è già riservato all\'account Mira "$ownerUsername".';
 }

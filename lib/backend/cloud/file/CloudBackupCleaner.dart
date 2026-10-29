@@ -17,7 +17,8 @@ class CloudBackupCleaner extends CloudBackup {
       "device_register.json"; // static attribute to indicate the path of the device register
 
   /* define attributes */
-  User _user;
+  final User _user;
+  final bool _forceReset;
 
   /// Constructor to pass the folder
   /// to the superclass [CloudBackupCleaner]
@@ -25,8 +26,15 @@ class CloudBackupCleaner extends CloudBackup {
     User user, {
     GoogleAuthenticationManager? authentication,
     DriveHttpHandler? handler,
+    String? email,
+    this._forceReset = false,
   }) : _user = user,
-       super(user, authentication: authentication, handler: handler);
+       super(
+         user,
+         authentication: authentication,
+         handler: handler,
+         email: email,
+       );
 
   /// Function to init the cleaner
   /// using authentication
@@ -44,8 +52,14 @@ class CloudBackupCleaner extends CloudBackup {
   }
 
   /// Permanently deletes cloud data if no other devices are registered.
+  /// Force reset mode bypasses registered-device protection after confirmation.
   /// Returns false when another device prevents the cleanup.
   Future<bool> clean() async {
+    if (_forceReset) {
+      await super.fileService.deleteAppDataFolderContents();
+      return true;
+    }
+
     if (!(await _checkIfCleaningIsAvailable())) return false;
     await super.fileService.deleteAppDataFolderContents();
     return true;

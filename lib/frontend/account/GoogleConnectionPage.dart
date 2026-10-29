@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:local_auth/local_auth.dart';
 
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
+import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupCleaner.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountConnection.dart';
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
@@ -98,6 +100,15 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
           _importStatus = null;
         });
       }
+    } on CloudAccountOwnershipException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Connessione a Google non riuscita: $error';
+      });
+      final googleEmail = authenticationManager.email;
+      if (googleEmail != null && googleEmail.isNotEmpty) {
+        await _offerCloudReset(authenticationManager, googleEmail);
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -118,6 +129,82 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
           _isConnecting = false;
         });
       }
+    }
+  }
+
+  /// Offers a destructive cloud reset only after a cloud ownership conflict.
+  Future<void> _offerCloudReset(
+    GoogleAuthenticationManager authenticationManager,
+    String googleEmail,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Account Mira diverso trovato'),
+        content: const Text(
+          'Lo spazio Google contiene dati associati a un altro account Mira. '
+          'Puoi eliminare definitivamente tutti i dati cloud di questa '
+          'app e poi riprovare. Questa operazione riguarda anche gli altri '
+          'dispositivi collegati e non può essere annullata.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('RESETTA CLOUD'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+
+    try {
+      final localAuth = LocalAuthentication();
+      if (!await localAuth.isDeviceSupported()) {
+        throw StateError('Lo sblocco del dispositivo non è disponibile.');
+      }
+      final authenticated = await localAuth.authenticate(
+        localizedReason: 'Sblocca per confermare il reset dei dati cloud',
+        persistAcrossBackgrounding: true,
+      );
+      if (!authenticated) {
+        throw StateError('Autenticazione del dispositivo non riuscita.');
+      }
+      if (!mounted) return;
+
+      setState(() {
+        _errorMessage = null;
+        _importStatus = 'Reset dei dati cloud in corso...';
+      });
+
+      final cleaner = CloudBackupCleaner(
+        widget.user,
+        authentication: authenticationManager,
+        email: googleEmail,
+        forceReset: true,
+      );
+      try {
+        await cleaner.init();
+        await cleaner.execute();
+      } finally {
+        await cleaner.dispose();
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _importStatus =
+            'Dati cloud eliminati. Puoi riprovare a collegare l’account Google.';
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _importStatus = null;
+        _errorMessage = 'Reset dei dati cloud non riuscito: $error';
+      });
     }
   }
 
