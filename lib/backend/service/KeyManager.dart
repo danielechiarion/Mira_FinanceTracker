@@ -108,12 +108,11 @@ class KeyManager {
   random salt to create the password */
   Future<List<int>> _generateSalt([int length = 16]) async {
     final algorithm = AesGcm.with256bits();
-    // newSecretKey() genera 32 byte casuali protetti
+    /* generate salt of 32 bytes */
     final newKey = await algorithm.newSecretKey();
     final bytes = await newKey.extractBytes();
 
-    // Prendi i primi 'length' byte (es. 16 byte)
-    return bytes.sublist(0, length);
+    return bytes.sublist(0, length); // take the first bytes
   }
 
   /// Function to generate a key
