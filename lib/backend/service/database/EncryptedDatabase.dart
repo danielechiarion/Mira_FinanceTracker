@@ -108,7 +108,7 @@ class EncryptedDatabase {
     }
 
     final escapedPassword = newPassword.replaceAll("'", "''");
-    await _database!.execute("PRAGMA rekey = '$escapedPassword'");
+    await _database!.rawQuery("PRAGMA rekey = '$escapedPassword'");
   }
 
   /// Closes the active database connection.
