@@ -108,13 +108,15 @@ class GoogleAuthenticationManager {
     }
 
     final clientSecret = jsonData[clientSecretKey];
-    if (clientSecret != null &&
-        (clientSecret is! String || clientSecret.isEmpty)) {
+    if (clientSecret != null && clientSecret is! String) {
       throw FormatException(
-        'The OAuth client secret "$clientSecretKey" must be a non-empty string.',
+        'The OAuth client secret "$clientSecretKey" must be a string.',
       );
     }
-    _clientSecret = clientSecret as String?;
+    _clientSecret = (clientSecret as String?)?.trim();
+    if (_clientSecret?.isEmpty ?? false) {
+      _clientSecret = null;
+    }
 
     return clientId;
   }
