@@ -512,7 +512,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper{
   Future<bool> _isTableEmpty(String table) async {
     /* execute counting query
     and extract integer value from the result */
-    final result = await appDatabase.query(sql:'SELECT COUNT(*) FROM ?', arguments: [table]);
+    final result = await appDatabase.query(sql:'SELECT COUNT(*) FROM $table');
     int? count = Sqflite.firstIntValue(result);
     
     return (count ?? 0) == 0;
