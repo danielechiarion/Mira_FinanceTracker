@@ -56,7 +56,7 @@ The settings user can configure in this sessions are:
 
 ### Cloud settings
 The application is planned to support cloud-based backup and syncronization between multiple devices. 
-The user will have the chance to access to the account google or remove it whenever it's necessary.
+The user will have the chance to access to the account Google or remove it whenever it's necessary.
 **When removing the account everythings saved on cloud should be removed, when it's not used by other users.**
 
 The cloud application should display errors of connection and data reading, and still let the user interact with local data saved. 

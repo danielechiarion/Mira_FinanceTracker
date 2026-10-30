@@ -73,3 +73,55 @@ The tables for the user database are:
 5. **FINANCIAL INSTRUMENT MODELS** models of financial services to use throughout the products registered. They are divided in `TimeDepositModel` and `BondModel`.
 6. **FINANCIAL INSTRUMENTS** services saved by the user specifically designed for the savings account. The can be created starting from a mdoel and they are `TimeDeposit`, `Bond` and `Stock`.
 7. **STEP INTERESTS** entity which indicates an interest coming after a period selected. It is useful when the interest is variable and in entites like bonds. The tables are `StepInterestModel` for bond models and `StepInterest` for bonds.
+
+
+## Cloud backup implementation
+This application gathers all the financial information about a user, who would probably like to use it both on a mobile device (to register small payments and immediate transactions) and on a desktop (to have a better view of the financial situation).
+So, implementing a cloud backup is the best choice to exchange the same information between multiple platforms, which are already supported by the Flutter framework. 
+Because it was difficult for the developer to build a public database where to save application data and keep it safe, it has been chosen to **provide cloud backup functionality on Google Drive**. Moreover, the framework, which is developed by Google, includes importable packages to communicate directly to this service. 
+
+But, considering this huge and key functionality for the application, there were different aspects to take into account: 
+
+### Limitations
+First of all, there are some limitations that could come out from this design:
+- ***MULTIPLE SESSION HANDLING*** Potentially, two application instances connected to the same backup point could be executed simultaneously. But, in this case, the two applications could make different changes to different data or, maybe the same. So, when it comes the moment of saving the changes, **which session we have to consider**? Because it is difficult to handle a correct merge of resources (like the function Github implements), especially in an encrypted database, *if a user is a connected to the cloud will be able to use just one application instance at a time*. This can be done by creating a file inside Google Drive in order to lock the space, registering which session is working at the moment.
+- ***BACKUP FREQUENCY*** Knowing how often an application should backup information is another key point of this functionality. A backup and cross-device application should have always for their instance the very updated data registered. But the application is serverless and it's difficult for the application to open a background process to update and save data when it comes a change, because operative systems (in particular mobile ones) do not respect precisely the time to accomplish the task because the have to work according to power save and system security policies. *This is why the application implements the cloud import every time the application resumes or opens and saves the content every time the application pauses or stops*.
+- ***DATA SECURITY*** The application will save data in a private folder inside Drive, accessible only by the instance and not by the common drive interface. All the files regarding user preferences and database are encrypted following the [cryptography desing](#cryptography) explained before.
+- ***MULTI-USER*** inside the Google Drive it is possible to enable by multi-user backup, but this will cost a heayv structure, struggling to handle different keys and encryption. Because of that, the Google Drive space will host backup just for one user.
+- ***CONNECTION AND CLOUD OPERATIONS*** implementing Google Drive backup requires a stable Internet connection. Besides, cloud operation could produce errors when reading, writing or when trying authentication. In this cases, it is possible for the the user to disconnect the account from the cloud and interact offline. Then it will be possible to connect to the cloud later, repeating the whole accounting procedure. This avoids the account and the application to be blocked by a cloud error. 
+
+### Sessions
+The sessions are used inside the backup space to let the others know which device and user is interacting with the drive. 
+The sessions available has been divided in two types:
+
+#### FOREGROUND SESSION
+Indicates session when the application is launched. The file saved into Google Drive follows the format:
+```json
+{
+  "user": {}, // map object containing the user
+  "os": "<OS_NAME>", // name of the OS
+  "deviceModel": "<DEVICE_MODEL>", // model of the device
+  "deviceName": "<DEVICE_NAME>", // name of the device
+  "accessTime": "<ACCESS_TIME>" // time when the application accessed the drive
+}
+```
+This file is not encrypted because it is the first thing an application should check, even before reading the cryptography key, because this operation is useful only when it's possible to read and write inside the files.
+**When a foreground session is registered, no other application instance can be used. When the application session is finished, the file is removed or emptied**.
+*When the application is running, the file containing the background session is read, as well. Since a background operation is planned and is designed to update expiring dates and expected transactions, it's better for the foreground session to wait till the background opened session ends, in order to have updated information*.
+
+#### BACKGROUND SESSION
+It is the session related to a background task opened. The background session is essential for the application to share results when the task is ended and avoids different application instances to run the same task. The file saved in Google Drive follows the format:
+```json
+{
+  "user": {}, // map object containing the user
+  "os": "<OS_NAME>", // name of the OS
+  "deviceModel": "<DEVICE_MODEL>", // model of the device
+  "deviceName": "<DEVICE_NAME>", // name of the device
+  "accessTime": "<1900-01-01 00:00.0000>", // time when the application accessed the drive
+  "endingTime": "<1900-01-01 00:00.0000>" // time when the last background task has finished (it could be empty if the task has not finished)
+}
+```
+The file contains the ending time, which indicated when and whether the background task has been finished. 
+The file is not encrypted and is not deleted after the session ends, because the background tasks should know when they should act or not. In particular, **background session should start when the previous task has been finished at the previous scheduling time, or when the background task has started and has not finished within a specified timing.**.
+
+### Backup file organization
