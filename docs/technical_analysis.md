@@ -75,6 +75,22 @@ The tables for the user database are:
 7. **STEP INTERESTS** entity which indicates an interest coming after a period selected. It is useful when the interest is variable and in entites like bonds. The tables are `StepInterestModel` for bond models and `StepInterest` for bonds.
 
 
+## User preferences
+User preferences defines settings that can be configured by the user inside the application. User preferences can be divided into two categories:
+- **GLOBAL PREFERENCES** which are the same throughout applications.
+- **LOCAL PREFERENCES** which are used only inside the local application.
+
+Local preferences are saved inside the database when the user is disconnected and they are moved to shared preference (memory slot integrated into fluter framework).
+Global preferences also uses part of the drive space to export the settings. 
+
+Examples of preferences are:
+- ***Enable background*** setting to enable background task inside the operation (GLOBAL).
+- ***Enable notification*** setting to enable notification for the local application (GLOBAL). 
+- ***Backup time*** time expressed generally in hours to repeat scheduled tasks (LOCAL).
+
+User preferences could support more than these settings and can be integrated inside the environment, as well. 
+
+
 ## Cloud backup implementation
 This application gathers all the financial information about a user, who would probably like to use it both on a mobile device (to register small payments and immediate transactions) and on a desktop (to have a better view of the financial situation).
 So, implementing a cloud backup is the best choice to exchange the same information between multiple platforms, which are already supported by the Flutter framework. 
@@ -125,3 +141,39 @@ The file contains the ending time, which indicated when and whether the backgrou
 The file is not encrypted and is not deleted after the session ends, because the background tasks should know when they should act or not. In particular, **background session should start when the previous task has been finished at the previous scheduling time, or when the background task has started and has not finished within a specified timing.**.
 
 ### Backup file organization
+Inside the private Google Drive `appDataFolder`, the backup files are organized as follows:
+```
+appDataFolder/
+├── background_session.json
+├── foreground_session.json
+├── device_register.json
+├── crypto/
+│   └── crypto_key.json
+├── preference/
+│   └── preferences.json
+└── database/
+    ├── counter_parties.json
+    ├── financial_institutes.json
+    ├── bank_accounts.json
+    ├── transactions.json
+    ├── billings.json
+    ├── periodic_transactions.json
+    ├── financial_models.json
+    ├── financial_instruments.json
+    └── step_interests.json
+```
+#### Root folder
+The root folder contains two different types of file:  
+- *SESSION FILES* explained in the [paragraph](#sessions)
+- DEVICE REGISTERED with filename `device_registered.json` containing the list of devices connected to the Google Drive selected. It useful to understand if other devices have set a cryptography key, othewrise export their own, in order to make data published next for the allowed instances.
+
+#### Crypto folder
+The crypto folder contains a file so far, with the cryptography key to be used to decrypt data. The file content and the format it follows is described inside the [cryptography session](#key-saving-system).
+
+#### Preference folder
+The preference folder contains the settings configured by the user have to implemented throughout the different application instances where the account is saved in. 
+*An example of shared preference is whether the device should activate background tasks or notifications.* The format is a simple map containing key and its corresponding primitive value. The data inside this file are encrypted with the user AES key. 
+
+#### Database folder
+Contains all the tables of the user database containing a json with all the records translated in maps gathered in a specific time window, which is explained inside the shared preference section. 
+All files inside the database are encrypted with the user key. 
