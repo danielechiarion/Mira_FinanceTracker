@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:googleapis/drive/v3.dart' as drive;
 
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
@@ -77,8 +76,25 @@ class GoogleAccountConnection {
       );
       final keyData = await _readCloudKeyData(cloudFiles);
       final hasRegisteredDevices = await _hasRegisteredDevices(cloudFiles);
+      print(
+        'Controllo passkey: crypto_key.json '
+        '${keyData == null ? "assente" : "presente"}, '
+        'dispositivi registrati '
+        '${hasRegisteredDevices ? "presenti" : "assenti"}.',
+      );
 
       if (keyData != null || hasRegisteredDevices) {
+        final cloudDatabaseIsEmpty = await _cloudReader!.isDriveEmpty();
+        print(
+          'Controllo database cloud: '
+          '${cloudDatabaseIsEmpty ? "vuoto" : "contiene file"}.',
+        );
+        print(
+          keyData != null
+              ? 'Richiesta passkey: trovato crypto_key.json su Drive.'
+              : 'Richiesta passkey: crypto_key.json assente, ma il registro '
+                    'indica dispositivi collegati; uso la chiave locale.',
+        );
         final password = decryptionKey?.trim();
         if (password == null || password.isEmpty) {
           throw ArgumentError(
@@ -90,18 +106,26 @@ class GoogleAccountConnection {
         keyManager = KeyManager(user: _user);
         await keyManager.init();
         final dataToValidate = keyData ?? await keyManager.exportKeyData();
+        if (keyData == null) {
+          print(
+            'File chiave cloud non trovato; verifico i dati della chiave locale.',
+          );
+        }
         final decryptedKey = await keyManager.validateKeyData(
           password,
           dataToValidate,
         );
         if (decryptedKey == null) {
+          print(
+            'Dati della chiave trovati, ma la verifica della decifratura è fallita.',
+          );
           throw ArgumentError(
             'La chiave inserita non è corretta per i dati crittografati.',
           );
         }
+        print('Dati della chiave crittografica verificati correttamente.');
 
-        if (!(await _userDatabase.isEmpty()) &&
-            !(await _cloudReader!.isDriveEmpty())) {
+        if (!(await _userDatabase.isEmpty()) && !cloudDatabaseIsEmpty) {
           throw StateError(
             'Impossibile connettersi al cloud con dati già salvati da ambo le parti',
           );
@@ -159,21 +183,34 @@ class GoogleAccountConnection {
   Future<Map<String, dynamic>?> _readCloudKeyData(
     CloudFileService cloudFiles,
   ) async {
+    print('Ricerca della cartella "$_keyDirectory" in Drive appDataFolder.');
     final folder = await cloudFiles.findFolderByName(
       _keyDirectory,
       parentFolderId: CloudFileService.appDataFolderId,
       spaces: 'appDataFolder',
     );
-    if (folder == null) return null;
+    if (folder == null) {
+      print('Cartella Drive "$_keyDirectory" non trovata in appDataFolder.');
+      return null;
+    }
+    print(
+      'Cartella Drive "$_keyDirectory" trovata; ricerca del file '
+      '"$_keyFileName".',
+    );
 
     final drive.File? keyFile = await cloudFiles.findByName(
       _keyFileName,
       folderId: folder.id,
       spaces: 'appDataFolder',
     );
-    if (keyFile == null) return null;
+    if (keyFile == null) {
+      print('File Drive "$_keyFileName" non trovato in "$_keyDirectory".');
+      return null;
+    }
 
+    print('File Drive "$_keyFileName" trovato; lettura del contenuto JSON.');
     final keyData = await cloudFiles.readJson(keyFile.id!);
+    print('File Drive "$_keyFileName" letto correttamente.');
     final owner = keyData['username'];
     if (owner is! String || owner.isEmpty) {
       throw const FormatException(
@@ -192,7 +229,10 @@ class GoogleAccountConnection {
       'device_register.json',
       spaces: CloudFileService.appDataFolderId,
     );
-    if (deviceFile == null) return false;
+    if (deviceFile == null) {
+      print('Registro dispositivi device_register.json non trovato.');
+      return false;
+    }
 
     final fileId = deviceFile.id;
     if (fileId == null) {
@@ -215,6 +255,10 @@ class GoogleAccountConnection {
       }
     }
 
+    print(
+      'Registro dispositivi trovato: ${devices.length} dispositivo/i '
+      'registrato/i.',
+    );
     return devices.isNotEmpty;
   }
 }

@@ -1,10 +1,8 @@
 import 'dart:io';
-//import 'dart:developer';
+import 'dart:ui' show DartPluginRegistrant;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
-
-import 'package:mira_finance_tracker/frontend/error_pages/ErrorManager.dart';
 
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
@@ -15,45 +13,65 @@ import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart
 mobile background workmanager */
 @pragma('vm:entry-point')
 void callbackDispatcher() {
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   Workmanager().executeTask((taskName, inputData) async {
-    // print("[BG] Start task = $taskName");
-    try{
-      // debugger();
+    debugPrint('[BackgroundManager] Avvio task "$taskName".');
+    try {
       if (taskName == "com.example.mira.backgroundControl") {
-        WidgetsFlutterBinding.ensureInitialized();
         final service = BackgroundControl();
-        // print("[BG] init...");
         await service.init();
-        // print("[BG] init OK, execute...");
         await service.execute();
-        // print("[BG] execute OK");
-      }else if(taskName == "mira.importCloud"){
+      } else if (taskName == "mira.importCloud") {
         CurrentSession? session = await CurrentSession.getFromMemory();
-        if(session == null) return false; // return if the session has not been found
+        if (session == null) {
+          debugPrint(
+            '[BackgroundManager] Sessione non disponibile per import.',
+          );
+          return false;
+        }
 
-        /* create the importing trying 
-        to connect to drive */
-        CloudFileImport importer = CloudFileImport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
-        await importer.init();
-        await importer.execute();
-        await importer.dispose();
-      }else if(taskName == "mira.exportCloud"){
+        final importer = CloudFileImport(session);
+        try {
+          await importer.init();
+          final succeeded = await importer.execute();
+          debugPrint(
+            '[BackgroundManager] Import cloud '
+            '${succeeded ? "completato" : "non riuscito"}.',
+          );
+          return succeeded;
+        } finally {
+          await importer.dispose();
+        }
+      } else if (taskName == "mira.exportCloud") {
         CurrentSession? session = await CurrentSession.getFromMemory();
-        if(session == null) return false; // return if the session has not been found
+        if (session == null) {
+          debugPrint(
+            '[BackgroundManager] Sessione non disponibile per export.',
+          );
+          return false;
+        }
 
-        /* create the exporter and 
-        complete the operation, allowing disconnection */
-        CloudFileExport exporter = CloudFileExport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
-        await exporter.init();
-        await exporter.execute();
-        await exporter.dispose();
+        final exporter = CloudFileExport(session);
+        try {
+          await exporter.init();
+          final succeeded = await exporter.execute();
+          debugPrint(
+            '[BackgroundManager] Export cloud '
+            '${succeeded ? "completato" : "non riuscito"}.',
+          );
+          return succeeded;
+        } finally {
+          await exporter.dispose();
+        }
       }
-      // print("[BG] END ok");
-      return Future.value(true);
-    }catch(e){
-      // print("[BG] ERROR: $e");
-      // print("[BG] STACKTRACE: $st");
-      return Future.value(false);
+      debugPrint('[BackgroundManager] Task "$taskName" completato.');
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint(
+        '[BackgroundManager] Task "$taskName" fallito: $error\n$stackTrace',
+      );
+      return false;
     }
   });
 }
@@ -65,7 +83,8 @@ class BackgroundManager {
   /// Function to enable daily background
   /// whatever platform has been used
   Future<void> enableDailyBackgroundCheck() async {
-    if (kIsWeb) return; // web doesn't support background application when closed
+    if (kIsWeb)
+      return; // web doesn't support background application when closed
 
     if (Platform.isAndroid || Platform.isIOS) {
       await _configureMobile();
@@ -82,7 +101,12 @@ class BackgroundManager {
     if (Platform.isAndroid || Platform.isIOS) {
       await Workmanager().cancelByUniqueName("background-control");
     } else if (Platform.isWindows) {
-      await Process.run('schtasks', ['/Delete', '/TN', 'Mira_BackgroundCheck', '/F']);
+      await Process.run('schtasks', [
+        '/Delete',
+        '/TN',
+        'Mira_BackgroundCheck',
+        '/F',
+      ]);
     } else if (Platform.isLinux || Platform.isMacOS) {
       await _disableLinuxCrontab();
     }
@@ -101,7 +125,9 @@ class BackgroundManager {
     /* remove only the rows containing the path
     matching the executable created */
     final lines = currentCron.split('\n');
-    final updatedLines = lines.where((line) => !line.contains(exePath)).join('\n');
+    final updatedLines = lines
+        .where((line) => !line.contains(exePath))
+        .join('\n');
 
     /* override the crontab with the 
     updated list */
@@ -112,20 +138,24 @@ class BackgroundManager {
 
   /* --- MOBILE CONFIGURATION (Android / iOS) --- */
   Future<void> _configureMobile() async {
-    await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
+    await Workmanager().initialize(
+      callbackDispatcher,
+      isInDebugMode: kDebugMode,
+    );
     await Workmanager().registerPeriodicTask(
       "background-control",
       "com.example.mira.backgroundControl",
       frequency: const Duration(hours: 24), // default: 24 hours
       constraints: Constraints(networkType: NetworkType.connected),
-      initialDelay: Duration(minutes: 15)
+      initialDelay: Duration(minutes: 15),
     );
   }
 
   /* --- WINDOWS CONFIGURATION --- */
   Future<void> _configureWindows() async {
-    final exePath = Platform.resolvedExecutable; // call the same executable of the function
-    
+    final exePath =
+        Platform.resolvedExecutable; // call the same executable of the function
+
     /* register a task which operates 
     on the computer daily */
     await Process.run('schtasks', [
@@ -134,7 +164,7 @@ class BackgroundManager {
       '/TR', '"$exePath" --background-check',
       '/SC', 'DAILY',
       '/ST', '09:00',
-      '/F' // override if already existing
+      '/F', // override if already existing
     ]);
   }
 
@@ -145,7 +175,9 @@ class BackgroundManager {
     final cronJob = "0 9 * * * $command > /dev/null 2>&1\n";
 
     final process = await Process.start('crontab', ['-l']);
-    final currentCron = await process.stdout.transform(const SystemEncoding().decoder).join();
+    final currentCron = await process.stdout
+        .transform(const SystemEncoding().decoder)
+        .join();
 
     if (!currentCron.contains(exePath)) {
       final newCron = currentCron + cronJob;

@@ -165,7 +165,7 @@ class UserBackgroundCheck {
     finally dipose the resources of the instance */
     CloudFileImport importer = CloudFileImport(_session, foreground: false);
     await importer.init();
-    for(int i=0; i<importingAttempts && result; i++){
+    for(int i=0; i<importingAttempts && !result; i++){
       result = await importer.execute();
     }
     await importer.dispose();
@@ -185,7 +185,7 @@ class UserBackgroundCheck {
     connected to the operation */
     CloudFileExport exporter = CloudFileExport(_session, foreground: false);
     await exporter.init();
-    for(int i=0; i<exportingAttempts && result; i++){
+    for(int i=0; i<exportingAttempts && !result; i++){
       result = await exporter.execute();
     }
     await exporter.dispose();

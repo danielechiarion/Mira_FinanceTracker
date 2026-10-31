@@ -22,7 +22,7 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper> {
   late final AppLifecycleListener _listener;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     _listener = AppLifecycleListener(
@@ -30,21 +30,35 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper> {
       and disconnect to it to let the resources
       free to other application instances */
       onPause: () async {
-        if(Platform.isIOS || Platform.isAndroid){
-          await Workmanager().registerOneOffTask(
-            "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}",
-            "mira.exportCloud",
-            constraints: Constraints(
-              networkType: NetworkType.connected,
-            ),
-          );
-        }else{
+        if (Platform.isIOS || Platform.isAndroid) {
+          try {
+            final taskId =
+                "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}";
+            await Workmanager().registerOneOffTask(
+              taskId,
+              "mira.exportCloud",
+              constraints: Constraints(networkType: NetworkType.connected),
+            );
+            debugPrint(
+              '[AppLifecycleWrapper] Export cloud pianificato ($taskId).',
+            );
+          } catch (error, stackTrace) {
+            debugPrint(
+              '[AppLifecycleWrapper] Pianificazione export cloud fallita: '
+              '$error\n$stackTrace',
+            );
+          }
+        } else {
           CurrentSession? session = await CurrentSession.getFromMemory();
-          if(session == null) return; // if the session is not found, end the function
+          if (session == null)
+            return; // if the session is not found, end the function
 
           /* create the exporter
           and execute all the operations */
-          CloudFileExport exporter = CloudFileExport(session, showErrorFunction: ErrorManager.redirectToErrorPageExport);
+          CloudFileExport exporter = CloudFileExport(
+            session,
+            showErrorFunction: ErrorManager.redirectToErrorPageExport,
+          );
           await exporter.init();
           await exporter.execute();
           await exporter.dispose();
@@ -53,36 +67,38 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper> {
       /* when it's time to resume try to 
       connect and get the data, otherwise display errors */
       onResume: () async {
-        if(Platform.isIOS || Platform.isAndroid){
+        if (Platform.isIOS || Platform.isAndroid) {
           await Workmanager().registerOneOffTask(
             "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}",
             "mira.importCloud",
-            constraints: Constraints(
-              networkType: NetworkType.connected,
-            ),
+            constraints: Constraints(networkType: NetworkType.connected),
           );
-        }else{
+        } else {
           CurrentSession? session = await CurrentSession.getFromMemory();
-          if(session == null) return; // if the session is not found, end the function
+          if (session == null)
+            return; // if the session is not found, end the function
 
           /* create the importer and execute all the operations */
-          CloudFileImport importer = CloudFileImport(session, showErrorFunction: ErrorManager.redirectToErrorPageImport);
+          CloudFileImport importer = CloudFileImport(
+            session,
+            showErrorFunction: ErrorManager.redirectToErrorPageImport,
+          );
           await importer.init();
           await importer.execute();
           await importer.dispose();
         }
-      }
+      },
     );
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
     _listener.dispose();
-  }      
+  }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return widget.child;
   }
 }
