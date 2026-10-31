@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:googleapis/drive/v3.dart' as drive;
 
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
@@ -139,7 +141,10 @@ class GoogleAccountConnection {
           }
 
           final importedKey = base64Encode(decryptedKey);
-          final requiresRekey = localKey != importedKey;
+          final isSqlCipherPlatform =
+              defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS;
+          final requiresRekey = isSqlCipherPlatform && localKey != importedKey;
           if (requiresRekey) {
             await _userDatabase.rekeyEncryptionKey(importedKey);
           }
