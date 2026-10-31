@@ -9,6 +9,7 @@ import 'package:mira_finance_tracker/backend/cloud/file/CloudFileService.dart';
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/backend/service/database/SystemDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
@@ -176,6 +177,11 @@ class GoogleAccountConnection {
       // Persist the Google token and account association in one database transaction.
       await _authentication.persistAuthenticatedAccount(user: _user);
       _user.email = googleEmail;
+      final currentSession = await CurrentSession.getFromMemory();
+      if (currentSession?.user.username == _user.username) {
+        currentSession!.user.email = googleEmail;
+        await currentSession.saveUser();
+      }
     } finally {
       keyManager?.clearSession();
       handler?.close();
