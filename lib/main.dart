@@ -1,6 +1,7 @@
 import 'dart:io';
 // import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mira_finance_tracker/globals.dart';
@@ -20,7 +21,10 @@ import 'package:mira_finance_tracker/frontend/SettingsPage.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized(); // ensure all libraries have been loaded
-  await initializeDateFormatting('it_IT', null); // define the language for dates
+  await initializeDateFormatting(
+    'it_IT',
+    null,
+  ); // define the language for dates
 
   /* configure ffi system for desktop ios and platforms */
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -30,7 +34,7 @@ void main(List<String> args) async {
 
   /* --- CATCH BACKGROUND TASK ---
   when it's called from the backend */
-  if(args.contains("--background-check")){
+  if (args.contains("--background-check")) {
     // debugger();
     /* call the service to execute
     in background */
@@ -43,6 +47,12 @@ void main(List<String> args) async {
     exit(0); // exit the proces
   }
 
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
+    await windowManager.setPreventClose(true);
+    debugPrint('[main] Intercettazione chiusura desktop abilitata.');
+  }
+
   /* ask permission for notification in
   order to send messages about the state of the accounts */
   await NotificationManager().requestPermissions();
@@ -53,7 +63,7 @@ void main(List<String> args) async {
   /* enable background manager daily task
   throughout all platforms */
   await BackgroundManager.instance.enableDailyBackgroundCheck();
-  // await BackgroundManager.instance.testOneOff(); 
+  // await BackgroundManager.instance.testOneOff();
 
   runApp(MainApp(isLogged: userLogged));
 }
@@ -73,14 +83,14 @@ class MainApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      /* sets login page as the 
-      page opened on first access */
-      home: isLogged ? AppLifecycleWrapper(child: const HomePage()) : AppLifecycleWrapper(child: const LoginPage()),
+      home: isLogged ? const HomePage() : const LoginPage(),
+      builder: (context, child) =>
+          AppLifecycleWrapper(child: child ?? const SizedBox.shrink()),
       routes: {
-        AppRoutes.home:(context) => const HomePage(),
-        AppRoutes.check:(context) => const CustomCheckPage(),
-        AppRoutes.actions:(context) => const ActionsPage(),
-        AppRoutes.settings:(context) => const SettingsPage()
+        AppRoutes.home: (context) => const HomePage(),
+        AppRoutes.check: (context) => const CustomCheckPage(),
+        AppRoutes.actions: (context) => const ActionsPage(),
+        AppRoutes.settings: (context) => const SettingsPage(),
       },
     );
   }
