@@ -177,3 +177,43 @@ The preference folder contains the settings configured by the user have to imple
 #### Database folder
 Contains all the tables of the user database containing a json with all the records translated in maps gathered in a specific time window, which is explained inside the shared preference section. 
 All files inside the database are encrypted with the user key. 
+
+### Connection steps
+A connection with the cloud is meant to be safe and complete so, regardless the functionality to execute, the cloud connection has some steps to follow:
+1. **CONNECTION CONTROL** the application connects to the cloud in order to see if the space can be lock for the session. When the channel has been reserved, a lock file will be written to avoid other instances to use the same space at the same time. Some errors could be returned by this procedure: 
+    - *AUTHENTICATION FAILED* it means the application could not find the google session to upload
+    - *LINE BUSY* so the cloud is currently used by another application instance
+    - *NETWORK ERROR* it means the application cannot reach the cloud ending point.
+
+  2. **EXECUTION**  the application does the operation which is expected to do. It starts only after the connection control ends successfully. Other errors could be returned by the procedure.
+  3. **DISCONNECTION** when the application disconnects it frees the lock file to let the space available for other application instances. When there is a logout procedure not allowing to use the cloud anymore by the user, the space occupied by the directory will be emptied if no other device is connected. 
+  The disconnection step has to be done regardless the exit of the execution step.
+
+
+## Background tasks
+The background part of the application is essential for the success of the application. It mainly controls the services uploaded by the user and controls if some money has to be owned or charged. 
+To develop the background status we have to consider different aspects:
+
+### Entities involved
+When the background process starts not all the entities have to be involved. Selecting only the essential parts of the system to take into account will allow the program to execute the task in a faster and more efficient way. In particular, the entities involved are:
+- **Account billings** so cashbacks and bank fees. The background tasks controls for each bank account if the time has come to register the transactions connected to these entitites.
+- **Periodic transactions** that means periodic incomes and domiciliation. The control procedure is similar to one applied to the account billings, but it only matters for current accounts.
+- **Financial services** without even considering their models. They are available only in savings account and it's good to control whether the expiring date has come or simply time to earn the interests. This procedure involves time deposits and bonds. Stocks are manual regulated by the user.
+- **Credit card transactions** this is a crucial operation for credit cards. When an outcome is register, it does not affect immediately the available balance. In spite of that, the credit cards has to substract the money the user owes only on a specific day of the month, simulating the function of a credit card provider.
+
+So, when these operations are done, the application does not need to read all the entities saved by the user (such as models or counterparties) and it's necessary to import and export only the data involved in the control. 
+
+### Software scheduling
+Background task scheduling is handled in different ways depending on the platfrom where the application is hosted:
+- **workmamanger** library provided by Flutter for mobile device. It is used for iOS and Android instances.
+- **Process manager** system to handle general processes by Windows.
+- **crontab** tool to handle scheduled processes provided by Linux distributions.
+It is suggested to configure the background activity in devices that are always active, such as in a mobile device. Process handling in desktop device could not work in the best way due to frequent start and stop of the device and the notification handler, which is more evident and visible in a mobile OS. 
+
+**PAY ATTENTION!** *When a background task is scheduled in different application instances, the same job could be done more than once. In order to solve this waste of computing, the [background session](#background-session) has been designed to let the device do the background task only when it hasn't done yet in the same time window.*
+
+### Cloud implementation
+If the cloud implementation is enabled by the user, this functionality will be provided also during background task. So long as the operation is not done in a foreground enviroment, the cloud background connection adopts some different methods from the foreground connection. In particular, the background cloud backup implements:
+- **Connection attempts** connection could not work at first attempt. In a foreground connection it would be displayed an error, but in the background connection it is difficult for the end user to see a log and, probably, it would be useful for the user. That is why there is a minimum of attemps allowed by the program to retry the connection. 
+- **Entities involved** import and export procedures involves only the [entities](#entities-involved) specified before.
+- **Disconnection** when the disconnection is done, it will be reported that in the same time window the backgroud task had been completed.
