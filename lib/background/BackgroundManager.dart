@@ -16,7 +16,9 @@ void callbackDispatcher() {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   Workmanager().executeTask((taskName, inputData) async {
-    debugPrint('[BackgroundManager] Avvio task "$taskName".');
+    final taskId = inputData?['taskId'];
+    final taskLabel = taskId is String ? '$taskName ($taskId)' : taskName;
+    debugPrint('[BackgroundManager] Avvio task "$taskLabel".');
     try {
       if (taskName == "com.example.mira.backgroundControl") {
         final service = BackgroundControl();
@@ -65,11 +67,11 @@ void callbackDispatcher() {
           await exporter.dispose();
         }
       }
-      debugPrint('[BackgroundManager] Task "$taskName" completato.');
+      debugPrint('[BackgroundManager] Task "$taskLabel" completato.');
       return true;
     } catch (error, stackTrace) {
       debugPrint(
-        '[BackgroundManager] Task "$taskName" fallito: $error\n$stackTrace',
+        '[BackgroundManager] Task "$taskLabel" fallito: $error\n$stackTrace',
       );
       return false;
     }

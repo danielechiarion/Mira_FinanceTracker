@@ -30,39 +30,44 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper> {
       and disconnect to it to let the resources
       free to other application instances */
       onPause: () async {
-        if (Platform.isIOS || Platform.isAndroid) {
+        final session = await CurrentSession.getFromMemory();
+        if (session == null) return;
+
+        if (Platform.isAndroid && session.user.isUserConnected) {
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          final taskId = "upload_drive_job_$timestamp";
           try {
-            final taskId =
-                "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}";
             await Workmanager().registerOneOffTask(
               taskId,
               "mira.exportCloud",
+              inputData: {'taskId': taskId},
               constraints: Constraints(networkType: NetworkType.connected),
+              expedited: true,
+              outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
+              foregroundServiceConfig: ForegroundServiceConfig(
+                notificationTitle: 'Salvataggio backup in corso',
+                notificationText: 'Sincronizzazione con Google Drive',
+                notificationChannelId: 'mira_cloud_backup',
+                notificationChannelName: 'Backup cloud',
+                notificationId: timestamp.remainder(100000),
+                foregroundServiceType: ForegroundServiceType.dataSync,
+              ),
             );
             debugPrint(
-              '[AppLifecycleWrapper] Export cloud pianificato ($taskId).',
+              '[AppLifecycleWrapper] Export cloud avviato come servizio '
+              'foreground ($taskId).',
             );
+            return;
           } catch (error, stackTrace) {
             debugPrint(
-              '[AppLifecycleWrapper] Pianificazione export cloud fallita: '
+              '[AppLifecycleWrapper] Avvio servizio foreground export '
+              'fallito, provo export diretto: '
               '$error\n$stackTrace',
             );
           }
-        } else {
-          CurrentSession? session = await CurrentSession.getFromMemory();
-          if (session == null)
-            return; // if the session is not found, end the function
-
-          /* create the exporter
-          and execute all the operations */
-          CloudFileExport exporter = CloudFileExport(
-            session,
-            showErrorFunction: ErrorManager.redirectToErrorPageExport,
-          );
-          await exporter.init();
-          await exporter.execute();
-          await exporter.dispose();
         }
+
+        await _exportCloudInForeground(session);
       },
       /* when it's time to resume try to 
       connect and get the data, otherwise display errors */
@@ -89,6 +94,35 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper> {
         }
       },
     );
+  }
+
+  Future<void> _exportCloudInForeground(CurrentSession session) async {
+    final exporter = CloudFileExport(
+      session,
+      showErrorFunction: ErrorManager.redirectToErrorPageExport,
+    );
+    try {
+      await exporter.init();
+      final succeeded = await exporter.execute();
+      debugPrint(
+        '[AppLifecycleWrapper] Export cloud diretto '
+        '${succeeded ? "completato" : "non riuscito"}.',
+      );
+    } catch (error, stackTrace) {
+      debugPrint(
+        '[AppLifecycleWrapper] Export cloud diretto fallito: '
+        '$error\n$stackTrace',
+      );
+    } finally {
+      try {
+        await exporter.dispose();
+      } catch (error, stackTrace) {
+        debugPrint(
+          '[AppLifecycleWrapper] Rilascio risorse export cloud fallito: '
+          '$error\n$stackTrace',
+        );
+      }
+    }
   }
 
   @override
