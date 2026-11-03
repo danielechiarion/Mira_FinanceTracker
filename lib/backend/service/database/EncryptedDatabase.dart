@@ -22,10 +22,8 @@ class EncryptedDatabase {
   connection is only closed for real once the counter reaches zero */
   static final Map<String, int> _referenceCounters = {};
 
-  /* tracks opening operations still in progress for a given path, so that
-  concurrent calls on the same database file wait for the same connection
-  instead of racing to open two different physical connections */
-  static final Map<String, Future<Database>> _pendingOpenings = {};
+  /* serializes opens, closes, and deletion for each database path */
+  static final Map<String, Future<void>> _connectionOperations = {};
 
   /* attributes definition */
   Database? _database;
@@ -62,19 +60,20 @@ class EncryptedDatabase {
     FutureOr<void> Function(Database, int)? onCreate,
     bool extensionAdded = false,
   }) async {
-    /* check if database is already opened */
-    if (isOpen) {
-      return;
+    if (!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
+      dbName += _DATABASEEXTENSION;
     }
 
-    try {
-      if (!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
-        dbName += _DATABASEEXTENSION;
+    final String path = await _resolvePath(dbName);
+    await _withConnectionOperation(path, () async {
+      if (isOpen) {
+        if (_connectionPath != path) {
+          throw StateError(
+            'This database wrapper already has another database open.',
+          );
+        }
+        return;
       }
-
-      /* resolve the physical path first: it is the key used to look up
-      or register the shared connection in the static registry */
-      final String path = await _resolvePath(dbName);
 
       _database = await _acquireConnection(
         path: path,
@@ -82,12 +81,8 @@ class EncryptedDatabase {
         version: version,
         onCreate: onCreate,
       );
-
-      // print("User Database path: $path");
       _connectionPath = path;
-    } catch (e) {
-      rethrow;
-    }
+    });
   }
 
   /// Changes the encryption key of the open SQLCipher database in place.
@@ -121,21 +116,33 @@ class EncryptedDatabase {
     }
 
     final String path = _connectionPath!;
-    final int remaining = (_referenceCounters[path] ?? 1) - 1;
-
-    if (remaining <= 0) {
-      /* no other instance is using this connection anymore: close it for real */
-      if (_database!.isOpen) {
-        await _database!.close();
+    await _withConnectionOperation(path, () async {
+      final database = _database;
+      if (database == null || _connectionPath != path) {
+        return;
       }
-      _sharedConnections.remove(path);
-      _referenceCounters.remove(path);
-    } else {
-      _referenceCounters[path] = remaining;
-    }
 
-    _database = null;
-    _connectionPath = null;
+      /* Ignore stale wrappers left behind by a forced close or deletion. */
+      if (!identical(_sharedConnections[path], database)) {
+        _database = null;
+        _connectionPath = null;
+        return;
+      }
+
+      final int remaining = (_referenceCounters[path] ?? 1) - 1;
+      _database = null;
+      _connectionPath = null;
+
+      if (remaining <= 0) {
+        _sharedConnections.remove(path);
+        _referenceCounters.remove(path);
+        if (database.isOpen) {
+          await database.close();
+        }
+      } else {
+        _referenceCounters[path] = remaining;
+      }
+    });
   }
 
   /// Function to close all the instances of the database
@@ -143,13 +150,23 @@ class EncryptedDatabase {
     if (_database == null || _connectionPath == null) {
       return;
     }
-    await _database!.close();
+    final String path = _connectionPath!;
+    await _withConnectionOperation(path, () async {
+      final database = _database;
+      if (database == null || _connectionPath != path) {
+        return;
+      }
 
-    /* reset all the registers
-    about the database */
-    _sharedConnections.remove(_connectionPath);
-    _referenceCounters[_connectionPath!] =
-        (_referenceCounters[_connectionPath] ?? 1) - 1;
+      _database = null;
+      _connectionPath = null;
+      if (identical(_sharedConnections[path], database)) {
+        _sharedConnections.remove(path);
+        _referenceCounters.remove(path);
+      }
+      if (database.isOpen) {
+        await database.close();
+      }
+    });
   }
 
   /* *** QUERY EXECUTION METHODS *** */
@@ -211,23 +228,16 @@ class EncryptedDatabase {
     openAppDatabase does it, so it matches the registry key exactly */
     final String fullPath = await _resolvePath(dbName);
 
-    /* 2. if a shared connection towards this file is still registered,
-    close it and drop it from the registry before deleting the file:
-    otherwise the delete could fail, or leave a stale entry behind.
-    note that any other instance still referencing this connection will
-    find it closed on its next operation, just like when a file is deleted
-    while still in use */
-    if (_sharedConnections.containsKey(fullPath)) {
-      final Database staleConnection = _sharedConnections[fullPath]!;
-      if (staleConnection.isOpen) {
+    await _withConnectionOperation(fullPath, () async {
+      /* Close and unregister any live connection before deleting the file. */
+      final staleConnection = _sharedConnections.remove(fullPath);
+      _referenceCounters.remove(fullPath);
+      if (staleConnection != null && staleConnection.isOpen) {
         await staleConnection.close();
       }
-      _sharedConnections.remove(fullPath);
-      _referenceCounters.remove(fullPath);
-    }
 
-    /* 3. delete the database file */
-    await deleteDatabase(fullPath);
+      await deleteDatabase(fullPath);
+    });
   }
 
   /* *** PRIVATE HELPER METHODS *** */
@@ -260,7 +270,7 @@ class EncryptedDatabase {
   /* returns the shared connection for the given path, opening it only if
   no other instance already opened it (or is currently opening it);
   concurrent requests for the same path are serialized through
-  _pendingOpenings so two physical connections are never created for
+  the per-path operation lock so two physical connections are never created for
   the same database */
   Future<Database> _acquireConnection({
     required String path,
@@ -268,8 +278,8 @@ class EncryptedDatabase {
     required int version,
     FutureOr<void> Function(Database, int)? onCreate,
   }) async {
-    if (_sharedConnections.containsKey(path)) {
-      final Database existing = _sharedConnections[path]!;
+    final existing = _sharedConnections[path];
+    if (existing != null) {
       if (existing.isOpen) {
         _referenceCounters[path] = (_referenceCounters[path] ?? 0) + 1;
         return existing;
@@ -281,27 +291,34 @@ class EncryptedDatabase {
       _referenceCounters.remove(path);
     }
 
-    if (_pendingOpenings.containsKey(path)) {
-      final Database db = await _pendingOpenings[path]!;
-      _referenceCounters[path] = (_referenceCounters[path] ?? 0) + 1;
-      return db;
-    }
-
-    final Future<Database> openingFuture = _openPhysicalConnection(
+    final Database database = await _openPhysicalConnection(
       path: path,
       password: password,
       version: version,
       onCreate: onCreate,
     );
-    _pendingOpenings[path] = openingFuture;
+    _sharedConnections[path] = database;
+    _referenceCounters[path] = 1;
+    return database;
+  }
 
+  Future<T> _withConnectionOperation<T>(
+    String path,
+    Future<T> Function() operation,
+  ) async {
+    final previous = _connectionOperations[path] ?? Future<void>.value();
+    final completer = Completer<void>();
+    final operationTail = previous.then((_) => completer.future);
+    _connectionOperations[path] = operationTail;
+
+    await previous;
     try {
-      final Database db = await openingFuture;
-      _sharedConnections[path] = db;
-      _referenceCounters[path] = 1;
-      return db;
+      return await operation();
     } finally {
-      _pendingOpenings.remove(path);
+      completer.complete();
+      if (identical(_connectionOperations[path], operationTail)) {
+        unawaited(_connectionOperations.remove(path));
+      }
     }
   }
 

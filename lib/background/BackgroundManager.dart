@@ -191,14 +191,14 @@ class BackgroundManager {
 
   /* debug function to test one off operations
   inside the device */
-  /* Future<void> testOneOff() async {
+  Future<void> testOneOff() async {
     await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
     await Workmanager().registerOneOffTask(
-      "test-bg-2",                          // cambialo a ogni prova: test-bg-2, ...
+      "test-bg-3",                          // cambialo a ogni prova: test-bg-2, ...
       "com.example.mira.backgroundControl", // stesso nome del task vero
-      initialDelay: const Duration(minutes: 1),
+      initialDelay: const Duration(minutes: 5),
       constraints: Constraints(networkType: NetworkType.connected),
     );
     print('[BG] one-off registrato');
-  } */
+  }
 }
