@@ -1,6 +1,6 @@
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
-import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 
@@ -45,12 +45,11 @@ class Logout{
     the one of the user logged */
     UserPreferences preferences = UserPreferences(_user);
     await preferences.init();
+    await preferences.disconnect();
 
     /* only when the cloud operation has been finished close 
     completely the database */
-    UserDatabaseWrapper database = UserDatabaseWrapper(_user.clone());
-    await database.init();
-    await database.closeCompletelyDatabase();
+    await UserDatabaseHandler.closeDatabase();
     return true;
   }
 }

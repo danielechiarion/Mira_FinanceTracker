@@ -54,6 +54,9 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper {
       _userKeyManager = KeyManager(user: user),
       super();
 
+  /* *** GETTER METHODS *** */
+  User get user => _user;
+
   /// Function to initialize the database
   /// defining the tables.
   /// Defining also the system database if it has not done before.

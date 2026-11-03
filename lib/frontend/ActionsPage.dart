@@ -10,6 +10,7 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation
 
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
@@ -40,7 +41,6 @@ class ActionsPage extends StatefulWidget {
 
 class _ActionsPageState extends State<ActionsPage> {
   late final Future<UserDatabaseWrapper> _databaseFuture;
-  UserDatabaseWrapper? _database;
 
   @override
   void initState() {
@@ -50,10 +50,6 @@ class _ActionsPageState extends State<ActionsPage> {
 
   @override
   void dispose(){
-    final database = _database;
-    if (database != null) {
-      database.closeDatabase();
-    }
     super.dispose();
   }
 
@@ -64,11 +60,9 @@ class _ActionsPageState extends State<ActionsPage> {
       throw StateError('Nessuna sessione attiva.');
     }
 
-    final database = UserDatabaseWrapper(session.user);
-    await database.init();
-    _database = database;
+    await UserDatabaseHandler.openDatabase(session.user);
 
-    return database;
+    return UserDatabaseHandler.database!;
   }
 
   // Placeholder category/action list: replace with the real one.

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
@@ -53,8 +54,8 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
       throw StateError('Nessuna sessione attiva.');
     }
 
-    final database = UserDatabaseWrapper(session.user);
-    await database.init();
+    await UserDatabaseHandler.openDatabase(session.user);
+    final database = UserDatabaseHandler.database!;
     try {
       final accounts = await database.getBankAccounts();
       final outputs = <TransactionOperationOutput>[];

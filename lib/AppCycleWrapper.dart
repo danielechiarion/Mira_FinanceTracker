@@ -8,6 +8,7 @@ import 'package:mira_finance_tracker/globals.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
+import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 import 'package:mira_finance_tracker/frontend/error_pages/ErrorManager.dart';
 
 /// Create app lifecycle listener to undrstand whether
@@ -43,8 +44,12 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
       and disconnect to it to let the resources
       free to other application instances */
       onPause: () async {
-        if (_isDesktop) return;
+        /* first of all close the 
+        database connection */
+        await UserDatabaseHandler.closeDatabase();
 
+        if (_isDesktop) return;
+ 
         final session = await CurrentSession.getFromMemory();
         if (session == null) return;
 
@@ -89,6 +94,11 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
       /* when it's time to resume try to 
       connect and get the data, otherwise display errors */
       onResume: () async {
+        /* find the session then try to 
+        open the database */
+        CurrentSession? session = await CurrentSession.getFromMemory();
+        if(session != null) await UserDatabaseHandler.openDatabase(session.user);
+          
         if (Platform.isIOS || Platform.isAndroid) {
           await Workmanager().registerOneOffTask(
             "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}",
@@ -96,9 +106,7 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
             constraints: Constraints(networkType: NetworkType.connected),
           );
         } else {
-          CurrentSession? session = await CurrentSession.getFromMemory();
-          if (session == null)
-            return; // if the session is not found, end the function
+          if (session == null) return; // if the session is not found, end the function
 
           /* create the importer and execute all the operations */
           CloudFileImport importer = CloudFileImport(

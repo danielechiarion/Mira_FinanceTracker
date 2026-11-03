@@ -13,6 +13,7 @@ import 'package:mira_finance_tracker/frontend/charts/PatrimonyPieChart.dart';
 import 'package:mira_finance_tracker/backend/operation/chart/HomePageData.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
+import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
 
@@ -50,7 +51,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _database?.closeDatabase();
     super.dispose();
   }
 
@@ -86,9 +86,8 @@ class _HomePageState extends State<HomePage> {
     if (_database != null) return;
 
     final initialization = _databaseInitialization ??= () async {
-      final database = UserDatabaseWrapper(session.user);
-      await database.init();
-      _database = database;
+      await UserDatabaseHandler.openDatabase(session.user);
+      _database = UserDatabaseHandler.database;
     }();
 
     try {
