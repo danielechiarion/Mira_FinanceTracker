@@ -12,15 +12,19 @@ class UserDatabaseHandler {
   /// Function to open and initialize a database
   /// for a specific [user] provided
   static Future<void> openDatabase(User user) async {
-    /* if there was another database before,
-    close completely it before creating a new one */
-    if(database != null) {
-      await database!.closeDatabase();
-    }
-    /* if the database for the user was already provided
-    just end the function */
-    else if(database!.user == user){
+    final currentDatabase = database;
+
+    /* if the database for the same user is already open,
+    do not reopen it */
+    if (currentDatabase != null && currentDatabase.user == user) {
       return;
+    }
+
+    /* if there was another database before,
+    close it completely before creating a new one */
+    if (currentDatabase != null) {
+      database = null;
+      await currentDatabase.closeDatabase();
     }
 
     /* then open the new database and initialize it */
@@ -31,7 +35,10 @@ class UserDatabaseHandler {
   /// Function to close the database if it was opened
   /// before and close it definitely
   static Future<void> closeDatabase() async {
-    /* if there is a database opened, close it */
-    if(database != null) await database!.closeDatabase(); // since it was opened once, just close it
+    final currentDatabase = database;
+    if (currentDatabase == null) return;
+
+    database = null;
+    await currentDatabase.closeDatabase();
   }
 }
