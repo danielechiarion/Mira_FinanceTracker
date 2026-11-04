@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:cryptography/cryptography.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
+import 'package:mira_finance_tracker/frontend/account/GoogleConnectionPage.dart';
 
 void main() {
   late Map<String, dynamic> keyData;
@@ -76,6 +78,20 @@ void main() {
         'userKey': base64Encode(encryptedKey.concatenation()),
       }),
       throwsA(isA<FormatException>()),
+    );
+  });
+
+  test('treats Linux desktop as supported for Google connection', () {
+    expect(
+      isGoogleConnectionSupported(isWeb: false, platform: TargetPlatform.linux),
+      isTrue,
+    );
+  });
+
+  test('keeps unsupported platforms blocked', () {
+    expect(
+      isGoogleConnectionSupported(isWeb: false, platform: TargetPlatform.fuchsia),
+      isFalse,
     );
   });
 }

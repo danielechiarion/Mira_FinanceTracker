@@ -9,6 +9,22 @@ import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountConn
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 
+bool isGoogleConnectionSupported({
+  required bool isWeb,
+  required TargetPlatform platform,
+}) {
+  if (isWeb) return true;
+
+  return switch (platform) {
+    TargetPlatform.android ||
+    TargetPlatform.iOS ||
+    TargetPlatform.macOS ||
+    TargetPlatform.windows ||
+    TargetPlatform.linux => true,
+    _ => false,
+  };
+}
+
 /// Page shown after signup to optionally connect a Google account.
 /// The user can skip this step and continue to the login page.
 class GoogleConnectionPage extends StatefulWidget {
@@ -35,17 +51,10 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
   String? _importStatus;
 
   /// Checks whether Google account connection is available on this platform.
-  bool get _canConnectGoogle {
-    if (kIsWeb) return true;
-
-    return switch (defaultTargetPlatform) {
-      TargetPlatform.android ||
-      TargetPlatform.iOS ||
-      TargetPlatform.macOS ||
-      TargetPlatform.windows => true,
-      _ => false,
-    };
-  }
+  bool get _canConnectGoogle => isGoogleConnectionSupported(
+    isWeb: kIsWeb,
+    platform: defaultTargetPlatform,
+  );
 
   @override
   void dispose() {
