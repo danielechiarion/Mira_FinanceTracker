@@ -45,21 +45,32 @@ class GoogleAuthenticationManager {
   }) : _database = SystemDatabaseWrapper();
 
   /// Function to initialize the resources of the class,
-  /// such as the client id and the database
+  /// such as the client id and the database.
+  ///
+  /// On Linux and Windows we use the browser-based OAuth flow because the
+  /// native google_sign_in plugin is not available there.
   Future<void> init() async {
     /* first initialize the database */
     await _database.init();
 
-    /* then get the client id 
-    and start the google sign in instance */
+    /* then get the client id and initialise the native plugin only on the
+    platforms where the google_sign_in implementation is actually available. */
     _clientID = await _getClientID();
-    _googleSignIn = GoogleSignIn(
-      clientId: _isAndroid ? null : _clientID,
-      serverClientId: _isAndroid ? _serverClientID : null,
-      scopes: _scopes,
-      forceCodeForRefreshToken: true, // to get the refresh token
-    );
+    if (_canUseNativeGoogleSignIn) {
+      _googleSignIn = GoogleSignIn(
+        clientId: _isAndroid ? null : _clientID,
+        serverClientId: _isAndroid ? _serverClientID : null,
+        scopes: _scopes,
+        forceCodeForRefreshToken: true, // to get the refresh token
+      );
+    }
   }
+
+  bool get _canUseNativeGoogleSignIn =>
+      kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -146,9 +157,17 @@ class GoogleAuthenticationManager {
 
   /// Function to sign in the user with google account
   Future<void> signIn({bool persistAccount = true}) async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
-      await _signInWithWindowsBrowser(persistAccount: persistAccount);
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux)) {
+      await _signInWithDesktopBrowser(persistAccount: persistAccount);
       return;
+    }
+
+    if (!_canUseNativeGoogleSignIn) {
+      throw UnsupportedError(
+        'Google Sign-In non è disponibile su questa piattaforma.',
+      );
     }
 
     final account = await _googleSignIn.signIn();
@@ -291,7 +310,7 @@ class GoogleAuthenticationManager {
     if (target == null) return;
 
     if (target == _currentEmail) {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) {
+      if (_canUseNativeGoogleSignIn) {
         await _googleSignIn.disconnect();
       }
       _currentEmail = null;
@@ -303,8 +322,8 @@ class GoogleAuthenticationManager {
     await _database.removeGoogleAccount(target);
   }
 
-  /// Authenticates a Windows user through the system browser and a loopback callback.
-  Future<void> _signInWithWindowsBrowser({required bool persistAccount}) async {
+  /// Authenticates a desktop user through the system browser and a loopback callback.
+  Future<void> _signInWithDesktopBrowser({required bool persistAccount}) async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final redirectUri = 'http://127.0.0.1:${server.port}';
     final codeVerifier = _generateSecureValue();
