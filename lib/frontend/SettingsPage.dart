@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
 
 import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountDisconnection.dart';
+import 'package:mira_finance_tracker/backend/service/security/LocalAuthSupport.dart';
 import 'package:mira_finance_tracker/backend/service/KeyManager.dart';
 import 'package:mira_finance_tracker/frontend/account/AccountSettingsPage.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
@@ -118,15 +118,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// Shows the saved encryption passkey after device authentication succeeds.
   Future<void> _showEncryptionPasskey() async {
-    final localAuth = LocalAuthentication();
     try {
-      if (!await localAuth.isDeviceSupported()) {
-        _showMessage('Lo sblocco del dispositivo non è disponibile.');
-        return;
-      }
-      final authenticated = await localAuth.authenticate(
-        localizedReason: 'Sblocca per visualizzare la passkey di crittografia',
-        persistAcrossBackgrounding: true,
+      final authenticated = await LocalAuthSupport.authenticate(
+        'Sblocca per visualizzare la passkey di crittografia',
       );
       if (!authenticated || !mounted) return;
 
@@ -161,8 +155,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       );
-    } on LocalAuthException {
-      if (mounted) _showMessage('Sblocco del dispositivo non riuscito.');
     } catch (error) {
       if (mounted) {
         _showMessage('Impossibile visualizzare la chiave: $error');

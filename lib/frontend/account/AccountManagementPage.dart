@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mira_finance_tracker/backend/operation/account/SuperAccountManager.dart';
+import 'package:mira_finance_tracker/backend/service/security/LocalAuthSupport.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/UserCardManager.dart';
 
 /// Page dedicated to advanced account management: lists every user
@@ -20,8 +20,6 @@ class AccountManagementPage extends StatefulWidget {
 }
 
 class _AccountManagementPageState extends State<AccountManagementPage> {
-  final LocalAuthentication _localAuth = LocalAuthentication();
-
   late final SuperAccountManager _manager;
   late final Future<void> _initFuture;
 
@@ -56,20 +54,9 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
       _authFailed = false;
     });
 
-    bool authenticated = false;
-    try {
-      final bool canAuthenticate = await _localAuth.isDeviceSupported();
-      if (canAuthenticate) {
-        authenticated = await _localAuth.authenticate(
-          localizedReason: 'Sblocca per accedere alla gestione degli account',
-          persistAcrossBackgrounding: true,
-        );
-      }
-    } on LocalAuthException {
-      authenticated = false;
-    } catch (_) {
-      authenticated = false;
-    }
+    final bool authenticated = await LocalAuthSupport.authenticate(
+      'Sblocca per accedere alla gestione degli account',
+    );
 
     if (!mounted) return;
     setState(() {

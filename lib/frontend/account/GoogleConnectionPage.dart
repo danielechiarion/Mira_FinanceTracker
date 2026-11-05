@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:local_auth/local_auth.dart';
 
 import 'package:mira_finance_tracker/backend/cloud/authentication/GoogleAuthenticationManager.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupCleaner.dart';
+import 'package:mira_finance_tracker/backend/service/security/LocalAuthSupport.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
 import 'package:mira_finance_tracker/backend/operation/account/GoogleAccountConnection.dart';
 import 'package:mira_finance_tracker/frontend/account/LoginPage.dart';
@@ -172,13 +172,8 @@ class _GoogleConnectionPageState extends State<GoogleConnectionPage> {
     if (!mounted || confirmed != true) return;
 
     try {
-      final localAuth = LocalAuthentication();
-      if (!await localAuth.isDeviceSupported()) {
-        throw StateError('Lo sblocco del dispositivo non è disponibile.');
-      }
-      final authenticated = await localAuth.authenticate(
-        localizedReason: 'Sblocca per confermare il reset dei dati cloud',
-        persistAcrossBackgrounding: true,
+      final authenticated = await LocalAuthSupport.authenticate(
+        'Sblocca per confermare il reset dei dati cloud',
       );
       if (!authenticated) {
         throw StateError('Autenticazione del dispositivo non riuscita.');

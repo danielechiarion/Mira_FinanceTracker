@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mira_finance_tracker/backend/operation/account/SuperAccountManager.dart';
+import 'package:mira_finance_tracker/backend/service/security/LocalAuthSupport.dart';
 import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
@@ -22,17 +22,7 @@ class UserCardManager extends StatelessWidget {
   /// Requests the device unlock (biometrics with fallback to
   /// PIN/pattern/password) and returns whether it succeeded.
   Future<bool> _confirmUnlock(String reason) async {
-    final LocalAuthentication localAuth = LocalAuthentication();
-    try {
-      return await localAuth.authenticate(
-        localizedReason: reason,
-        persistAcrossBackgrounding: true,
-      );
-    } on LocalAuthException {
-      return false;
-    } catch (_) {
-      return false;
-    }
+    return await LocalAuthSupport.authenticate(reason);
   }
  
   /// Opens the popup to set a new password for [user], validates
