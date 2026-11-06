@@ -1,20 +1,20 @@
 # Software requirements
-The software requirements involves especially the cloud implementation, because there has to be some Google API to be enabled in order to make the application work.
-For that reason it will be explained how to configure it and how give the information to the application. 
-This information are useful only if you want to replicate the project and develop it. A basic user just need to follow the user guide.
+The software requirements mainly involve the cloud implementation, because some Google APIs have to be enabled in order to make the application work.
+For that reason, it will be explained how to configure them and how to give the information to the application. 
+This information is useful only if you want to replicate the project and develop it. A basic user just needs to follow the user guide.
 
 ## Configure the Google Cloud Console
-Access to the [Google Cloud Console page](https://console.cloud.google.com/home) with your Google Account. Create a project (a free account will support a maximum of 10 projects) and configure the Google Drive API with a private google drive folder as scope.
-Then it will be necessary to configure different cloud API based on the platform:
+Access the [Google Cloud Console page](https://console.cloud.google.com/home) with your Google Account. Create a project (a free account will support a maximum of 10 projects) and configure the Google Drive API with a private Google Drive folder as scope.
+Then it will be necessary to configure different cloud APIs based on the platform:
 - **Android Client API**
 - **Linux Client API**
 - **Desktop Client API** working for both Windows and Linux application instances
-- **Web Client API** (it could be used even inside a mobile environment).
+- **Web Client API** (it could also be used inside a mobile environment).
 
-This settings will not save the application data of all the users inside the Google Account owning the Cloud Console. This platform has to be consider as a "gateway" to enable google authentication and to have the right permissions to access to the private drive of the user once installing the application. 
+These settings will not save the application data of all the users inside the Google Account owning the Cloud Console. This platform has to be considered a "gateway" to enable Google authentication and to have the right permissions to access the user's private drive once the application is installed.
 
 ## File to be implemented
-The main file to use for the cloud backup implementation has to be located with path `assets/data/credentials.json`, starting from the root of the Flutter project. 
+The main file to use for the cloud backup implementation has to be located at the path `assets/data/credentials.json`, starting from the root of the Flutter project. 
 The file has to follow this structure:
 ```json
 {
@@ -28,8 +28,8 @@ The file has to follow this structure:
     "web_client_secret": ""
 }
 ```
-Copying in the values the corresponding fields found in the Google Cloud Console.
-***Consider that not all the platforms needs both client id and secret. As an example, Android needs only the client ID, while a web or desktop client could need both. For more information follow the guidelines provided inside the Google Cloud Console***.
+Copy the values of the corresponding fields found in the Google Cloud Console.
+***Consider that not all the platforms need both client ID and secret. As an example, Android needs only the client ID, while a web or desktop client could need both. For more information, follow the guidelines provided inside the Google Cloud Console***.
 
 
-*Once finished this configuration, it will be possible to test the Flutter project and generate new executable files for the platforms needed*.
+*Once this configuration is finished, it will be possible to test the Flutter project and generate new executable files for the needed platforms*.
