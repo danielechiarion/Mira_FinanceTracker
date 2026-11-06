@@ -50,7 +50,10 @@ class UserBackgroundCheck {
     /* before the operations that has to be done
     in a normal background check, ensure that the data of the application
     are syncronized with the ones saved in the cloud, if that option has been enabled.  */
-    if(_user.isUserConnected) await _cloudImportSyncronization();
+    if (_user.isUserConnected && !await _cloudImportSyncronization()) {
+      await _disposeResources();
+      return;
+    }
 
     /* first of all get the essential preferences
     for the user to do the background check */
@@ -153,7 +156,7 @@ class UserBackgroundCheck {
 
   /* function to import files from the cloud
   in order to keep the background updated */
-  Future<void> _cloudImportSyncronization() async {
+  Future<bool> _cloudImportSyncronization() async {
     /* define variables for a 
     minimum of attempt to execute the import
     when it fails for some reason */
@@ -164,11 +167,15 @@ class UserBackgroundCheck {
     then repeat the execution if necessary and 
     finally dipose the resources of the instance */
     CloudFileImport importer = CloudFileImport(_session, foreground: false);
-    await importer.init();
-    for(int i=0; i<importingAttempts && !result; i++){
-      result = await importer.execute();
+    try {
+      await importer.init();
+      for (int i = 0; i < importingAttempts && !result; i++) {
+        result = await importer.execute();
+      }
+      return result;
+    } finally {
+      await importer.dispose();
     }
-    await importer.dispose();
   }
 
   /* function to export files from the

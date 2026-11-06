@@ -31,6 +31,18 @@ class CloudConnectionBackground extends CloudConnection {
       return status;
     }
 
+    drive.File? foregroundFile = await super.findSessionFile(
+      super.FOREGROUNDSESSIONFILEPATH,
+    );
+    if (foregroundFile != null) {
+      final lastUpdated = foregroundFile.modifiedTime;
+      if (lastUpdated == null ||
+          DateTime.now().toUtc().difference(lastUpdated.toUtc()) <
+              const Duration(minutes: 30)) {
+        return CloudConnectionStatus.line_busy;
+      }
+    }
+
     drive.File? file = await super.findSessionFile(
       super.BACKGROUNDSESSIONFILEPATH,
     ); // try to find the file

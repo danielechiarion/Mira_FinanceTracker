@@ -159,14 +159,16 @@ class CloudBackupReader extends CloudBackup {
       spaces: 'appDataFolder',
     );
     if (directory == null)
-      throw Exception("During user preferences reading directory not found");
+      throw _BackupFileNotFoundException(
+        "During user preferences reading directory not found",
+      );
     drive.File? file = await super.fileService.findByName(
       super.PREFERENCEFILENAME,
       folderId: directory.id,
       spaces: 'appDataFolder',
     );
     if (file == null)
-      throw Exception(
+      throw _BackupFileNotFoundException(
         "During user preferences reading file has not been found",
       );
 
@@ -193,14 +195,18 @@ class CloudBackupReader extends CloudBackup {
       spaces: 'appDataFolder',
     );
     if (directory == null)
-      throw Exception("During reading procedure directory not found");
+      throw _BackupFileNotFoundException(
+        "During reading procedure directory not found",
+      );
     drive.File? file = await super.fileService.findByName(
       fileName,
       folderId: directory.id,
       spaces: 'appDataFolder',
     );
     if (file == null)
-      throw Exception("During reading procedure file has not been found");
+      throw _BackupFileNotFoundException(
+        "During reading procedure file has not been found",
+      );
 
     /* decrypt the stored bytes and parse the original JSON */
     final encryptedContent = await super.fileService.readBytes(file.id!);
@@ -212,97 +218,72 @@ class CloudBackupReader extends CloudBackup {
   in the selected drive and
   import them into the database */
   Future<void> _readDatabaseData() async {
-    Map<String, dynamic> content; // object to contain decrypted content
-
-    /* for each section decrypt data and then 
-    import inside the database.
-    Use try catch to avoid exceptions during conversion
-    or when the file is not found. */
     if (!super.financialControl) {
-      try {
-        content = await _readEncryptedData(
-          super.DATABASEDIRECTORY,
-          super.COUNTERPARTIESFILENAME,
-        );
-        await super.database.importCounterparties(content);
-      } on Exception {
-        if (_strictImport) rethrow;
-      }
-      try {
-        content = await _readEncryptedData(
-          super.DATABASEDIRECTORY,
-          super.FINANCIALINSTITUTESFILENAME,
-        );
-        await super.database.importFinancialInstitutes(content);
-      } on Exception {
-        if (_strictImport) rethrow;
-      }
-    }
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.BANKACCOUNTSFILENAME,
+      await _importBackupSection(
+        super.COUNTERPARTIESFILENAME,
+        super.database.importCounterparties,
       );
-      await super.database.importBankAccounts(content);
-    } on Exception {
-      if (_strictImport) rethrow;
-    }
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.TRANSACTIONSFILENAME,
+      await _importBackupSection(
+        super.FINANCIALINSTITUTESFILENAME,
+        super.database.importFinancialInstitutes,
       );
-      await super.database.importTransactions(content);
-    } on Exception {
-      if (_strictImport) rethrow;
     }
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.BILLINGSFILENAME,
-      );
-      await super.database.importPeriodicAccountBillings(content);
-    } on Exception {
-      if (_strictImport) rethrow;
-    }
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.PERIODICTRANSACTIONSFILENAME,
-      );
-      await super.database.importPeriodicTransactions(content);
-    } on Exception {
-      if (_strictImport) rethrow;
-    }
+    await _importBackupSection(
+      super.BANKACCOUNTSFILENAME,
+      super.database.importBankAccounts,
+    );
+    await _importBackupSection(
+      super.TRANSACTIONSFILENAME,
+      super.database.importTransactions,
+    );
+    await _importBackupSection(
+      super.BILLINGSFILENAME,
+      super.database.importPeriodicAccountBillings,
+    );
+    await _importBackupSection(
+      super.PERIODICTRANSACTIONSFILENAME,
+      super.database.importPeriodicTransactions,
+    );
     if (!super.financialControl) {
-      try {
-        content = await _readEncryptedData(
-          super.DATABASEDIRECTORY,
-          super.FINANCIALMODELSFILENAME,
-        );
-        await super.database.importFinancialInstrumentModels(content);
-      } on Exception {
-        if (_strictImport) rethrow;
-      }
-    }
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.FINANCIALINSTRUMENTSFILENAME,
+      await _importBackupSection(
+        super.FINANCIALMODELSFILENAME,
+        super.database.importFinancialInstrumentModels,
       );
-      await super.database.importFinancialInstruments(content);
-    } on Exception {
-      if (_strictImport) rethrow;
     }
-    try {
-      content = await _readEncryptedData(
-        super.DATABASEDIRECTORY,
-        super.STEPINTERESTSFILENAME,
-      );
-      await super.database.importStepInterests(
+    await _importBackupSection(
+      super.FINANCIALINSTRUMENTSFILENAME,
+      super.database.importFinancialInstruments,
+    );
+    await _importBackupSection(
+      super.STEPINTERESTSFILENAME,
+      (content) => super.database.importStepInterests(
         content,
         notModels: super.financialControl,
-      );
-    } on Exception {}
+      ),
+    );
   }
+
+  Future<void> _importBackupSection(
+    String fileName,
+    Future<void> Function(Map<String, dynamic>) import,
+  ) async {
+    try {
+      final content = await _readEncryptedData(
+        super.DATABASEDIRECTORY,
+        fileName,
+      );
+      await import(content);
+    } on _BackupFileNotFoundException {
+      if (_strictImport) rethrow;
+    }
+  }
+}
+
+class _BackupFileNotFoundException implements Exception {
+  const _BackupFileNotFoundException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }

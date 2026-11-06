@@ -6,7 +6,6 @@ import 'package:workmanager/workmanager.dart';
 
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
-import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 
 /* entry point required for 
@@ -25,26 +24,11 @@ void callbackDispatcher() {
         await service.init();
         await service.execute();
       } else if (taskName == "mira.importCloud") {
-        CurrentSession? session = await CurrentSession.getFromMemory();
-        if (session == null) {
-          debugPrint(
-            '[BackgroundManager] Sessione non disponibile per import.',
-          );
-          return false;
-        }
-
-        final importer = CloudFileImport(session);
-        try {
-          await importer.init();
-          final succeeded = await importer.execute();
-          debugPrint(
-            '[BackgroundManager] Import cloud '
-            '${succeeded ? "completato" : "non riuscito"}.',
-          );
-          return succeeded;
-        } finally {
-          await importer.dispose();
-        }
+        debugPrint(
+          '[BackgroundManager] Import legacy ignorato; verrà eseguito '
+          'in foreground.',
+        );
+        return true;
       } else if (taskName == "mira.exportCloud") {
         CurrentSession? session = await CurrentSession.getFromMemory();
         if (session == null) {

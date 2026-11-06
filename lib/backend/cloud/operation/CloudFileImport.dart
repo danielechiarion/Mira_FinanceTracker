@@ -77,28 +77,32 @@ class CloudFileImport{
       await _showErrorFunction!(connectionStatus);
       return false;
     }else if(_session is BackgroundSession && connectionStatus == CloudConnectionStatus.line_busy){
-      /* if the background session the line busy it means the someone else
-      has done the job, so it's not necessary to repeat the execution.
-      It is an expected result */
-      return true;
+      return false;
     }else if(connectionStatus != CloudConnectionStatus.connection_established && !_isErrorFunctionProvided){
       return false;
     }
 
     /* then try to read the files from the cloud
     if the database is not empty, then catch possible errors */
-    _reader = CloudBackupReader(_session.user, financialControl: !_foreground);
-    await _reader!.init();
+    _reader = CloudBackupReader(
+      _session.user,
+      financialControl: !_foreground,
+      strictImport: _foreground,
+    );
 
     try{
+      await _reader!.init();
       if(await _reader!.isDriveEmpty()){
         return true;
       }
 
       await _reader!.execute();
     }catch (e){
-      await _reader!.dispose();
-      if(_isErrorFunctionProvided) await _showErrorFunction!(e.toString());
+      if (_isErrorFunctionProvided) {
+        await _showErrorFunction!(e.toString());
+        return false;
+      }
+      rethrow;
     }
     
     return true;

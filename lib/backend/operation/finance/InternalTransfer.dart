@@ -60,15 +60,23 @@ class InternalTransfer{
 
     /* add these transactions to the 
     connected bank accounts */
-    _startingAccount.addTransactions(startingTransactions);
-    _endingAccount.addTransactions(endingTransactions);
+    try {
+      _startingAccount.addTransactions(startingTransactions);
+      _endingAccount.addTransactions(endingTransactions);
 
-    /* then save them into the database */
-    await _database.saveTransactions(_startingAccount, startingTransactions);
-    await _database.updateBankAccountBalance(_startingAccount);
-
-    await _database.saveTransactions(_endingAccount, endingTransactions);
-    await _database.updateBankAccountBalance(_endingAccount);
+      await _database.saveTransactionsAndUpdateBalances({
+        _startingAccount: startingTransactions,
+        _endingAccount: endingTransactions,
+      });
+    } catch (_) {
+      for (final transaction in startingTransactions) {
+        _startingAccount.removeTransaction(transaction);
+      }
+      for (final transaction in endingTransactions) {
+        _endingAccount.removeTransaction(transaction);
+      }
+      rethrow;
+    }
 
     return true;
   }

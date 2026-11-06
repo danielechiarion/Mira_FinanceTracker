@@ -135,13 +135,16 @@ class _HomePageState extends State<HomePage> {
   Future<void> _downloadCloudData(CurrentSession session) async {
     /* call the class to manage all
     file import operation */
-    CloudFileImport operation = CloudFileImport(
+    final operation = CloudFileImport(
       session,
       showErrorFunction: ErrorManager.redirectToErrorPageImport,
     );
-    await operation.init();
-    await operation.execute();
-    await operation.dispose();
+    try {
+      await operation.init();
+      await operation.execute();
+    } finally {
+      await operation.dispose();
+    }
   }
 
   Future<void> _reload() async {

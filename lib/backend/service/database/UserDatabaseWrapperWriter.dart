@@ -47,6 +47,45 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
     }
   }
 
+  Future<void> saveTransactionsAndUpdateBalances(
+    Map<BankAccount, List<BankTransaction>> transactionsByAccount,
+  ) async {
+    await appDatabase.transaction((transaction) async {
+      for (final entry in transactionsByAccount.entries) {
+        final account = entry.key;
+        for (final singleTransaction in entry.value) {
+          final transactionMap = singleTransaction.toMap();
+          final sql = singleTransaction is Income
+              ? '''INSERT INTO Income (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)'''
+              : '''INSERT INTO Outcome (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)''';
+          final id = await transaction.rawInsert(sql, [
+            account.id,
+            transactionMap['reference'],
+            transactionMap['counterParty'],
+            transactionMap['amount'],
+            transactionMap['executionDate'],
+            transactionMap['accountingDate'],
+            transactionMap['category'],
+          ]);
+          singleTransaction.id = id;
+        }
+
+        await transaction.rawUpdate(
+          'UPDATE BankAccount SET availableBalance = ? WHERE id = ?',
+          [account.availableBalance, account.id],
+        );
+        if (account is SavingsAccount) {
+          await transaction.rawUpdate(
+            'UPDATE SavingsAccount SET ledgerBalance = ? WHERE id = ?',
+            [account.ledgerBalance, account.id],
+          );
+        }
+      }
+    });
+  }
+
   /// Function to save the counterparty inside the database
   /// * [counterParty] object to save
   /// * [close] flag to indicate when to close the database

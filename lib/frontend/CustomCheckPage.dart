@@ -56,29 +56,25 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
 
     await UserDatabaseHandler.openDatabase(session.user);
     final database = UserDatabaseHandler.database!;
-    try {
-      final accounts = await database.getBankAccounts();
-      final outputs = <TransactionOperationOutput>[];
-      for (final account in accounts) {
-        final transactions = await database.getTransactionsOfAccount(account);
-        outputs.addAll(
-          transactions.map((transaction) => _toOutput(account, transaction)),
-        );
-      }
-      _operations = outputs;
-
-      // Initialize selected filters with all available options on first load
-      // so they can be properly deselected without falling back to an empty set.
-      if (_isFirstLoad) {
-        _selectedAccounts.addAll(_accountNames);
-        _selectedServices.addAll(_serviceNames);
-        _isFirstLoad = false;
-      }
-
-      return outputs;
-    } on Exception{
-      return []; // do nothing, just return an empty list
+    final accounts = await database.getBankAccounts();
+    final outputs = <TransactionOperationOutput>[];
+    for (final account in accounts) {
+      final transactions = await database.getTransactionsOfAccount(account);
+      outputs.addAll(
+        transactions.map((transaction) => _toOutput(account, transaction)),
+      );
     }
+    _operations = outputs;
+
+    // Initialize selected filters with all available options on first load
+    // so they can be properly deselected without falling back to an empty set.
+    if (_isFirstLoad) {
+      _selectedAccounts.addAll(_accountNames);
+      _selectedServices.addAll(_serviceNames);
+      _isFirstLoad = false;
+    }
+
+    return outputs;
   }
 
   TransactionOperationOutput _toOutput(

@@ -26,6 +26,7 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
     with WindowListener {
   late final AppLifecycleListener _listener;
   bool _isClosing = false;
+  Future<void>? _resumeSynchronization;
   bool _showCloseProgress = false;
   String _closeProgressMessage =
       'Verifica sessione e salvataggio backup in corso. '
@@ -51,13 +52,12 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
 
         if (Platform.isAndroid && session.user.isUserConnected) {
           final timestamp = DateTime.now().millisecondsSinceEpoch;
-          final taskId = "upload_drive_job_$timestamp";
           try {
             await Workmanager().registerOneOffTask(
-              taskId,
+              "mira-export-cloud",
               "mira.exportCloud",
-              inputData: {'taskId': taskId},
               constraints: Constraints(networkType: NetworkType.connected),
+              existingWorkPolicy: ExistingWorkPolicy.keep,
               expedited: true,
               outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
               foregroundServiceConfig: ForegroundServiceConfig(
@@ -71,7 +71,7 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
             );
             debugPrint(
               '[AppLifecycleWrapper] Export cloud avviato come servizio '
-              'foreground ($taskId).',
+              'foreground.',
             );
             return;
           } catch (error, stackTrace) {
@@ -90,33 +90,72 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
       /* when it's time to resume try to 
       connect and get the data, otherwise display errors */
       onResume: () async {
-        /* find the session then try to 
-        open the database */
-        CurrentSession? session = await CurrentSession.getFromMemory();
-        if (session != null)
-          await UserDatabaseHandler.openDatabase(session.user);
+        final session = await CurrentSession.getFromMemory();
+        if (session == null) return;
 
-        if (Platform.isIOS || Platform.isAndroid) {
-          await Workmanager().registerOneOffTask(
-            "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}",
-            "mira.importCloud",
-            constraints: Constraints(networkType: NetworkType.connected),
-          );
-        } else {
-          if (session == null)
-            return; // if the session is not found, end the function
+        await UserDatabaseHandler.openDatabase(session.user);
 
+        if ((Platform.isIOS || Platform.isAndroid) &&
+            session.user.isUserConnected) {
+          await _synchronizeOnResume(session);
+        } else if (_isDesktop) {
           /* create the importer and execute all the operations */
-          CloudFileImport importer = CloudFileImport(
+          final importer = CloudFileImport(
             session,
             showErrorFunction: ErrorManager.redirectToErrorPageImport,
           );
-          await importer.init();
-          await importer.execute();
-          await importer.dispose();
+          try {
+            await importer.init();
+            await importer.execute();
+          } finally {
+            await importer.dispose();
+          }
         }
       },
     );
+  }
+
+  Future<void> _synchronizeOnResume(CurrentSession session) async {
+    final runningSynchronization = _resumeSynchronization;
+    if (runningSynchronization != null) {
+      await runningSynchronization;
+      return;
+    }
+
+    final synchronization = _runResumeSynchronization(session);
+    _resumeSynchronization = synchronization;
+    try {
+      await synchronization;
+    } finally {
+      if (identical(_resumeSynchronization, synchronization)) {
+        _resumeSynchronization = null;
+      }
+    }
+  }
+
+  Future<void> _runResumeSynchronization(CurrentSession session) async {
+    if (!mounted) return;
+    setState(() {
+      _showCloseProgress = true;
+      _closeProgressMessage = 'Sincronizzazione dei dati in corso...';
+    });
+
+    final importer = CloudFileImport(
+      session,
+      showErrorFunction: ErrorManager.redirectToErrorPageImport,
+    );
+    try {
+      await importer.init();
+      await importer.execute();
+    } finally {
+      try {
+        await importer.dispose();
+      } finally {
+        if (mounted) {
+          setState(() => _showCloseProgress = false);
+        }
+      }
+    }
   }
 
   bool get _isDesktop =>

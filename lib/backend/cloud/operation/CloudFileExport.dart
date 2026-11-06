@@ -47,6 +47,26 @@ class CloudFileExport{
     otherwise return it */
     if(!_session.user.isUserConnected) return true;
 
+    var attempts = 0;
+    late CloudConnectionStatus connectionStatus;
+    do {
+      connectionStatus = await _connection.connect();
+      if (connectionStatus == CloudConnectionStatus.wait_till_update) {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        attempts++;
+      }
+    } while (
+      connectionStatus == CloudConnectionStatus.wait_till_update &&
+      attempts < 30
+    );
+
+    if (connectionStatus != CloudConnectionStatus.connection_established) {
+      if (_isErrorFunctionProvided) {
+        await _showErrorFunction!(connectionStatus);
+      }
+      return false;
+    }
+
     /* start at first with writing the data 
     inside the drive */
     try{
@@ -57,15 +77,15 @@ class CloudFileExport{
       if(_isErrorFunctionProvided) {
         await _showErrorFunction!(e.toString());
       }
-      if(_enableDisconnection) await _connection.disconnect();
       if(!_isErrorFunctionProvided) rethrow;
       return false;
+    } finally {
+      if (_enableDisconnection) await _connection.disconnect();
     }
 
     /* then understand if it's possible to disconnect
     the user and possibly disconnect it from drive,
     in order to remove the lock for other applications listening */
-    if(_enableDisconnection) await _connection.disconnect();
     return true;
   }
 
