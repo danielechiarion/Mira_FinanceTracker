@@ -2,7 +2,7 @@ import 'package:mira_finance_tracker/classes/financial_instruments/service/Finan
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/Currency.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/subjects/FinancialInstitute.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/model/FinancialInstrumentModel.dart';
 
@@ -95,7 +95,7 @@ class Stock extends FinancialInstrument{
     /* return the transaction to register */
     List<BankTransaction> transactions = [];
     transactions.add(
-      Outcome(OutcomeCategory.financial_investment, "Acquisto di $sharesBought azioni $_ticker al prezzo di $pricePerShare${currency.symbol} ciascuna", sharesBought*pricePerShare, DateTime.now())
+      Outgoing(OutgoingCategory.financial_investment, "Acquisto di $sharesBought azioni $_ticker al prezzo di $pricePerShare${currency.symbol} ciascuna", sharesBought*pricePerShare, DateTime.now())
     );
 
     return transactions;
@@ -128,7 +128,7 @@ class Stock extends FinancialInstrument{
       Income(IncomeCategory.stock_return, "Vendita di $sharesSold azioni di $_ticker", pricePerShare * sharesSold, DateTime.now())
     );
     /* based on the potential profit or loss, 
-    create an income or outcome transactions, 
+    create an income or outgoing transactions,
     with connected taxes */
     if(realizedProfitOrLoss > 0){
       transactions.add(
@@ -140,12 +140,12 @@ class Stock extends FinancialInstrument{
       double taxes = realizedProfitOrLoss * super.taxRate;
       if (taxes > 0) {
         transactions.add(
-          Outcome(OutcomeCategory.financial_tax, "Tassazione vendita di $sharesSold di $_ticker", taxes, DateTime.now())
+          Outgoing(OutgoingCategory.financial_tax, "Tassazione vendita di $sharesSold di $_ticker", taxes, DateTime.now())
         );
       }
     }else if(realizedProfitOrLoss < 0){
       transactions.add(
-        Outcome(OutcomeCategory.stock_loss, "Perdita capitale vendita di $sharesSold di $_ticker", realizedProfitOrLoss.abs(), DateTime.now())
+        Outgoing(OutgoingCategory.stock_loss, "Perdita capitale vendita di $sharesSold di $_ticker", realizedProfitOrLoss.abs(), DateTime.now())
       );
     }
 

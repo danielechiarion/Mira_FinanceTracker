@@ -167,7 +167,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<BankTransaction> transactions = []; // create the list
 
     /* first search inside the incomes, than
-    do the same with the outcomes */
+    do the same with the outgoings */
     List<Map<String, dynamic>> incomeResults = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
           FROM Income LEFT JOIN CounterParty ON Income.counterParty = CounterParty.id
@@ -177,13 +177,13 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       transactions.add(Income.fromMap(singleIncome, counterParty: _getCounterPartyFromMap(singleIncome)));
     }
 
-    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outgoing.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+          FROM Outgoing LEFT JOIN CounterParty ON Outgoing.counterParty = CounterParty.id
           WHERE accountingDate >= ? AND executionDate <= ?
           ORDER BY executionDate DESC, accountingDate DESC LIMIT ?''', arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), limit]);
     for(Map<String, dynamic> singleOutcome in outcomeResults){
-      transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
+      transactions.add(Outgoing.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
     
     if(close){
@@ -218,7 +218,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   }
 
   /// Function to get the trends in the last months provided
-  /// by the [monthTimeWindow] highlighting incomes and outcomes
+  /// by the [monthTimeWindow] highlighting incomes and outgoings
   /// 
   /// * [close] flag to indicate if the database has to be closed at the end of the operation
   Future<List<MonthlyFlow>> getMonthsTrend({int monthTimeWindow = 6, bool close = false}) async {
@@ -232,7 +232,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       final startingDate = DateTime(currentDate.year, currentDate.month - monthTimeWindow + i, 1);
       final endingDate = DateTime(startingDate.year, startingDate.month + 1, 1);
 
-      /* get the sum of incomes and outcomes and 
+      /* get the sum of incomes and outgoings and
       get the result.
       Exclude the internal transfers in order not to add more money
       to the counter */
@@ -241,8 +241,8 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
         arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), IncomeCategory.internal_transfer.index]
       );
       List<Map<String, dynamic>> outcomeResult = await appDatabase.query(
-        sql: 'SELECT SUM(amount) AS sum FROM Outcome WHERE accountingDate >= ? AND accountingDate < ? AND category != ?',
-        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), OutcomeCategory.internal_transfer.index]
+        sql: 'SELECT SUM(amount) AS sum FROM Outgoing WHERE accountingDate >= ? AND accountingDate < ? AND category != ?',
+        arguments: [startingDate.toIso8601String(), endingDate.toIso8601String(), OutgoingCategory.internal_transfer.index]
       );
 
       Map<String, dynamic> incomeSum = incomeResult.isNotEmpty ? incomeResult.first : {'sum': 0};
@@ -370,7 +370,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     List<Map<String, dynamic>> result;
     
     /* first control inside 
-    incomes and outcomes. 
+    incomes and outgoings.
     If anywhere compares the counterparty signal it's not possible 
     to erase it */
     result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Income WHERE counterParty = ?',
@@ -378,7 +378,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     if(_checkCounterField(result, 'counter')){
       return false;
     }
-    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Outcome WHERE counterParty = ?',
+    result = await appDatabase.query(sql: 'SELECT COUNT(id) AS counter FROM Outgoing WHERE counterParty = ?',
                       arguments: [counterParty.identifier]);
     if(_checkCounterField(result, 'counter')){
       return false;
@@ -998,14 +998,14 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     return accounts;
   }
 
-  /// Function to get all the transactions (both incomes and outcomes)
+  /// Function to get all the transactions (both incomes and outgoings)
   /// coming from the same bank [account]
   /// * [close] flag to close the database
   Future<List<BankTransaction>> getTransactionsOfAccount(BankAccount account, {bool close = false}) async {
     List<BankTransaction> transactions = []; // list for the transactions
 
     /* first search inside the incomes, than
-    do the same with the outcomes */
+    do the same with the outgoings */
     List<Map<String, dynamic>> incomeResults = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
           FROM Income LEFT JOIN CounterParty ON Income.counterParty = CounterParty.id
@@ -1014,12 +1014,12 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       transactions.add(Income.fromMap(singleIncome, counterParty: _getCounterPartyFromMap(singleIncome)));
     }
 
-    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+    List<Map<String, dynamic>> outcomeResults = await appDatabase.query(sql: '''SELECT Outgoing.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+          FROM Outgoing LEFT JOIN CounterParty ON Outgoing.counterParty = CounterParty.id
           WHERE bankAccount = ?''', arguments: [account.id]);
     for(Map<String, dynamic> singleOutcome in outcomeResults){
-      transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
+      transactions.add(Outgoing.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
 
     if(close){
@@ -1031,7 +1031,7 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
   }
 
   /// Return for each bank [account] a slot of transactions (both incomes and 
-  /// outcomes) specifing the lenght using the [limit] and the position of the slot
+  /// outgoings) specifing the lenght using the [limit] and the position of the slot
   /// with the [offset]
   Future<List<BankTransaction>> getAccountTransactionSlot(BankAccount account, int limit, int offset) async {
     List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Income.id, reference, amount, executionDate, accountingDate, category,
@@ -1041,9 +1041,9 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
       
       UNION ALL
       
-      SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+      SELECT Outgoing.id, reference, amount, executionDate, accountingDate, category,
       Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN, 'outcome' as type
-      FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id
+      FROM Outgoing LEFT JOIN CounterParty ON Outgoing.counterParty = CounterParty.id
       WHERE bankAccount = ?
       
       ORDER BY accountingDate DESC LIMIT ? OFFSET ?''',
@@ -1051,13 +1051,13 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     );
     
     /* after the result
-    convert the map objects into income and outcome */
+    convert the map objects into income and outgoing transactions */
     List<BankTransaction> transactions = [];
     for(Map<String, dynamic> map in result){
       if(map['type'] == 'income'){
         transactions.add(Income.fromMap(map, counterParty: _getCounterPartyFromMap(map)));
       }else{
-        transactions.add(Outcome.fromMap(map, counterParty: _getCounterPartyFromMap(map)));
+        transactions.add(Outgoing.fromMap(map, counterParty: _getCounterPartyFromMap(map)));
       }
     }
 
@@ -1090,14 +1090,14 @@ extension UserDatabaseWrapperReader on UserDatabaseWrapper{
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
     final outcomeResults = await appDatabase.query(
-      sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category,
+      sql: '''SELECT Outgoing.id, reference, amount, executionDate, accountingDate, category,
           Counterparty.id AS counter_id, name AS counter_name, IBAN AS counter_IBAN
-          FROM Outcome LEFT JOIN CounterParty ON Outcome.counterParty = CounterParty.id 
+          FROM Outgoing LEFT JOIN CounterParty ON Outgoing.counterParty = CounterParty.id
           WHERE accountingDate >= ? AND accountingDate < ?''',
       arguments: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
     );
     for(Map<String, dynamic> singleOutcome in outcomeResults){
-      transactions.add(Outcome.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
+      transactions.add(Outgoing.fromMap(singleOutcome, counterParty: _getCounterPartyFromMap(singleOutcome)));
     }
 
     return transactions;

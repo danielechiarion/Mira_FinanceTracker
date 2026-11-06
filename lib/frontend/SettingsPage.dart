@@ -31,7 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isLoading = true;
 
   /// Whether the periodic background activity is enabled
-  /// (monthly reviews, automatic incomes/outcomes calculation, etc.).
+  /// (monthly reviews, automatic income/outgoing calculations, etc.).
   late bool _backgroundActivityEnabled;
 
   /// Whether the application is allowed to show notifications

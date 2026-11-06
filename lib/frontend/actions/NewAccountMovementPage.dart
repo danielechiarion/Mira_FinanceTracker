@@ -11,12 +11,12 @@ import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/Toast.dart';
 
-/// Shared form to register a bank movement (income or outcome), built
-/// on top of [ActionOperationPage]. Incomes and outcomes share the same
+/// Shared form to register a bank movement (income or outgoing), built
+/// on top of [ActionOperationPage]. Incomes and outgoings share the same
 /// base fields (account, category, reference, amount and dates), so
 /// this widget is parametrized with labels and the actual save logic,
 /// keeping both pages visually and structurally identical -- exactly
@@ -26,7 +26,7 @@ class MovementFormPage extends StatelessWidget {
   final String title;
   final String referenceLabel;
   final UserDatabaseWrapper database;
-  final Type classRequested; // Income or Outcome
+  final Type classRequested; // Income or Outgoing
 
   const MovementFormPage({
     super.key,
@@ -54,7 +54,7 @@ class MovementFormPage extends StatelessWidget {
 
   /// Returns the category values selectable for [account], based on the
   /// account's runtime type (CurrentAccount / SavingsAccount / Card) and
-  /// on whether this page is handling an [Income] or an [Outcome]
+  /// on whether this page is handling an [Income] or an [Outgoing]
   /// (check `classRequested` to tell them apart).
   List<dynamic> _categoriesForAccount(BankAccount account) {
     if (classRequested == Income) {
@@ -67,11 +67,11 @@ class MovementFormPage extends StatelessWidget {
       }
     } else {
       if (account is CurrentAccount) {
-        return OutcomeCategory.getCurrentAccountOperations();
+        return OutgoingCategory.getCurrentAccountOperations();
       } else if (account is SavingsAccount) {
-        return OutcomeCategory.getSavingsAccountOperations();
+        return OutgoingCategory.getSavingsAccountOperations();
       } else {
-        return OutcomeCategory.getCardOperations();
+        return OutgoingCategory.getCardOperations();
       }
     }
   }
@@ -103,7 +103,7 @@ class MovementFormPage extends StatelessWidget {
           accountingDate: accountingDate,
         );
       } else {
-        movement = Outcome(
+        movement = Outgoing(
           category,
           reference,
           amount,

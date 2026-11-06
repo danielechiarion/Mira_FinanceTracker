@@ -8,7 +8,7 @@ import 'package:mira_finance_tracker/classes/time_management/LimitedAccountDurat
 import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 
 /// Class to specify a particular type of financial instrument. 
 /// Time deposits usually have a stable interest rate and a specified duration, 
@@ -197,7 +197,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       );
       if(taxes > 0){
         transactions.add(
-          Outcome(OutcomeCategory.financial_tax, "Tasse applicate dagli intreressi generate dal deposito: ${super.name}", taxes, DateTime.now())
+          Outgoing(OutgoingCategory.financial_tax, "Tasse applicate dagli intreressi generate dal deposito: ${super.name}", taxes, DateTime.now())
         );
       }
 
@@ -247,7 +247,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
     }
     if(taxes > 0){
       transactions.add(
-        Outcome(OutcomeCategory.financial_tax, "Tasse applicate sulla liquidazione anticipata del deposito: ${super.name}", taxes, stopDate)
+        Outgoing(OutgoingCategory.financial_tax, "Tasse applicate sulla liquidazione anticipata del deposito: ${super.name}", taxes, stopDate)
       );
     }
 

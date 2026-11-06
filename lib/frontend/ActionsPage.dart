@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicIncome.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Domiciliation.dart';
 
@@ -115,7 +115,7 @@ class _ActionsPageState extends State<ActionsPage> {
         _ActionItem(
           label: 'Nuova uscita',
           icon: Icons.arrow_upward,
-          pageBuilder: (context, database) => MovementFormPage(title: 'Aggiungi addebito', referenceLabel: 'Addebito', database: database, classRequested: Outcome)
+          pageBuilder: (context, database) => MovementFormPage(title: 'Aggiungi addebito', referenceLabel: 'Addebito', database: database, classRequested: Outgoing)
         ),
       ],
     ),

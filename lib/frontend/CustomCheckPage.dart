@@ -8,7 +8,7 @@ import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/frontend/navbar/ResponsiveScaffold.dart';
 import 'package:mira_finance_tracker/frontend/single_elements/SummaryCard.dart';
@@ -84,7 +84,7 @@ class _CustomCheckPageState extends State<CustomCheckPage> {
     final isIncome = transaction is Income;
     final category = isIncome
         ? transaction.category.name
-        : (transaction as Outcome).category.name;
+        : (transaction as Outgoing).category.name;
     return TransactionOperationOutput(
       reference: transaction.reference,
       accountName: account.name,

@@ -4,7 +4,7 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/FinancialInstrument.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/model/FinancialInstrumentModel.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/service/TimeDeposit.dart';
@@ -108,7 +108,7 @@ class SavingsAccount extends BankAccount{
     }
 
     /* return the transaction of the financial investment */
-    return [Outcome(OutcomeCategory.financial_investment, "Inizio investimento finanziario in prodotto: ${service.name}", service.currentValue, serviceDate)];
+    return [Outgoing(OutgoingCategory.financial_investment, "Inizio investimento finanziario in prodotto: ${service.name}", service.currentValue, serviceDate)];
   }
 
   void removeService(FinancialInstrument service){
@@ -168,7 +168,7 @@ class SavingsAccount extends BankAccount{
     but not displaying it in the list */
     if(transaction is Income && transaction.category == IncomeCategory.financial_cashing){
       super.availableBalance += transaction.amount;
-    }else if(transaction is Outcome && transaction.category == OutcomeCategory.financial_investment){
+    }else if(transaction is Outgoing && transaction.category == OutgoingCategory.financial_investment){
       super.availableBalance -= transaction.amount;
     }else{
       /* call the superclass method and updating

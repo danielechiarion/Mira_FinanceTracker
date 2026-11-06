@@ -4,7 +4,7 @@ import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/BankFee.dart';
 import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
 
 import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
@@ -153,7 +153,7 @@ abstract class BankAccount{
   dynamic addTransaction(BankTransaction transaction){
     /* control if the transaction goes over than
     the available balance provided */
-    if(transaction is Outcome && transaction.amount > availableBalance){
+    if(transaction is Outgoing && transaction.amount > availableBalance){
       throw Exception("Cannot add a transaction when it requires more money than the ones available in the balance");
     }
 

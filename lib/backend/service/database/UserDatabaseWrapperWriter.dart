@@ -34,7 +34,7 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
         );
       }else{
         id = await appDatabase.executeWithMap(
-          sql: '''INSERT INTO Outcome (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
+          sql: '''INSERT INTO Outgoing (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
                   VALUES (:bankAccount, :reference, :counterParty, :amount, :executionDate, :accountingDate, :category)''',
           parameters: {'bankAccount': account.id, ...singleTransaction.toMap()}
         );
@@ -58,7 +58,7 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
           final sql = singleTransaction is Income
               ? '''INSERT INTO Income (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
                    VALUES (?, ?, ?, ?, ?, ?, ?)'''
-              : '''INSERT INTO Outcome (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
+              : '''INSERT INTO Outgoing (bankAccount, reference, counterParty, amount, executionDate, accountingDate, category)
                    VALUES (?, ?, ?, ?, ?, ?, ?)''';
           final id = await transaction.rawInsert(sql, [
             account.id,
@@ -535,7 +535,7 @@ extension UserDatabaseWrapperWriter on UserDatabaseWrapper{
     if(transaction is Income){
       await appDatabase.execute(sql: 'DELETE FROM Income WHERE id = ?', arguments: [transaction.id]);
     }else{
-      await appDatabase.execute(sql: 'DELETE FROM Outcome WHERE id = ?', arguments: [transaction.id]);
+      await appDatabase.execute(sql: 'DELETE FROM Outgoing WHERE id = ?', arguments: [transaction.id]);
     }
 
     if(close){

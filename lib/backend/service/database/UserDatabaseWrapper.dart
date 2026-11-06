@@ -11,7 +11,7 @@ import 'package:mira_finance_tracker/classes/account/User.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/bank_account/Card.dart';
 import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/SavingsAccount.dart';
@@ -93,8 +93,24 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper {
     await database.openAppDatabase(
       dbName: '${SystemDatabaseWrapper.USERDATABASEPREFIX}${_user.username}',
       password: key,
+      version: 2,
       onCreate: defineTables,
+      onUpgrade: _upgradeTables,
     );
+  }
+
+  Future<void> _upgradeTables(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2 && newVersion >= 2) {
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('Outcome', 'Outgoing')",
+      );
+      final tableNames = tables.map((table) => table['name']).toSet();
+      if (tableNames.contains('Outcome') && !tableNames.contains('Outgoing')) {
+        await db.execute('ALTER TABLE Outcome RENAME TO Outgoing');
+      } else if (!tableNames.contains('Outgoing')) {
+        throw StateError('Cannot migrate transaction table to Outgoing.');
+      }
+    }
   }
 
   /// Changes the encryption key of the currently open user database.
@@ -144,7 +160,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper {
     /* create general table bank account, with all
     the tables for each extended class, in order
     to manage correctly common fields
-    and common entity related such as incomes and outcomes */
+    and common entity related such as incomes and outgoings */
     await db.execute('''CREATE TABLE IF NOT EXISTS BankAccount(
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         financialInstitute INTEGER,
@@ -200,7 +216,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper {
   /* function to define table for basic 
   transactions through every kind of bank account */
   Future<void> _defineTransactions(Database db) async {
-    /* define incomes and outcomes,
+    /* define incomes and outgoings,
     which contains the same fields */
     await db.execute('''CREATE TABLE IF NOT EXISTS Income(
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -217,7 +233,7 @@ class UserDatabaseWrapper extends SystemDatabaseWrapper {
                         FOREIGN KEY (counterParty) REFERENCES CounterParty(id)
                           ON DELETE RESTRICT
                         )''');
-    await db.execute('''CREATE TABLE IF NOT EXISTS Outcome(
+    await db.execute('''CREATE TABLE IF NOT EXISTS Outgoing(
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         bankAccount INTEGER NOT NULL,
                         reference TEXT NOT NULL,

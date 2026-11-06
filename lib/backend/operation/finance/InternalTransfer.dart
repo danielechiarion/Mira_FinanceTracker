@@ -1,7 +1,7 @@
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
@@ -50,9 +50,9 @@ class InternalTransfer{
     /* first create the list of transactions
     for each bank account */
     List<BankTransaction> startingTransactions = [];
-    startingTransactions.add(Outcome(OutcomeCategory.internal_transfer, "Trasferimento interno a conto: ${_endingAccount.name}", _amount, _executionDate, accountingDate: _accountingDate));
+    startingTransactions.add(Outgoing(OutgoingCategory.internal_transfer, "Trasferimento interno a conto: ${_endingAccount.name}", _amount, _executionDate, accountingDate: _accountingDate));
     if(_fee > 0){
-      startingTransactions.add(Outcome(OutcomeCategory.internal_transfer_fee, "Tassa applicata a trasferimento interno a conto: ${_endingAccount.name}", _fee, _executionDate, accountingDate: _accountingDate));
+      startingTransactions.add(Outgoing(OutgoingCategory.internal_transfer_fee, "Tassa applicata a trasferimento interno a conto: ${_endingAccount.name}", _fee, _executionDate, accountingDate: _accountingDate));
     }
 
     List<BankTransaction> endingTransactions = [];

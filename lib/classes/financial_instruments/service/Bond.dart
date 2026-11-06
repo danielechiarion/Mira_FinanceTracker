@@ -9,7 +9,7 @@ import 'package:mira_finance_tracker/classes/time_management/LongDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/InterestList.dart';
 import 'package:mira_finance_tracker/classes/financial_instruments/elements/StepInterest.dart';
 
@@ -361,7 +361,7 @@ class Bond extends FinancialInstrument implements CadenceCheck, InterestList{
       );
       if(taxes > 0){
         transactions.add(
-          Outcome(OutcomeCategory.financial_tax, "Tasse applicate dagli intreressi generate dal titolo: ${super.name}", taxes, DateTime.now())
+          Outgoing(OutgoingCategory.financial_tax, "Tasse applicate dagli intreressi generate dal titolo: ${super.name}", taxes, DateTime.now())
         );
       }
 

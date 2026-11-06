@@ -53,11 +53,13 @@ class EncryptedDatabase {
   /// * [password] secret key used for encryption/decryption (AES-256)
   /// * [version] target schema version of the database
   /// * [onCreate] optional callback executed when creating the database for the first time
+  /// * [onUpgrade] optional callback executed when upgrading the database schema
   Future<void> openAppDatabase({
     required String dbName,
     required String password,
     int version = 1,
     FutureOr<void> Function(Database, int)? onCreate,
+    FutureOr<void> Function(Database, int, int)? onUpgrade,
     bool extensionAdded = false,
   }) async {
     if (!extensionAdded && !dbName.endsWith(_DATABASEEXTENSION)) {
@@ -80,6 +82,7 @@ class EncryptedDatabase {
         password: password,
         version: version,
         onCreate: onCreate,
+        onUpgrade: onUpgrade,
       );
       _connectionPath = path;
     });
@@ -277,6 +280,7 @@ class EncryptedDatabase {
     required String password,
     required int version,
     FutureOr<void> Function(Database, int)? onCreate,
+    FutureOr<void> Function(Database, int, int)? onUpgrade,
   }) async {
     final existing = _sharedConnections[path];
     if (existing != null) {
@@ -296,6 +300,7 @@ class EncryptedDatabase {
       password: password,
       version: version,
       onCreate: onCreate,
+      onUpgrade: onUpgrade,
     );
     _sharedConnections[path] = database;
     _referenceCounters[path] = 1;
@@ -330,6 +335,7 @@ class EncryptedDatabase {
     required String password,
     required int version,
     FutureOr<void> Function(Database, int)? onCreate,
+    FutureOr<void> Function(Database, int, int)? onUpgrade,
   }) async {
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       return await sqldesktop.databaseFactoryFfi.openDatabase(
@@ -337,6 +343,7 @@ class EncryptedDatabase {
         options: OpenDatabaseOptions(
           version: version,
           onCreate: onCreate,
+          onUpgrade: onUpgrade,
           onConfigure: (db) async {
             await db.execute('PRAGMA foreign_keys = ON');
           },
@@ -348,6 +355,7 @@ class EncryptedDatabase {
         password: password,
         version: version,
         onCreate: onCreate,
+        onUpgrade: onUpgrade,
         onConfigure: (db) async {
           await db.execute('PRAGMA foreign_keys = ON');
         },

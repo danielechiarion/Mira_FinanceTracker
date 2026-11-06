@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 import 'package:mira_finance_tracker/classes/bank_account/CurrentAccount.dart';
@@ -16,7 +16,7 @@ import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrappe
 /// [transaction] (which already carries all its presentation data) and the
 /// [account] it belongs to.
 class TransactionOperationOutputEditable extends StatefulWidget {
-  /// The original transaction object (Income or Outcome).
+  /// The original transaction object (Income or Outgoing).
   final BankTransaction transaction;
 
   /// The account to which the transaction belongs.
@@ -56,7 +56,7 @@ class _TransactionOperationOutputEditableState
     final transaction = widget.transaction;
     if (transaction is Income) {
       return transaction.category.name;
-    } else if (transaction is Outcome) {
+    } else if (transaction is Outgoing) {
       return transaction.category.name;
     }
     return '';
@@ -167,7 +167,7 @@ class _TransactionOperationOutputEditableState
 
   /// Returns the category values selectable for [account], based on the
   /// account's runtime type (CurrentAccount / SavingsAccount / Card) and
-  /// on whether this page is handling an [Income] or an [Outcome].
+  /// on whether this page is handling an [Income] or an [Outgoing].
   List<String> _categoriesForAccount(BankAccount account) {
     if (widget.transaction is Income) {
       if (account is CurrentAccount) {
@@ -185,15 +185,15 @@ class _TransactionOperationOutputEditableState
       }
     } else {
       if (account is CurrentAccount) {
-        return OutcomeCategory.getCurrentAccountOperations()
+        return OutgoingCategory.getCurrentAccountOperations()
             .map((category) => category.name)
             .toList();
       } else if (account is SavingsAccount) {
-        return OutcomeCategory.getSavingsAccountOperations()
+        return OutgoingCategory.getSavingsAccountOperations()
             .map((category) => category.name)
             .toList();
       } else {
-        return OutcomeCategory.getCardOperations()
+        return OutgoingCategory.getCardOperations()
             .map((category) => category.name)
             .toList();
       }
@@ -300,7 +300,7 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
     _accountingDate = transaction.accountingDate;
     if (transaction is Income) {
       _selectedCategory = transaction.category.name;
-    } else if (transaction is Outcome) {
+    } else if (transaction is Outgoing) {
       _selectedCategory = transaction.category.name;
     } else {
       _selectedCategory = widget.availableCategories.first;
@@ -323,10 +323,10 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
         orElse: () => IncomeCategory.other,
       );
       return category.counterPartyRequired;
-    } else if (widget.transaction is Outcome) {
-      final category = OutcomeCategory.values.firstWhere(
+    } else if (widget.transaction is Outgoing) {
+      final category = OutgoingCategory.values.firstWhere(
         (e) => e.name == _selectedCategory,
-        orElse: () => OutcomeCategory.other,
+        orElse: () => OutgoingCategory.other,
       );
       return category.counterPartyRequired;
     }
@@ -390,12 +390,12 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
         counterParty: counterParty,
         accountingDate: _accountingDate,
       );
-    } else if (widget.transaction is Outcome) {
-      final category = OutcomeCategory.values.firstWhere(
+    } else if (widget.transaction is Outgoing) {
+      final category = OutgoingCategory.values.firstWhere(
         (e) => e.name == _selectedCategory,
-        orElse: () => OutcomeCategory.other,
+        orElse: () => OutgoingCategory.other,
       );
-      updatedTransaction = Outcome(
+      updatedTransaction = Outgoing(
         category,
         reference,
         amount,

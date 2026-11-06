@@ -1,10 +1,10 @@
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicAccountBillings.dart';
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 
 /// Class made to manage the periodic Bank fees inside a bank accounts,
-/// registering the outcomes provided 
+/// registering the outgoings provided
 class BankFee extends PeriodicAccountBillings{
   
   /// Constructor method of the Bank fee
@@ -21,7 +21,7 @@ class BankFee extends PeriodicAccountBillings{
   /// a list of bank transactions for the account selected
   @override
   List<BankTransaction> checkAndExecute(){
-    List<Outcome> transactionList = []; // create the list
+    List<Outgoing> transactionList = []; // create the list
 
     /* use cycle because this operation could be 
     without a regular cadence, having even more
@@ -30,7 +30,7 @@ class BankFee extends PeriodicAccountBillings{
       /* if the control has passed, add to the list the 
       various transactions to do */
       transactionList.add(
-        Outcome(OutcomeCategory.bank_fee, "Bank fee: ${super.name}", super.amount, DateTime.now())
+        Outgoing(OutgoingCategory.bank_fee, "Bank fee: ${super.name}", super.amount, DateTime.now())
       );
 
       /* update the cadence counter */

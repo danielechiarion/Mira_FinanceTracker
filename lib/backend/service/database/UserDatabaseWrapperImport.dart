@@ -154,7 +154,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     if (close) await appDatabase.close();
   }
 
-  /// Function to save outcomes or update them inside the database
+  /// Function to save outgoings or update them inside the database
   /// from a specific file [content] given
   /// * [close] flag to close the database
   Future<void> importOutcomes(
@@ -163,7 +163,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
   }) async {
     for (Map<String, dynamic> transaction in content['content']) {
       await appDatabase.executeWithMap(
-        sql: '''INSERT OR REPLACE INTO Outcome
+        sql: '''INSERT OR REPLACE INTO Outgoing
         (id, reference, amount, executionDate, accountingDate, category, bankAccount, counterParty)
         VALUES (:id, :reference, :amount, :executionDate, :accountingDate, :category, :bankAccount, :counterParty)''',
         parameters: transaction,
@@ -181,7 +181,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     bool close = false,
   }) async {
     /* call the single functions to save 
-    incomes and outcomes coming from cloud */
+    incomes and outgoings coming from cloud */
     await importIncomes(content['incomes']);
     await importOutcomes(content['outcomes']);
 

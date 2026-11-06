@@ -12,7 +12,7 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
 /// Edit page shared by Domiciliation and PeriodicIncome, since both are
-/// just PeriodicTransaction with a different meaning (outcome vs income) -
+/// just PeriodicTransaction with a different meaning (outgoing vs income) -
 /// Domiciliation additionally carries its own bank fee. [classRequested]
 /// picks which of the two concrete classes gets rebuilt on confirm,
 /// following the same convention used by PeriodicBillingFormPage for the

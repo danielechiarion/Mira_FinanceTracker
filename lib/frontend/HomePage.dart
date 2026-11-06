@@ -15,7 +15,7 @@ import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 import 'package:mira_finance_tracker/backend/service/UserDatabaseHandler.dart';
 import 'package:mira_finance_tracker/classes/transaction/Income.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
 import 'package:mira_finance_tracker/frontend/error_pages/ErrorManager.dart';
@@ -364,7 +364,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Single tappable account-type card. Reuses SummaryCard to stay
-  /// consistent with the income/outcome cards, wrapped in an InkWell so it
+  /// consistent with the income/outgoing cards, wrapped in an InkWell so it
   /// can navigate to the dedicated account-type page.
   Widget _accountTypeCard({
     required String label,
@@ -463,7 +463,7 @@ class _HomePageState extends State<HomePage> {
           isIncome: op is Income,
           category: op is Income
               ? op.category.name
-              : (op as Outcome).category.name,
+              : (op as Outgoing).category.name,
           executionDate: op.executionDate,
           accountingDate: op.accountingDate,
         ).build();

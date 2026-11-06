@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 /// Reusable presentation model for a movement returned by a custom check.
-/// It can later be mapped directly from BankTransaction, Income, and Outcome.
+/// It can later be mapped directly from BankTransaction, Income, and Outgoing.
 class TransactionOperationOutput {
   static final _formatter = NumberFormat.currency(locale: 'it_IT', symbol: '€');
   final String reference;

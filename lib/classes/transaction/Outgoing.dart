@@ -4,9 +4,9 @@ import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
 
 /// Enumerator used to classify
-/// different categories of an outcome for the application
+/// different categories of an outgoing transaction for the application
 /// made by the user or by the automatic calculation of the software
-enum OutcomeCategory{
+enum OutgoingCategory{
   bank_fee("Commissione conto", false),
   financial_tax("Tassa d'investimento", false),
   domiciliation("Domiciliazione", true),
@@ -22,13 +22,13 @@ enum OutcomeCategory{
   final String name;
   final bool counterPartyRequired;
 
-  /* define constructor allowing names 
-  to define the outcome operation */
-  const OutcomeCategory(this.name, this.counterPartyRequired);
+  /* define constructor allowing names
+  to define the outgoing operation */
+  const OutgoingCategory(this.name, this.counterPartyRequired);
 
-  /// Get the different outcome operations types
+  /// Get the different outgoing operation types
   /// for the current account
-  static List<OutcomeCategory> getCurrentAccountOperations(){
+  static List<OutgoingCategory> getCurrentAccountOperations(){
     return [
       bank_fee,
       domiciliation,
@@ -39,9 +39,9 @@ enum OutcomeCategory{
     ];
   }
 
-  /// Get the different outcome operations types
+  /// Get the different outgoing operation types
   /// for the savings account
-  static List<OutcomeCategory> getSavingsAccountOperations(){
+  static List<OutgoingCategory> getSavingsAccountOperations(){
     return [
       bank_fee,
       financial_tax,
@@ -55,9 +55,9 @@ enum OutcomeCategory{
     ];
   }
 
-  /// Get the different outcome operations types
+  /// Get the different outgoing operation types
   /// for the card account
-  static List<OutcomeCategory> getCardOperations(){
+  static List<OutgoingCategory> getCardOperations(){
     return [
       bank_fee,
       general_outcome,
@@ -68,29 +68,29 @@ enum OutcomeCategory{
   }
 }
 
-class Outcome extends BankTransaction{
+class Outgoing extends BankTransaction{
   /* attributes definition */
-  OutcomeCategory _category;
+  OutgoingCategory _category;
 
-  /// Constructor method of the outcome class
-  /// * [reference] the reference of the outcome
-  /// * [counterParty] the counterparty of the outcome
-  /// * [amount] the amount of the outcome
-  /// * [executionDate] the execution date of the outcome
-  /// * [accountingDate] the accounting date of the outcome (if not set is the execution date)
-  /// * [id] the ID of the outcome (firstly it will be -1, then it will be set by the database)
-  /// * [_category] the category of the outcome
-  Outcome(this._category, String reference, double amount, DateTime executionDate, {int id = -1, CounterParty? counterParty, DateTime? accountingDate})
+  /// Constructor method of the outgoing class
+  /// * [reference] the reference of the outgoing transaction
+  /// * [counterParty] the counterparty of the outgoing transaction
+  /// * [amount] the amount of the outgoing transaction
+  /// * [executionDate] the execution date of the outgoing transaction
+  /// * [accountingDate] the accounting date of the outgoing transaction (if not set is the execution date)
+  /// * [id] the ID of the outgoing transaction (initially -1, then set by the database)
+  /// * [_category] the category of the outgoing transaction
+  Outgoing(this._category, String reference, double amount, DateTime executionDate, {int id = -1, CounterParty? counterParty, DateTime? accountingDate})
       : super(reference, amount, executionDate, id: id, counterParty: counterParty, accountingDate: accountingDate) {
-    if((_category == OutcomeCategory.domiciliation || _category == OutcomeCategory.general_outcome) && counterParty == null){
-      throw Exception("Outcomes not related to the bank or owned bank accounts must have a specified counterparty");
+    if((_category == OutgoingCategory.domiciliation || _category == OutgoingCategory.general_outcome) && counterParty == null){
+      throw Exception("Outgoing transactions not related to the bank or owned bank accounts must have a specified counterparty");
     }
   }
 
   /* *** GETTER METHODS *** */
-  OutcomeCategory get category => _category;
+  OutgoingCategory get category => _category;
 
-  /// Method to convert an outcome object into 
+  /// Method to convert an outgoing object into
   /// a map one for database manipulation
   @override
   Map<String, dynamic> toMap(){
@@ -106,13 +106,13 @@ class Outcome extends BankTransaction{
   }
 
   /// Static method to convert a map object
-  /// to an outcome one to use it inside the application
+  /// to an outgoing one to use it inside the application
   /// * [map] map object coming from the database
-  static Outcome fromMap(Map<String, dynamic> map, {CounterParty? counterParty}){
-    final categoryIndex = map['category'] as int? ?? OutcomeCategory.general_outcome.index;
+  static Outgoing fromMap(Map<String, dynamic> map, {CounterParty? counterParty}){
+    final categoryIndex = map['category'] as int? ?? OutgoingCategory.general_outcome.index;
 
-    return Outcome(
-      OutcomeCategory.values[categoryIndex],
+    return Outgoing(
+      OutgoingCategory.values[categoryIndex],
       map['reference'],
       map['amount'],
       DateTime.parse(map['executionDate']),
@@ -124,34 +124,34 @@ class Outcome extends BankTransaction{
 
   /// Method to get a deep clone of the instance
   @override
-  Outcome clone(){
-    return Outcome(_category, super.reference, super.amount, super.executionDate, 
+  Outgoing clone(){
+    return Outgoing(_category, super.reference, super.amount, super.executionDate,
             id: super.id, counterParty: super.counterParty, accountingDate: super.accountingDate);
   }
 
-  /// Override method to convert Outcome to notification
+  /// Override method to convert Outgoing to notification
   /// from [BankTransaction] class
   @override
   NotificationData toNotification() {
     String title = ""; // define title to be changed
 
-    if(_category == OutcomeCategory.bank_fee){
+    if(_category == OutgoingCategory.bank_fee){
       title = "Commissione conto";
-    } else if(_category == OutcomeCategory.financial_tax){
+    } else if(_category == OutgoingCategory.financial_tax){
       title = "Tassa d'investimento";
-    } else if(_category == OutcomeCategory.domiciliation){
+    } else if(_category == OutgoingCategory.domiciliation){
       title = "Domiciliazione";
-    } else if(_category == OutcomeCategory.general_outcome){
+    } else if(_category == OutgoingCategory.general_outcome){
       title = "Addebito generico";
-    } else if(_category == OutcomeCategory.internal_transfer){
+    } else if(_category == OutgoingCategory.internal_transfer){
       title = "Addebito da girofondo";
-    } else if(_category == OutcomeCategory.internal_transfer_fee){
+    } else if(_category == OutgoingCategory.internal_transfer_fee){
       title = "Commissione da girofondo";
-    } else if(_category == OutcomeCategory.financial_investment){
+    } else if(_category == OutgoingCategory.financial_investment){
       title = "Investimento";
-    } else if(_category == OutcomeCategory.stock_fee){
+    } else if(_category == OutgoingCategory.stock_fee){
       title = "Tassazione azioni";
-    } else if(_category == OutcomeCategory.stock_loss){
+    } else if(_category == OutgoingCategory.stock_loss){
       title = "Perdita azioni";
     } else {
       title = "Altro addebito";

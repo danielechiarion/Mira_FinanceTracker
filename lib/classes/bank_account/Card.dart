@@ -4,7 +4,7 @@ import 'package:mira_finance_tracker/classes/periodic_transactions/Cashback.dart
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/time_management/DurationType.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/bank_account/BankAccount.dart';
 
 import 'package:mira_finance_tracker/backend/service/notification/NotificationData.dart';
@@ -77,8 +77,8 @@ class Card extends BankAccount{
   /* function to understand if the transaction 
   can receive the credit from the card */
   bool _hasCredit(BankTransaction transaction){
-    return transaction is Outcome && _cardType == CardType.credit && 
-            (transaction.category == OutcomeCategory.general_outcome || transaction.category == OutcomeCategory.other) &&
+    return transaction is Outgoing && _cardType == CardType.credit &&
+            (transaction.category == OutgoingCategory.general_outcome || transaction.category == OutgoingCategory.other) &&
             (_creditTime!.lastDateActivity == null || transaction.executionDate.isAfter(_creditTime!.lastDateActivity!));
   }
 

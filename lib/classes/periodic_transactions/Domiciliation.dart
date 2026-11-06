@@ -1,7 +1,7 @@
 import 'package:mira_finance_tracker/classes/periodic_transactions/PeriodicTransaction.dart';
 import 'package:mira_finance_tracker/classes/time_management/PeriodicAccountDuration.dart';
 import 'package:mira_finance_tracker/classes/transaction/BankTransaction.dart';
-import 'package:mira_finance_tracker/classes/transaction/Outcome.dart';
+import 'package:mira_finance_tracker/classes/transaction/Outgoing.dart';
 import 'package:mira_finance_tracker/classes/subjects/CounterParty.dart';
 
 /// Class to manage a domiciliation coming from 
@@ -37,7 +37,7 @@ class Domiciliation extends PeriodicTransaction{
   /// and create the necessary transactions for the bank account
   @override
   List<BankTransaction> checkAndExecute(){
-    List<Outcome> transactionList = []; // create the list
+    List<Outgoing> transactionList = []; // create the list
 
     /* use cycle because this operation could be 
     without a regular cadence, having even more
@@ -46,13 +46,13 @@ class Domiciliation extends PeriodicTransaction{
       /* if the control has passed, add to the list the 
       various transactions to do */
       transactionList.add(
-        Outcome(OutcomeCategory.domiciliation, "Periodic domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
+        Outgoing(OutgoingCategory.domiciliation, "Periodic domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
       );
 
       /* verify if the fee has to be applied, 
       and add it as a transaction */
       transactionList.add(
-        Outcome(OutcomeCategory.bank_fee, "Bank fee applied to domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
+        Outgoing(OutgoingCategory.bank_fee, "Bank fee applied to domiciliation coming from ${super.counterParty.name}: ${super.name}", super.amount, DateTime.now())
       );
 
       /* update the cadence counter */

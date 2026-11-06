@@ -126,20 +126,20 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     };
   }
 
-  /// Function to export outcomes within a [yearLimit] expressed 
+  /// Function to export outgoings within a [yearLimit] expressed
   /// * [close] flag to close the database
   Future<Map<String, dynamic>> exportOutcomes(int yearLimit, {bool close = false}) async {
     DateTime currentDate = DateTime.now();
     DateTime limitDate = DateTime(currentDate.year-yearLimit, currentDate.month, currentDate.day);
 
-    /* write the query to get incomes 
+    /* write the query to get outgoings
     within a year limit */
-    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Outcome.id, reference, amount, executionDate, accountingDate, category, bankAccount, counterParty
-      FROM Outcome WHERE accountingDate IS NULL OR accountingDate >= ?''', 
+    List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT Outgoing.id, reference, amount, executionDate, accountingDate, category, bankAccount, counterParty
+      FROM Outgoing WHERE accountingDate IS NULL OR accountingDate >= ?''',
       arguments: [limitDate.toIso8601String()]);
 
     return {
-      "table": "Outcome",
+      "table": "Outgoing",
       "content": result
     };
   }

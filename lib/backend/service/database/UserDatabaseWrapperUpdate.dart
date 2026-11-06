@@ -285,7 +285,7 @@ extension UserDatabaseWrapperUpdate on UserDatabaseWrapper{
         amount = :amount, executionDate = :executionDate, accountingDate = :accountingDate, category = :category
         WHERE id = :id''', parameters: transaction.toMap());
     }else{
-      await appDatabase.executeWithMap(sql: '''UPDATE Outcome SET reference = :reference, counterParty = :counterParty,
+      await appDatabase.executeWithMap(sql: '''UPDATE Outgoing SET reference = :reference, counterParty = :counterParty,
         amount = :amount, executionDate = :executionDate, accountingDate = :accountingDate, category = :category
         WHERE id = :id''', parameters: transaction.toMap());
     }

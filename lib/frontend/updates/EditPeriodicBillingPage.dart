@@ -12,7 +12,7 @@ import 'package:mira_finance_tracker/frontend/templates/ActionOperationPage.dart
 import 'package:mira_finance_tracker/backend/service/database/UserDatabaseWrapper.dart';
 
 /// Edit page shared by BankFee and Cashback, since both are just
-/// PeriodicAccountBillings with a different meaning (outcome vs income).
+/// PeriodicAccountBillings with a different meaning (outgoing vs income).
 /// [classRequested] picks which of the two concrete classes gets rebuilt
 /// on confirm, following the same convention used by
 /// PeriodicBillingFormPage for the "add" flow - the recurrence controls
