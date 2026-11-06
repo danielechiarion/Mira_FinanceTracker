@@ -1,7 +1,7 @@
 # Requirement analysis
 
 ## Introduction of the problem
-Controlling our financial situation is important, but it is not a given that our banking app does so. Maybe it can offer a list of movements and transactions, but not every one of them shows interactive charts about incomes and outcomes, to give the customer a better view of their net worth. 
+Controlling our financial situation is important, but it is not a given that our banking app does so. Maybe it can offer a list of movements and transactions, but not every one of them shows interactive charts about incomes and outgoings, to give the customer a better view of their net worth. 
 Moreover, the customer could have different accounts belonging to different banks and financial institutes and, as a result, it is impossible to have a broader view of the total resources owned. 
 **Mira Finance Tracker** offers customers a new way of managing bank accounts and transactions, with interactive charts all together.
 
@@ -30,8 +30,8 @@ Within the bank account we can find different types:
 An account used mostly for direct transfers and various operations with money. 
 A current account, in addition to the functions of a normal bank account, should consider:
 - **Incomes** occasional payments to the bank account
-- **Outcomes** occasional payments from the bank account
-- **Domiciliation** periodic outcome, for example a payment for a service. 
+- **Outgoings** occasional payments from the bank account
+- **Domiciliation** periodic outgoing, for example a payment for a service. 
 - **Periodic Income** for example the salary.
 
 #### Savings account
@@ -67,7 +67,7 @@ Looking at how different bank accounts work, here are some requirements to follo
 
 ### Bank account
 - Ensure all the different types of bank accounts illustrated
-- Ensure the basic income / outcome operations
+- Ensure the basic income / outgoing operations
 - Manage periodic fees, even in the different transaction types
 - Ensure dynamic money transfers between different bank accounts with the connected fees
 
@@ -83,7 +83,7 @@ Looking at how different bank accounts work, here are some requirements to follo
 - Make instruments from a financial institute available only to the corresponding bank accounts
 
 ### Frontend requirements
-- Show charts to display incomes, outcomes and investments
+- Show charts to display incomes, outgoings and investments
 - Save the history of the bank accounts, including past years, allowing the user to read and compare it, even if the bank account is no longer active
 
 ### Security requirements

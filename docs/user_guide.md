@@ -36,9 +36,9 @@ To move from one place to another, it is possible to use the top navbar or the s
 
 ### Home page
 The home page is the landing page of the application after the login. On the home page it is possible to view:
-- **MONTHLY STATUS** with total incomes and outcomes of the month
+- **MONTHLY STATUS** with total incomes and outgoings of the month
 - **PATRIMONY DISTRIBUTION** showing, with a pie chart, the distribution of the user's money among the registered bank accounts.
-- **RECENT TREND** showing a bar graph of total incomes and outcomes of the last six months.
+- **RECENT TREND** showing a bar graph of total incomes and outgoings of the last six months.
 - **RECENT TRANSACTIONS** a list of the last 10/15 transactions across all the bank accounts. These transactions are not editable; they can be edited on the single bank account page.
 
 ***The home page has a section to access the single bank accounts. It displays the available balance of the bank accounts, divided by type: current accounts, savings accounts and cards. Click on one of these pages to look for the single bank account of the required type.***

@@ -4,9 +4,9 @@ This report describes how the application should work and which functionalities 
 ## Structure of the application pages
 The application will contain several pages because of the various functionalities it covers.  
 The main pages of the program will be:
-- **REVIEW** page with a summary of incomes, outcomes and charts. 
+- **REVIEW** page with a summary of incomes, outgoings and charts. 
 - **CUSTOM CHECK** controls the situation of the selected bank accounts over a specified amount of time. 
-- **ACTION PAGES** allow the person to add different things to the application, such as payments, incomes, outcomes etc.
+- **ACTION PAGES** allow the person to add different things to the application, such as payments, incomes, outgoings etc.
 - **SETTINGS** regarding the account and personal customizations.
 
 ### Access page
@@ -22,7 +22,7 @@ The starting page, if the user is not logged in, offers the following possibilit
 In the application there will also be specific subpages in order to display details better.
 The main classification of subpages in the application will be:
 - **REVIEW SUBPAGES** to better display the situation of each bank account, with all the charts and movements connected to it. 
-- **ADDING SUBPAGES** will be used to add new things to the bank account, such as incomes, outcomes etc.
+- **ADDING SUBPAGES** will be used to add new things to the bank account, such as incomes, outgoings etc.
 
 
 ## Adding actions allowed
@@ -50,7 +50,7 @@ The data the user can change are:
 
 ### Application settings
 The settings the user can configure in this section are:
-- **Background activity** the user can decide whether to activate it or not in order to check things periodically (monthly incomes, outcomes, reviews etc.). ***If the user disables this functionality, the automatic calculation of periodic incomes and domiciliations will be disabled as well and the user will have to add this information manually.***
+- **Background activity** the user can decide whether to activate it or not in order to check things periodically (monthly incomes, outgoings, reviews etc.). ***If the user disables this functionality, the automatic calculation of periodic incomes and domiciliations will be disabled as well and the user will have to add this information manually.***
 - **Notification** the background activity can produce some notifications to inform the user about the monthly review of the bank accounts or about other periodic payments to be made. Disabling these functionalities won't impact the performance and the automatic calculations in the application background. 
 - **Changing period** this setting will let the application know how far back the user is allowed to make changes and in which time window the application will use incremental backups. This functionality is important if, on a new application, you want to keep an archive or just check the latest movements.
 

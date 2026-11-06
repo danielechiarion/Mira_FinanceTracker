@@ -68,7 +68,7 @@ Database to save the user's private information. Each user has their own databas
 The tables of the user database are:
 1. **SUBJECTS** interacting with users' operations, such as `FinancialInstitute` and `CounterParty`.
 2. **BANK ACCOUNTS** the main table is `BankAccount`, containing general information *and the unique ID*. Then the details of each type of bank account are expressed in the tables: `CurrentAccount`, `SavingsAccount`, `Card`.
-3. **TRANSACTIONS** general entities to define financial movements connected to financial products or periodic billings. They are divided into `Income` and `Outcome`.
+3. **TRANSACTIONS** general entities to define financial movements connected to financial products or periodic billings. They are divided into `Income` and `Outgoing`.
 4. **PERIODIC TRANSACTIONS** divided into billings, such as `Cashback` and `BankFee`, which are common to all bank accounts, and periodic transactions, such as `PeriodicIncome` and `Domiciliation`, which are designed for current accounts.
 5. **FINANCIAL INSTRUMENT MODELS** models of financial services to use across the registered products. They are divided into `TimeDepositModel` and `BondModel`.
 6. **FINANCIAL INSTRUMENTS** services saved by the user, specifically designed for the savings account. They can be created starting from a model and they are `TimeDeposit`, `Bond` and `Stock`.
@@ -187,7 +187,7 @@ A connection with the cloud is meant to be safe and complete so, regardless of t
 
 2. **EXECUTION** the application performs the operation it is expected to do. It starts only after the connection control ends successfully. Other errors could be returned by the procedure.
 3. **DISCONNECTION** when the application disconnects, it frees the lock file to make the space available to other application instances. When a logout procedure no longer allows the user to use the cloud, the space occupied by the directory will be emptied if no other device is connected. 
-  The disconnection step has to be done regardless of the outcome of the execution step.
+  The disconnection step has to be done regardless of the outgoing of the execution step.
 
 
 ## Background tasks
@@ -199,7 +199,7 @@ When the background process starts, not all the entities have to be involved. Se
 - **Account billings** so cashbacks and bank fees. The background task checks, for each bank account, whether the time has come to register the transactions connected to these entities.
 - **Periodic transactions** that means periodic incomes and domiciliations. The control procedure is similar to the one applied to the account billings, but it only matters for current accounts.
 - **Financial services** without even considering their models. They are available only in savings accounts and it is good to check whether the expiration date has come or whether it is simply time to earn the interest. This procedure involves time deposits and bonds. Stocks are manually regulated by the user.
-- **Credit card transactions** this is a crucial operation for credit cards. When an outcome is registered, it does not immediately affect the available balance. Instead, credit cards have to subtract the money the user owes only on a specific day of the month, simulating the function of a credit card provider.
+- **Credit card transactions** this is a crucial operation for credit cards. When an outgoing is registered, it does not immediately affect the available balance. Instead, credit cards have to subtract the money the user owes only on a specific day of the month, simulating the function of a credit card provider.
 
 So, when these operations are done, the application does not need to read all the entities saved by the user (such as models or counterparties) and it is necessary to import and export only the data involved in the check. 
 
