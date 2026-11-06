@@ -29,6 +29,9 @@ class SystemDatabaseWrapper {
     : systemKeyManager = KeyManager(),
       database = EncryptedDatabase();
 
+  /// Whether this wrapper currently holds an open database connection.
+  bool get isDatabaseOpen => database.isOpen;
+
   /// Function to initialize the databse
   /// for system purposes
   Future<void> init() async {

@@ -40,7 +40,6 @@ class _HomePageState extends State<HomePage> {
 
   late Future<HomePageData> _summaryFuture;
   UserDatabaseWrapper? _database;
-  Future<void>? _databaseInitialization;
   String _loadingMessage = 'Caricamento dei dati...';
 
   @override
@@ -83,19 +82,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initializeDatabase(CurrentSession session) async {
-    if (_database != null) return;
-
-    final initialization = _databaseInitialization ??= () async {
-      await UserDatabaseHandler.openDatabase(session.user);
-      _database = UserDatabaseHandler.database;
-    }();
-
-    try {
-      await initialization;
-    } catch (_) {
-      _databaseInitialization = null;
-      rethrow;
+    await UserDatabaseHandler.openDatabase(session.user);
+    final database = UserDatabaseHandler.database;
+    if (database == null || !database.isDatabaseOpen) {
+      throw StateError('Connessione al database utente non disponibile.');
     }
+    _database = database;
   }
 
   Future<void> _downloadCloudDataOnce(
@@ -393,29 +385,38 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Navigates to the dedicated page for the tapped account type.
-  void _openAccountsOfType(_AccountSection section) {
+  Future<void> _openAccountsOfType(_AccountSection section) async {
+    final session = await CurrentSession.getFromMemory();
+    if (session == null) {
+      throw StateError('Nessuna sessione attiva.');
+    }
+
+    await _initializeDatabase(session);
+    if (!mounted) return;
+    final database = _database!;
+
     switch (section) {
       case _AccountSection.checking:
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CurrentAccountPage(database: _database!),
+            builder: (context) => CurrentAccountPage(database: database),
           ),
         );
         break;
       case _AccountSection.deposit:
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SavingsAccountPage(database: _database!),
+            builder: (context) => SavingsAccountPage(database: database),
           ),
         );
         break;
       case _AccountSection.cards:
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CardAccountPage(database: _database!),
+            builder: (context) => CardAccountPage(database: database),
           ),
         );
         break;

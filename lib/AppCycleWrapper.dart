@@ -44,12 +44,8 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
       and disconnect to it to let the resources
       free to other application instances */
       onPause: () async {
-        /* first of all close the 
-        database connection */
-        await UserDatabaseHandler.closeDatabase();
-
         if (_isDesktop) return;
- 
+
         final session = await CurrentSession.getFromMemory();
         if (session == null) return;
 
@@ -97,8 +93,9 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
         /* find the session then try to 
         open the database */
         CurrentSession? session = await CurrentSession.getFromMemory();
-        if(session != null) await UserDatabaseHandler.openDatabase(session.user);
-          
+        if (session != null)
+          await UserDatabaseHandler.openDatabase(session.user);
+
         if (Platform.isIOS || Platform.isAndroid) {
           await Workmanager().registerOneOffTask(
             "upload_drive_job_${DateTime.now().millisecondsSinceEpoch}",
@@ -106,7 +103,8 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
             constraints: Constraints(networkType: NetworkType.connected),
           );
         } else {
-          if (session == null) return; // if the session is not found, end the function
+          if (session == null)
+            return; // if the session is not found, end the function
 
           /* create the importer and execute all the operations */
           CloudFileImport importer = CloudFileImport(
