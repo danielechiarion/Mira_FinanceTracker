@@ -57,3 +57,40 @@ After the status card it is possible to see a new section with the services you 
 ***Another section to consider while using a bank account is the transaction section, which displayed potentially all the transactions registered connected to the bank account.***
 ![](img/bank-account_transaction.png)
 ***Each transaction (even the one generated inside the background task) can be edited or deleted. In particular, a transaction could change its name or its amount. When using this commands, the result affects automatically the available balance, which will increase or decrease depending on the type of transaction.***
+
+### Subjects section
+Inside the Action Page named "Aggiungi" it is possible to add new entities related to the user and manage completely the financial subjects. 
+![](img/contacts_managenent.png)
+To the bottom part of the page there is a section called "Rubrica", where it is possible to manage financial institutes and counterparties of your transactions. 
+
+Inside each there is an interface similar to the one representing the services inside a bank account. So, it is possible to create, change and delete the subjects you want.
+***Pay Attention that you cannot delete the subjects connected to existing financial objects saved inside the application. First delete the related entitities to be able to erase the financial subjects, as well***.
+
+### Financial instrument models
+Before the subject section you can find another link dedicated the managament of financial instrument models. This page allows the user to handle time deposits and bond models using an interface similar to the one described in the subject section. 
+![](img/models_link.png)
+When completing the procedure is it possible inside a financial instrument to create it using a model and completing the remaining data with the possibility to make less mistakes.
+![](img/service_model.png)
+
+
+## Settings configuration
+This is how the page setting is displayed to the end user:
+![](img/settings_page.png)
+Inside the page it is possible to define three different sections:
+
+### User profile
+Inside the user profile it is possible to:
+- **MANAGE ACCOUNT** by changing the password, personal data or logout
+- **GOOGLE AUTHENTICATION** with the possibility to authenticate or logout when the user has already logged in the google account. When it is time to access, the following page will be displayed:
+![](img/google_authentication.png)
+
+### User preferences
+For each application it is possible to handle some of the user preference, such as:
+- **Enable notifications**
+- **Enable background** execution task, daily
+- **Saving time window** it means the time window the backup has to consider when syncronizing files. It is expressed in years
+Some of these preferences (such as the notification) are unique for every device the application is installed in, while others (like the time window) are shared among the applicatin instances connected to the same user.
+
+### User passkey
+It is the passkey created by the user during the signup procedure and can be seen by the user after entering local authentication credentials. 
+This has to be used when accessing to one of the [user profile settings](#user-profile) described before.
