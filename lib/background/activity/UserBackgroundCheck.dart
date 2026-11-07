@@ -49,8 +49,8 @@ class UserBackgroundCheck {
   Future<void> execute() async {
     /* before the operations that has to be done
     in a normal background check, ensure that the data of the application
-    are syncronized with the ones saved in the cloud, if that option has been enabled.  */
-    if (_user.isUserConnected && !await _cloudImportSyncronization()) {
+    are synchronized with the ones saved in the cloud, if that option has been enabled.  */
+    if (_user.isUserConnected && !await _cloudImportSynchronization()) {
       await _disposeResources();
       return;
     }
@@ -115,7 +115,7 @@ class UserBackgroundCheck {
 
     /* at the end, if the cloud sync has been enable from the user,
     save the changes inside the cloud */
-    if(_user.isUserConnected) await _cloudExportSyncronization();
+    if(_user.isUserConnected) await _cloudExportSynchronization();
 
     await _disposeResources(); // then dispose all the resouces at the end of the operation
   }
@@ -156,7 +156,7 @@ class UserBackgroundCheck {
 
   /* function to import files from the cloud
   in order to keep the background updated */
-  Future<bool> _cloudImportSyncronization() async {
+  Future<bool> _cloudImportSynchronization() async {
     /* define variables for a 
     minimum of attempt to execute the import
     when it fails for some reason */
@@ -180,7 +180,7 @@ class UserBackgroundCheck {
 
   /* function to export files from the
   cloud in order to keep the background updated*/
-  Future<void> _cloudExportSyncronization() async {
+  Future<void> _cloudExportSynchronization() async {
     /* define variables for a 
     minimum of attempt to execute the export
     when it fails for some reason */
