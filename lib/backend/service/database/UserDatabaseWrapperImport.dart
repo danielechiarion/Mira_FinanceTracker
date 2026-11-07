@@ -29,8 +29,13 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     for (Map<String, dynamic> financialInstitute in content['content']) {
       await appDatabase.executeWithMap(
         sql:
-            '''INSERT OR REPLACE INTO FinancialInstitute (id, name, email, phoneNumber, site)
-        VALUES (:id, :name, :email, :phoneNumber, :site)''',
+            '''INSERT INTO FinancialInstitute (id, name, email, phoneNumber, site)
+        VALUES (:id, :name, :email, :phoneNumber, :site)
+        ON CONFLICT(id) DO UPDATE SET
+          name = excluded.name,
+          email = excluded.email,
+          phoneNumber = excluded.phoneNumber,
+          site = excluded.site''',
         parameters: financialInstitute,
       );
     }
