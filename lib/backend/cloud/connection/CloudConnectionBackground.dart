@@ -31,6 +31,8 @@ class CloudConnectionBackground extends CloudConnection {
       return status;
     }
 
+    /* control if the background file has been 
+    recently modified */
     drive.File? foregroundFile = await super.findSessionFile(
       super.FOREGROUNDSESSIONFILEPATH,
     );
