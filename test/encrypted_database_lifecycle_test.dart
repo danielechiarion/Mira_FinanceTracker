@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.dart';
+import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqldesktop;
 
 void main() {
@@ -95,4 +96,26 @@ void main() {
       await wrappers.last.close();
     },
   );
+
+  test('deletes a desktop database through the FFI database factory', () async {
+    final database = EncryptedDatabase();
+    const databaseName = 'delete_database';
+    await database.openAppDatabase(
+      dbName: databaseName,
+      password: '',
+      onCreate: (database, version) async {
+        await database.execute('CREATE TABLE lifecycle_test (value INTEGER)');
+      },
+    );
+
+    final databaseFile = File(
+      path.join(temporaryDirectory.path, '$databaseName.db'),
+    );
+    expect(await databaseFile.exists(), isTrue);
+
+    await database.deleteAppDatabase(databaseName);
+
+    expect(await databaseFile.exists(), isFalse);
+    await database.close();
+  });
 }

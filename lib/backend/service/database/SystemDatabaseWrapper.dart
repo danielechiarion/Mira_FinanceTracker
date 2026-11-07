@@ -178,23 +178,18 @@ class SystemDatabaseWrapper {
   /// * [close] flag to indicated if the database has to be closed after the operation
   Future<void> removeUser(User user, {bool close = false}) async {
     try {
+      await database.deleteAppDatabase('$USERDATABASEPREFIX${user.username}');
       await database.execute(
         sql: 'DELETE FROM User WHERE username = ?',
         arguments: [user.username],
       );
-      /* delete also the database 
-      dedicated to the user operations. 
-      if this one was not created, make the operation non fatal */
-      try {
-        await database.deleteAppDatabase('$USERDATABASEPREFIX${user.username}');
-      } catch (_) {}
     } on DatabaseException {
       rethrow;
     } catch (e) {
       throw Exception(e);
     } finally {
       if (close) {
-        database.close();
+        await database.close();
       }
     }
   }

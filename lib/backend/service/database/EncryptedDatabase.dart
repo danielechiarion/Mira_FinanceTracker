@@ -227,6 +227,10 @@ class EncryptedDatabase {
   /// Deletes the specified database file from local device storage
   /// * [dbName] name of the database file to remove (e.g., 'app_database.db')
   Future<void> deleteAppDatabase(String dbName) async {
+    if (!dbName.endsWith(_DATABASEEXTENSION)) {
+      dbName += _DATABASEEXTENSION;
+    }
+
     /* 1. get the path to the databases directory, resolved the same way
     openAppDatabase does it, so it matches the registry key exactly */
     final String fullPath = await _resolvePath(dbName);
@@ -239,7 +243,11 @@ class EncryptedDatabase {
         await staleConnection.close();
       }
 
-      await deleteDatabase(fullPath);
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        await sqldesktop.databaseFactoryFfi.deleteDatabase(fullPath);
+      } else {
+        await deleteDatabase(fullPath);
+      }
     });
   }
 
