@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:workmanager/workmanager.dart';
 
 import 'package:mira_finance_tracker/backend/service/session/BackgroundSession.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/DriveHttpHandler.dart';
@@ -37,12 +39,18 @@ class CloudConnectionBackground extends CloudConnection {
       super.FOREGROUNDSESSIONFILEPATH,
     );
     if (foregroundFile != null) {
-      final lastUpdated = foregroundFile.modifiedTime;
-      if (lastUpdated == null ||
-          DateTime.now().toUtc().difference(lastUpdated.toUtc()) <
-              const Duration(minutes: 30)) {
-        return CloudConnectionStatus.line_busy;
+      if (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) {
+        await Workmanager().registerOneOffTask(
+          "background-control-retry",
+          "com.example.mira.backgroundControl",
+          initialDelay: const Duration(minutes: 30),
+          constraints: Constraints(networkType: NetworkType.connected),
+          existingWorkPolicy: ExistingWorkPolicy.keep,
+        );
       }
+      return CloudConnectionStatus.line_busy;
     }
 
     drive.File? file = await super.findSessionFile(
