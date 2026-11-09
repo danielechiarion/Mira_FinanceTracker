@@ -10,6 +10,7 @@ import 'package:mira_finance_tracker/frontend/navbar/AppRoutes.dart';
 import 'package:mira_finance_tracker/backend/service/preference/UserPreferences.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 import 'package:mira_finance_tracker/frontend/account/GoogleConnectionPage.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Main entry point for the Settings feature.
 /// Displays the account shortcut and the application-wide preferences
@@ -214,6 +215,26 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openGuide() async {
+    final guideUri = Uri.parse(
+      'https://github.com/danielechiarion/Mira_FinanceTracker/blob/main/docs/user_guide.md',
+    );
+
+    try {
+      final opened = await launchUrl(
+        guideUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!opened && mounted) {
+        _showMessage('Impossibile aprire la guida nel browser.');
+      }
+    } catch (error) {
+      if (mounted) {
+        _showMessage('Impossibile aprire la guida: $error');
+      }
+    }
   }
 
   @override
@@ -484,6 +505,36 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            _buildSectionTitle('Supporto'),
+            const SizedBox(height: 8),
+            Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                leading: const CircleAvatar(
+                  backgroundColor: Colors.teal,
+                  child: Icon(Icons.help_outline, color: Colors.white),
+                ),
+                title: const Text(
+                  'Guida',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text('Consulta la guida dell’applicazione.'),
+                trailing: const Icon(
+                  Icons.open_in_new,
+                  size: 20,
+                  color: Colors.teal,
+                ),
+                onTap: _openGuide,
               ),
             ),
             const SizedBox(height: 28),
