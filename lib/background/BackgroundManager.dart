@@ -3,7 +3,7 @@ import 'dart:ui' show DartPluginRegistrant;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
-import 'dart:developer'; 
+// import 'dart:developer'; 
 
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
@@ -21,7 +21,7 @@ void callbackDispatcher() {
     debugPrint('[BackgroundManager] Avvio task "$taskLabel".');
     try {
       if (taskName == "com.example.mira.backgroundControl") {
-        debugger();
+        // debugger();
         final service = BackgroundControl();
         await service.init();
         await service.execute();
