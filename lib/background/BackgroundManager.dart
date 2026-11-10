@@ -3,7 +3,6 @@ import 'dart:ui' show DartPluginRegistrant;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
-// import 'dart:developer'; 
 
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
@@ -21,7 +20,6 @@ void callbackDispatcher() {
     debugPrint('[BackgroundManager] Avvio task "$taskLabel".');
     try {
       if (taskName == "com.example.mira.backgroundControl") {
-        // debugger();
         final service = BackgroundControl();
         await service.init();
         await service.execute();
@@ -180,7 +178,7 @@ class BackgroundManager {
   Future<void> testOneOff() async {
     await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
     await Workmanager().registerOneOffTask(
-      "test-bg-12",                          // cambialo a ogni prova: test-bg-2, ...
+      "test-bg-17",                      // cambialo a ogni prova: test-bg-2, ...
       "com.example.mira.backgroundControl", // stesso nome del task vero
       initialDelay: const Duration(minutes: 2),
       constraints: Constraints(networkType: NetworkType.connected),

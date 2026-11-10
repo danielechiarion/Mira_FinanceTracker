@@ -13,7 +13,7 @@ class CloudFileImport{
   /* define attributes to import */
   final CurrentSession _session;
   late CloudConnection _connection;
-  late CloudBackupReader? _reader;
+  CloudBackupReader? _reader;
   final Future<void> Function(dynamic error)? _showErrorFunction;
   final bool _foreground;
 

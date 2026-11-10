@@ -5,7 +5,7 @@ import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart
 /// starting and ending time using extending [CurrentSession] class
 class BackgroundSession extends CurrentSession {
   /* define attributes for current session */
-  late DateTime? _endingTime;
+  DateTime? _endingTime;
 
   /// Constructor of the background session 
   /// to initialize the superclass
@@ -68,7 +68,10 @@ class BackgroundSession extends CurrentSession {
     session.deviceModel = map['deviceModel'];
     session.deviceName = map['deviceName'];
     session.os = map['os'];
-    session._endingTime = map.containsKey('endingTime') ? map['endingTime'] : null;
+    final endingTime = map['endingTime'];
+    session._endingTime = endingTime == null
+        ? null
+        : DateTime.parse(endingTime as String);
 
     return session;
   }
