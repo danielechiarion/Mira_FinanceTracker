@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the checkAndExecute method from the Bond class, for the Dart programming language.">
+  <title>checkAndExecute method - Bond class - Bond library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_financial_instruments_service_Bond/">classes\financial_instruments\service\Bond.dart</a></li>
+    <li><a href="../../classes_financial_instruments_service_Bond/Bond-class.html">Bond</a></li>
+    <li class="self-crumb">checkAndExecute method</li>
+  </ol>
+  <div class="self-name">checkAndExecute</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="classes_financial_instruments_service_Bond&#47;Bond-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">checkAndExecute</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://api.flutter.dev/flutter/dart-core/override-constant.html">override</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a></span>&gt;</span></span>
+<span class="name ">checkAndExecute</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="checkAndExecute-param-notificationRequests"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../backend_service_notification_NotificationData/NotificationData-class.html">NotificationData</a></span>&gt;</span>?</span> <span class="parameter-name">notificationRequests</span>, </span></li>
+</ol>})
+
+      <div class="features"><span class="feature">override</span></div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Override of the method proposed by the interface <a href="../../classes_financial_instruments_elements_CadenceCheck/CadenceCheck-class.html">CadenceCheck</a></p>
+<ul>
+<li><code>notificationRequests</code> requests of notification to make appear in the application</li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@override
+List&lt;BankTransaction&gt; checkAndExecute({List&lt;NotificationData&gt;? notificationRequests}){
+  List&lt;BankTransaction&gt; transactions = []; &#47;&#47; declare an empty list
+
+  &#47;* use cycle because this operation could be
+  without a regular cadence, having even more
+  transactions of the same type to do *&#47;
+  while(super.isActive &amp;&amp; _timeInfo.isTime()){
+    &#47;* understand the interest rate
+    to apply to the sum *&#47;
+    double interestRate;
+    if(_interestType == BondType.fixed){
+      interestRate = _couponSchedule.first.interestRate;
+    }else if(_interestType == BondType.step){
+      interestRate = _getRightInterest();
+    }else if(_interestType == BondType.variable &amp;&amp; !hasInterests){
+      &#47;* if the tax rate is variable it&#39;s impossible to calculate
+      it with the right interest, unless it&#39;s provided by the user.
+      So, add a request of notification to inform the user.*&#47;
+      notificationRequests!.add(NotificationData(&quot;Richiesta aggiornamento interessi&quot;, &quot;E&#39; presente una cedola da ritirare per l&#39;obbligazione: ${super.name}. Aggiorna il tasso di interesse variabile per ottenerlo!&quot;));
+      return transactions;
+    }else{
+      interestRate = _couponSchedule.first.interestRate;
+    }
+
+    &#47;* otherwise calculate the interest,
+    the tax applied and the current value of the bond *&#47;
+    double interests = super.initialValue * _timeInfo.timeFrequency.getExactInterest(interestRate) &#47; 100;
+    double taxes = interests * super.taxRate &#47; 100;
+    super.currentValue += interests - taxes;
+
+    &#47;* create the transactions to be returned *&#47;
+    transactions.add(
+      Income(IncomeCategory.financial_interest, &quot;Interessi dal titolo: ${super.name}&quot;, interests, DateTime.now())
+    );
+    if(taxes &gt; 0){
+      transactions.add(
+        Outgoing(OutgoingCategory.financial_tax, &quot;Tasse applicate dagli intreressi generate dal titolo: ${super.name}&quot;, taxes, DateTime.now())
+      );
+    }
+
+    _timeInfo.acknowledgeSignal(); &#47;&#47; at the end the operation register the last activity date
+
+    &#47;* if it&#39;s the ending date, force the
+    end method to complete the procedure *&#47;
+    if(!DateTime.now().isBefore(_timeInfo.endingDate)){
+      transactions.addAll(end());
+      break;
+    }
+  }
+
+  return transactions;
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_financial_instruments_service_Bond/">Bond</a></li>
+    <li><a href="../../classes_financial_instruments_service_Bond/Bond-class.html">Bond</a></li>
+    <li class="self-crumb">checkAndExecute method</li>
+</ol>
+
+    <h5>Bond class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

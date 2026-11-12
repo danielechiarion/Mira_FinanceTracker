@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the toNotification method from the Outgoing class, for the Dart programming language.">
+  <title>toNotification method - Outgoing class - Outgoing library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_transaction_Outgoing/">classes\transaction\Outgoing.dart</a></li>
+    <li><a href="../../classes_transaction_Outgoing/Outgoing-class.html">Outgoing</a></li>
+    <li class="self-crumb">toNotification method</li>
+  </ol>
+  <div class="self-name">toNotification</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="classes_transaction_Outgoing&#47;Outgoing-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">toNotification</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://api.flutter.dev/flutter/dart-core/override-constant.html">override</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="../../backend_service_notification_NotificationData/NotificationData-class.html">NotificationData</a></span>
+<span class="name ">toNotification</span>(<wbr>)
+
+      <div class="features"><span class="feature">override</span></div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Override method to convert Outgoing to notification
+from <a href="../../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a> class</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@override
+NotificationData toNotification() {
+  String title = &quot;&quot;; &#47;&#47; define title to be changed
+
+  if(_category == OutgoingCategory.bank_fee){
+    title = &quot;Commissione conto&quot;;
+  } else if(_category == OutgoingCategory.financial_tax){
+    title = &quot;Tassa d&#39;investimento&quot;;
+  } else if(_category == OutgoingCategory.domiciliation){
+    title = &quot;Domiciliazione&quot;;
+  } else if(_category == OutgoingCategory.general_outcome){
+    title = &quot;Addebito generico&quot;;
+  } else if(_category == OutgoingCategory.internal_transfer){
+    title = &quot;Addebito da girofondo&quot;;
+  } else if(_category == OutgoingCategory.internal_transfer_fee){
+    title = &quot;Commissione da girofondo&quot;;
+  } else if(_category == OutgoingCategory.financial_investment){
+    title = &quot;Investimento&quot;;
+  } else if(_category == OutgoingCategory.stock_fee){
+    title = &quot;Tassazione azioni&quot;;
+  } else if(_category == OutgoingCategory.stock_loss){
+    title = &quot;Perdita azioni&quot;;
+  } else {
+    title = &quot;Altro addebito&quot;;
+  }
+
+  title += &quot;: ${super.amount.toStringAsFixed(2)}€&quot;; &#47;&#47; then add the amount paid
+
+  return NotificationData(
+    title,
+    super.reference
+  );
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_transaction_Outgoing/">Outgoing</a></li>
+    <li><a href="../../classes_transaction_Outgoing/Outgoing-class.html">Outgoing</a></li>
+    <li class="self-crumb">toNotification method</li>
+</ol>
+
+    <h5>Outgoing class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

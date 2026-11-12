@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the SystemDatabaseWrapper class from the SystemDatabaseWrapper library, for the Dart programming language.">
+  <title>SystemDatabaseWrapper class - SystemDatabaseWrapper library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">mira_finance_tracker</a></li>
+    <li><a href="../backend_service_database_SystemDatabaseWrapper/">backend\service\database\SystemDatabaseWrapper.dart</a></li>
+    <li class="self-crumb">SystemDatabaseWrapper class</li>
+  </ol>
+  <div class="self-name">SystemDatabaseWrapper</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="backend_service_database_SystemDatabaseWrapper&#47;backend_service_database_SystemDatabaseWrapper-library-sidebar.html"
+    data-below-sidebar="backend_service_database_SystemDatabaseWrapper&#47;SystemDatabaseWrapper-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">SystemDatabaseWrapper</span> class 
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Class which wrapps the secure database class
+in order to manage the most common system functionalities,
+which works not depending on the user connected</p>
+</section>
+
+
+    <section>
+      <dl class="dl-horizontal">
+        
+
+        
+        
+
+          <dt>Implementers</dt>
+          <dd><ul class="comma-separated clazz-relationships">
+              <li><a href="../backend_service_database_UserDatabaseWrapper/UserDatabaseWrapper-class.html">UserDatabaseWrapper</a></li>
+          </ul></dd>
+
+        
+        
+
+
+      </dl>
+    </section>
+
+    
+  <section class="summary offset-anchor" id="constructors">
+    <h2>Constructors</h2>
+    <dl class="constructor-summary-list">
+        <dt id="SystemDatabaseWrapper.new" class="callable">
+          <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/SystemDatabaseWrapper.html">SystemDatabaseWrapper</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          Constructor of the database wrapper for system functionalities
+in order to manage custom functions
+        </dd>
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="database" class="property">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/database.html">database</a></span>
+  <span class="signature">&#8596; <a href="../backend_service_database_EncryptedDatabase/EncryptedDatabase-class.html">EncryptedDatabase</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">getter/setter pair</span></div>
+
+</dd>
+
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="isDatabaseOpen" class="property">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/isDatabaseOpen.html">isDatabaseOpen</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  
+
+</dt>
+<dd>
+  Whether this wrapper currently holds an open database connection.
+  <div class="features"><span class="feature">no setter</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="systemKeyManager" class="property">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/systemKeyManager.html">systemKeyManager</a></span>
+  <span class="signature">&#8596; <a href="../backend_service_KeyManager/KeyManager-class.html">KeyManager</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">getter/setter pair</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="addGoogleAccount" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/addGoogleAccount.html">addGoogleAccount</a></span><span class="signature">(<wbr><span class="parameter" id="addGoogleAccount-param-account"><span class="type-annotation"><a href="../backend_cloud_authentication_GoogleAccount/GoogleAccount-class.html">GoogleAccount</a></span> <span class="parameter-name">account</span>, {</span><span class="parameter" id="addGoogleAccount-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to add or replace a google <code>account</code> inside the database,
+in order to save the tokens
+  
+
+</dd>
+
+        <dt id="addUser" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/addUser.html">addUser</a></span><span class="signature">(<wbr><span class="parameter" id="addUser-param-user"><span class="type-annotation"><a href="../classes_account_User/User-class.html">User</a></span> <span class="parameter-name">user</span>, {</span><span class="parameter" id="addUser-param-passwordHashed"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">passwordHashed</span> = <span class="default-value">false</span>, </span><span class="parameter" id="addUser-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to add a new user checking
+the hash of the password and if it already exists
+  
+
+</dd>
+
+        <dt id="closeCompletelyDatabase" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/closeCompletelyDatabase.html">closeCompletelyDatabase</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Method to close the current session
+and all the other which were left open,
+to be sure nothing is connected anymore
+  
+
+</dd>
+
+        <dt id="closeDatabase" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/closeDatabase.html">closeDatabase</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to close definitely the database
+  
+
+</dd>
+
+        <dt id="defineTables" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/defineTables.html">defineTables</a></span><span class="signature">(<wbr><span class="parameter" id="defineTables-param-db"><span class="type-annotation"><a href="https://pub.dev/documentation/sqflite_common/2.5.13/sqlite_api/Database-class.html">Database</a></span> <span class="parameter-name">db</span>, </span><span class="parameter" id="defineTables-param-version"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">version</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Method used to define tables of the database
+for system functionalities
+<code>db</code> input database
+<code>version</code> version of the database
+  
+
+</dd>
+
+        <dt id="getAllGoogleAccounts" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/getAllGoogleAccounts.html">getAllGoogleAccounts</a></span><span class="signature">(<wbr>{<span class="parameter" id="getAllGoogleAccounts-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../backend_cloud_authentication_GoogleAccount/GoogleAccount-class.html">GoogleAccount</a></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to get all google accounts from the database
+  
+
+</dd>
+
+        <dt id="getGoogleAccountByEmail" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/getGoogleAccountByEmail.html">getGoogleAccountByEmail</a></span><span class="signature">(<wbr><span class="parameter" id="getGoogleAccountByEmail-param-email"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">email</span>, {</span><span class="parameter" id="getGoogleAccountByEmail-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../backend_cloud_authentication_GoogleAccount/GoogleAccount-class.html">GoogleAccount</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to get the google account by its <code>email</code>
+  
+
+</dd>
+
+        <dt id="init" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/init.html">init</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to initialize the databse
+for system purposes
+  
+
+</dd>
+
+        <dt id="isGoogleEmailAssignedToAnotherUser" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/isGoogleEmailAssignedToAnotherUser.html">isGoogleEmailAssignedToAnotherUser</a></span><span class="signature">(<wbr><span class="parameter" id="isGoogleEmailAssignedToAnotherUser-param-email"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">email</span>, </span><span class="parameter" id="isGoogleEmailAssignedToAnotherUser-param-username"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">username</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Checks whether <code>email</code> is already assigned to a different local user.
+  
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="removeGoogleAccount" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/removeGoogleAccount.html">removeGoogleAccount</a></span><span class="signature">(<wbr><span class="parameter" id="removeGoogleAccount-param-email"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">email</span>, {</span><span class="parameter" id="removeGoogleAccount-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to remove a google account from the database
+  
+
+</dd>
+
+        <dt id="removeUser" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/removeUser.html">removeUser</a></span><span class="signature">(<wbr><span class="parameter" id="removeUser-param-user"><span class="type-annotation"><a href="../classes_account_User/User-class.html">User</a></span> <span class="parameter-name">user</span>, {</span><span class="parameter" id="removeUser-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to remove the data of the user inside the
+system and the personal database
+  
+
+</dd>
+
+        <dt id="removeUserEmail" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/removeUserEmail.html">removeUserEmail</a></span><span class="signature">(<wbr><span class="parameter" id="removeUserEmail-param-user"><span class="type-annotation"><a href="../classes_account_User/User-class.html">User</a></span> <span class="parameter-name">user</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to remove user email
+connected to the cloud settings
+  
+
+</dd>
+
+        <dt id="saveGoogleAccountForUser" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/saveGoogleAccountForUser.html">saveGoogleAccountForUser</a></span><span class="signature">(<wbr><span class="parameter" id="saveGoogleAccountForUser-param-account"><span class="type-annotation"><a href="../backend_cloud_authentication_GoogleAccount/GoogleAccount-class.html">GoogleAccount</a></span> <span class="parameter-name">account</span>, </span><span class="parameter" id="saveGoogleAccountForUser-param-user"><span class="type-annotation"><a href="../classes_account_User/User-class.html">User</a></span> <span class="parameter-name">user</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Saves Google credentials and associates them with <code>user</code> atomically.
+  
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="updateUser" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/updateUser.html">updateUser</a></span><span class="signature">(<wbr><span class="parameter" id="updateUser-param-user"><span class="type-annotation"><a href="../classes_account_User/User-class.html">User</a></span> <span class="parameter-name">user</span>, {</span><span class="parameter" id="updateUser-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to update the data of the user
+  
+
+</dd>
+
+        <dt id="updateUserEmail" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/updateUserEmail.html">updateUserEmail</a></span><span class="signature">(<wbr><span class="parameter" id="updateUserEmail-param-user"><span class="type-annotation"><a href="../classes_account_User/User-class.html">User</a></span> <span class="parameter-name">user</span>, </span><span class="parameter" id="updateUserEmail-param-email"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">email</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to update user on general table
+saving email connected to the google account
+  
+
+</dd>
+
+        <dt id="userList" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/userList.html">userList</a></span><span class="signature">(<wbr>{<span class="parameter" id="userList-param-close"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_account_User/User-class.html">User</a></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to return the list of users
+registered inside the database
+  
+
+</dd>
+
+        <dt id="userLogin" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/userLogin.html">userLogin</a></span><span class="signature">(<wbr><span class="parameter" id="userLogin-param-username"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">username</span>, </span><span class="parameter" id="userLogin-param-password"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">password</span>, {</span><span class="parameter" id="userLogin-param-close"><span class="type-annotation">dynamic</span> <span class="parameter-name">close</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_account_User/User-class.html">User</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to check if the user who tries
+to log in exists and return it back
+  
+
+</dd>
+
+        <dt id="userValidity" class="callable">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/userValidity.html">userValidity</a></span><span class="signature">(<wbr><span class="parameter" id="userValidity-param-username"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">username</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Method to check the user validity
+in order to add it correctly inside the database
+  
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section class="summary offset-anchor" id="static-properties">
+    <h2>Static Properties</h2>
+    <dl class="properties">
+        <dt id="USERDATABASEPREFIX" class="property">
+  <span class="name"><a href="../backend_service_database_SystemDatabaseWrapper/SystemDatabaseWrapper/USERDATABASEPREFIX.html">USERDATABASEPREFIX</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">mira_finance_tracker</a></li>
+    <li><a href="../backend_service_database_SystemDatabaseWrapper/">SystemDatabaseWrapper</a></li>
+    <li class="self-crumb">SystemDatabaseWrapper class</li>
+</ol>
+
+    <h5>SystemDatabaseWrapper library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

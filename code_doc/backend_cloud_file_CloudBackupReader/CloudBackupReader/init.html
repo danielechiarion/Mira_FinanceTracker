@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the init method from the CloudBackupReader class, for the Dart programming language.">
+  <title>init method - CloudBackupReader class - CloudBackupReader library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../backend_cloud_file_CloudBackupReader/">backend\cloud\file\CloudBackupReader.dart</a></li>
+    <li><a href="../../backend_cloud_file_CloudBackupReader/CloudBackupReader-class.html">CloudBackupReader</a></li>
+    <li class="self-crumb">init method</li>
+  </ol>
+  <div class="self-name">init</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="backend_cloud_file_CloudBackupReader&#47;CloudBackupReader-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">init</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://api.flutter.dev/flutter/dart-core/override-constant.html">override</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+<span class="name ">init</span>(<wbr>)
+
+      <div class="features"><span class="feature">override</span></div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Override function of <a href="../../backend_cloud_file_CloudBackup/CloudBackup-class.html">CloudBackup</a> class to initialize resources.
+Change, in particular, the set of instructions to recover key
+if they are present in the drive and has not been generated before.
+Throws a <a href="https://api.flutter.dev/flutter/dart-core/StateError-class.html">StateError</a> if it's not possible to generate or recover the key.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@override
+Future&lt;void&gt; init() async {
+  &#47;* restore authentication if it&#39;s given *&#47;
+  if (!super.givenAuthentication) {
+    await super.authenticationManager.init();
+    await super.authenticationManager.restoreAccount(super.email);
+  }
+
+  &#47;* initialize database, preference
+  and all the other resources *&#47;
+  await super.database.init();
+  await super.userPreferences.init();
+
+  &#47;* avoid the init and try
+  to see if it&#39;s possible to recover the key *&#47;
+  bool recoverResult = await super.keyManager.recoverKey();
+  &#47;* if no key has found, try to find it from the
+  drive and import it, otherwise generate the key randomly *&#47;
+  if (!recoverResult &amp;&amp; _keyPassword != null) {
+    &#47;* first try to find file and folder *&#47;
+    drive.File? directory = await super.fileService.findFolderByName(
+      super.KEYDIRECTORY,
+      parentFolderId: CloudFileService.appDataFolderId,
+      spaces: &#39;appDataFolder&#39;,
+    );
+    if (directory == null) {
+      throw StateError(
+        &quot;[CloudBackupReader] cannot recover key because dedicated folder in cloud has not been created.&quot;,
+      );
+    }
+    drive.File? file = await super.fileService.findByName(
+      super.CRYPTOFILENAME,
+      folderId: directory.id,
+      spaces: &#39;appDataFolder&#39;,
+    );
+    if (file == null) {
+      throw StateError(
+        &quot;[CloudBackupReader] cannot recover key because file has not been found&quot;,
+      );
+    }
+    &#47;* then make get the file content
+    and give it to the import function of the key manager *&#47;
+    bool keyResult = await super.keyManager.importKeyData(
+      _keyPassword!,
+      await super.fileService.readJson(file.id!),
+    );
+    if (!keyResult)
+      throw ArgumentError(
+        &quot;[CloudBackupError] key reading operation didn&#39;t end successfully&quot;,
+      );
+  } else if (!_requireKey) {
+    throw StateError(
+      &quot;[CloudBackupReader] cannot recover key not saved and with no password given&quot;,
+    );
+  }
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../backend_cloud_file_CloudBackupReader/">CloudBackupReader</a></li>
+    <li><a href="../../backend_cloud_file_CloudBackupReader/CloudBackupReader-class.html">CloudBackupReader</a></li>
+    <li class="self-crumb">init method</li>
+</ol>
+
+    <h5>CloudBackupReader class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

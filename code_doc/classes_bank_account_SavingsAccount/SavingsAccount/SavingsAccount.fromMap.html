@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the SavingsAccount.fromMap constructor from Class SavingsAccount from the SavingsAccount library, for the Dart programming language.">
+  <title>SavingsAccount.fromMap constructor - SavingsAccount - SavingsAccount library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_bank_account_SavingsAccount/">classes\bank_account\SavingsAccount.dart</a></li>
+    <li><a href="../../classes_bank_account_SavingsAccount/SavingsAccount-class.html">SavingsAccount</a></li>
+    <li class="self-crumb">SavingsAccount.fromMap factory constructor</li>
+  </ol>
+  <div class="self-name">SavingsAccount.fromMap</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="classes_bank_account_SavingsAccount&#47;SavingsAccount-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">SavingsAccount.fromMap</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+      <span class="name ">SavingsAccount.fromMap</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="fromMap-param-map"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">map</span>, </span></li>
+<li><span class="parameter" id="fromMap-param-fees"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../classes_periodic_transactions_BankFee/BankFee-class.html">BankFee</a></span>&gt;</span></span> <span class="parameter-name">fees</span>, </span></li>
+<li><span class="parameter" id="fromMap-param-cashbacks"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../classes_periodic_transactions_Cashback/Cashback-class.html">Cashback</a></span>&gt;</span></span> <span class="parameter-name">cashbacks</span>, </span></li>
+<li><span class="parameter" id="fromMap-param-transactions"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a></span>&gt;</span></span> <span class="parameter-name">transactions</span>, </span></li>
+<li><span class="parameter" id="fromMap-param-services"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument-class.html">FinancialInstrument</a></span>&gt;</span></span> <span class="parameter-name">services</span>, </span></li>
+<li><span class="parameter" id="fromMap-param-financialInstitute"><span class="type-annotation"><a href="../../classes_subjects_FinancialInstitute/FinancialInstitute-class.html">FinancialInstitute</a></span> <span class="parameter-name">financialInstitute</span>, </span></li>
+</ol>)
+    </section>
+    
+<section class="desc markdown">
+  <p>Method to convert a map object into a
+Savings Account instance</p>
+<ul>
+<li><code>map</code> map object from database</li>
+<li><code>fees</code> list of fees</li>
+<li><code>cashbacks</code> list of cashbacks</li>
+<li><code>transactions</code> list of transactions</li>
+<li><code>services</code> list of financial services provided</li>
+<li><code>financialInstitute</code> institute offering the bank account service</li>
+</ul>
+<p>All the arguments except for the map comes from other tables,
+so they have to be already converted.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">factory SavingsAccount.fromMap(Map&lt;String, dynamic&gt; map, List&lt;BankFee&gt; fees, List&lt;Cashback&gt; cashbacks, List&lt;BankTransaction&gt; transactions,
+                                List&lt;FinancialInstrument&gt; services, FinancialInstitute financialInstitute){
+  final accountMap = Map&lt;String, dynamic&gt;.from(map);
+
+  return SavingsAccount(
+    accountMap.remove(&#39;name&#39;),
+    financialInstitute,
+    DateTime.parse(accountMap.remove(&#39;subscriptionDate&#39;)),
+    id: accountMap.remove(&#39;id&#39;),
+    availableBalance: accountMap.remove(&#39;availableBalance&#39;),
+    IBAN: accountMap.remove(&#39;IBAN&#39;),
+    interest: accountMap.remove(&#39;interest&#39;),
+    active: accountMap.remove(&#39;active&#39;) == 1,
+    endingDate: DateTime.tryParse((accountMap.remove(&#39;endingDate&#39;) as String?) ?? &#39;&#39;),
+    interestTime: PeriodicAccountDuration.fromMap(accountMap),
+    fees: fees,
+    cashbacks: cashbacks,
+    transactions: transactions,
+    financialInstruments: services,
+    ledgerBalance: accountMap[&#39;ledgerBalance&#39;]
+  );
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_bank_account_SavingsAccount/">SavingsAccount</a></li>
+    <li><a href="../../classes_bank_account_SavingsAccount/SavingsAccount-class.html">SavingsAccount</a></li>
+    <li class="self-crumb">SavingsAccount.fromMap factory constructor</li>
+</ol>
+
+    <h5>SavingsAccount class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the build method from the NewSavingsAccountPage class, for the Dart programming language.">
+  <title>build method - NewSavingsAccountPage class - NewSavingsAccountPage library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../frontend_actions_NewSavingsAccountPage/">frontend\actions\NewSavingsAccountPage.dart</a></li>
+    <li><a href="../../frontend_actions_NewSavingsAccountPage/NewSavingsAccountPage-class.html">NewSavingsAccountPage</a></li>
+    <li class="self-crumb">build method</li>
+  </ol>
+  <div class="self-name">build</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="frontend_actions_NewSavingsAccountPage&#47;NewSavingsAccountPage-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">build</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://api.flutter.dev/flutter/dart-core/override-constant.html">override</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="https://api.flutter.dev/flutter/widgets/Widget-class.html">Widget</a></span>
+<span class="name ">build</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="build-param-context"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a></span> <span class="parameter-name">context</span></span></li>
+</ol>)
+
+      <div class="features"><span class="feature">override</span></div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Describes the part of the user interface represented by this widget.</p>
+<p>The framework calls this method when this widget is inserted into the tree
+in a given <a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a> and when the dependencies of this widget change
+(e.g., an <a href="https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html">InheritedWidget</a> referenced by this widget changes). This
+method can potentially be called in every frame and should not have any side
+effects beyond building a widget.</p>
+<p>The framework replaces the subtree below this widget with the widget
+returned by this method, either by updating the existing subtree or by
+removing the subtree and inflating a new subtree, depending on whether the
+widget returned by this method can update the root of the existing
+subtree, as determined by calling <a href="https://api.flutter.dev/flutter/widgets/Widget/canUpdate.html">Widget.canUpdate</a>.</p>
+<p>Typically implementations return a newly created constellation of widgets
+that are configured with information from this widget's constructor and
+from the given <a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a>.</p>
+<p>The given <a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a> contains information about the location in the
+tree at which this widget is being built. For example, the context
+provides the set of inherited widgets for this location in the tree. A
+given widget might be built with multiple different <a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a>
+arguments over time if the widget is moved around the tree or if the
+widget is inserted into the tree in multiple places at once.</p>
+<p>The implementation of this method must only depend on:</p>
+<ul>
+<li>the fields of the widget, which themselves must not change over time,
+and</li>
+<li>any ambient state obtained from the <code>context</code> using
+<a href="https://api.flutter.dev/flutter/widgets/BuildContext/dependOnInheritedWidgetOfExactType.html">BuildContext.dependOnInheritedWidgetOfExactType</a>.</li>
+</ul>
+<p>If a widget's <a href="../../frontend_actions_NewSavingsAccountPage/NewSavingsAccountPage/build.html">build</a> method is to depend on anything else, use a
+<a href="https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html">StatefulWidget</a> instead.</p>
+<p>See also:</p>
+<ul>
+<li><a href="https://api.flutter.dev/flutter/widgets/StatelessWidget-class.html">StatelessWidget</a>, which contains the discussion on performance considerations.</li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@override
+Widget build(BuildContext context) {
+  final nameController = TextEditingController();
+  final ibanController = TextEditingController();
+  final balanceController = TextEditingController(text: &#39;0&#39;);
+  final ledgerController = TextEditingController(text: &#39;0&#39;);
+  final interestController = TextEditingController(text: &#39;0&#39;);
+  final formKey = GlobalKey&lt;FormState&gt;();
+  final dateFormat = DateFormat(&#39;dd&#47;MM&#47;yyyy&#39;);
+
+  bool nameAvailable = false;
+  FinancialInstitute? selectedInstitute;
+  DateTime subscriptionDate = DateTime.now();
+  DateTime? endingDate;
+  bool isActive = true;
+
+  return ActionOperationPage(
+    title: &#39;Nuovo conto deposito&#39;,
+    formKey: formKey,
+    inputBuilder: (context) =&gt; StatefulBuilder(
+      builder: (context, setLocalState) =&gt; Form(
+        key: formKey,
+        child: Column(
+          children: [
+            UniqueNameField(
+              controller: nameController,
+              label: &#39;Nome conto&#39;,
+              checkAvailability: _isNameAvailable,
+              onAvailabilityChanged: (available) =&gt; nameAvailable = available,
+            ),
+            const SizedBox(height: 16),
+
+            &#47;&#47; --- FINANCIAL INSTITUTE SELECTION ---
+            FutureBuilder&lt;List&lt;FinancialInstitute&gt;&gt;(
+              future: _loadInstitutes(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Center(child: CircularProgressIndicator(color: Colors.teal)),
+                  );
+                }
+
+                final institutes = snapshot.data ?? [];
+                return DropdownButtonFormField&lt;FinancialInstitute&gt;(
+                  value: selectedInstitute,
+                  decoration: const InputDecoration(labelText: &#39;Istituto finanziario&#39;),
+                  items: institutes
+                      .map((institute) =&gt; DropdownMenuItem(value: institute, child: Text(institute.name)))
+                      .toList(),
+                  onChanged: (value) =&gt; setLocalState(() =&gt; selectedInstitute = value),
+                  validator: (value) =&gt; value == null ? &#39;Seleziona un istituto finanziario&#39; : null,
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+
+            &#47;&#47; --- SUBSCRIPTION DATE ---
+            InkWell(
+              onTap: () async {
+                final picked = await _pickDate(context, subscriptionDate);
+                if (picked != null) setLocalState(() =&gt; subscriptionDate = picked);
+              },
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: &#39;Data di sottoscrizione&#39;,
+                  prefixIcon: Icon(Icons.calendar_today, color: Colors.teal),
+                ),
+                child: Text(dateFormat.format(subscriptionDate)),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: ibanController,
+              decoration: const InputDecoration(labelText: &#39;IBAN&#39;),
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: balanceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r&#39;^\d+[.,]?\d{0,2}&#39;)),
+              ],
+              decoration: const InputDecoration(
+                labelText: &#39;Saldo disponibile&#39;,
+                prefixIcon: Icon(Icons.euro, color: Colors.teal),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return null; &#47;&#47; campo opzionale, default 0
+                final parsed = double.tryParse(value.replaceAll(&#39;,&#39;, &#39;.&#39;));
+                if (parsed == null) return &#39;Inserisci un numero valido&#39;;
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: ledgerController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r&#39;^\d+[.,]?\d{0,2}&#39;)),
+              ],
+              decoration: const InputDecoration(
+                labelText: &#39;Saldo contabile&#39;,
+                prefixIcon: Icon(Icons.euro, color: Colors.teal),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return null; &#47;&#47; campo opzionale, default 0
+                final parsed = double.tryParse(value.replaceAll(&#39;,&#39;, &#39;.&#39;));
+                if (parsed == null) return &#39;Inserisci un numero valido&#39;;
+                return null;
+              },
+            ),
+
+            TextFormField(
+              controller: interestController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r&#39;^\d+[.,]?\d{0,2}&#39;)),
+              ],
+              decoration: const InputDecoration(
+                labelText: &#39;Tasso di interesse&#39;,
+                prefixIcon: Icon(Icons.percent, color: Colors.teal),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return null;
+                final parsed = double.tryParse(value.replaceAll(&#39;,&#39;, &#39;.&#39;));
+                if (parsed == null) return &#39;Inserisci un numero valido&#39;;
+                if(parsed &lt; 0 || parsed &gt; 100) return &#39;Il tasso deve essere compreso tra 0% e 100%&#39;;
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+    onConfirm: (context) async {
+      if (!nameAvailable || selectedInstitute == null) return;
+
+      final newAccount = SavingsAccount(
+        nameController.text.trim(),
+        selectedInstitute!,
+        subscriptionDate,
+        IBAN: ibanController.text.trim().isEmpty ? null : ibanController.text.trim(),
+        availableBalance: double.tryParse(balanceController.text.trim().replaceAll(&#39;,&#39;, &#39;.&#39;)) ?? 0.0,
+        ledgerBalance: [
+          double.tryParse(ledgerController.text.trim().replaceAll(&#39;,&#39;, &#39;.&#39;)) ?? 0.0,
+          double.tryParse(balanceController.text.trim().replaceAll(&#39;,&#39;, &#39;.&#39;)) ?? 0.0,
+        ].reduce((maximum, value) =&gt; maximum &gt; value ? maximum : value),
+        interest: double.tryParse(interestController.text.trim().replaceAll(&#39;,&#39;, &#39;.&#39;)) ?? 0.0,
+        active: isActive,
+        endingDate: endingDate,
+      );
+
+      try{
+        await database.saveSavingsAccount(newAccount);
+      }catch(e){
+        AppToast.show(context, e.toString(), ToastType.fatal);
+      }
+
+      Navigator.pop(context);
+    },
+  );
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../frontend_actions_NewSavingsAccountPage/">NewSavingsAccountPage</a></li>
+    <li><a href="../../frontend_actions_NewSavingsAccountPage/NewSavingsAccountPage-class.html">NewSavingsAccountPage</a></li>
+    <li class="self-crumb">build method</li>
+</ol>
+
+    <h5>NewSavingsAccountPage class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the LimitedAccountDuration.new constructor from Class LimitedAccountDuration from the LimitedAccountDuration library, for the Dart programming language.">
+  <title>LimitedAccountDuration.new constructor - LimitedAccountDuration - LimitedAccountDuration library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_time_management_LimitedAccountDuration/">classes\time_management\LimitedAccountDuration.dart</a></li>
+    <li><a href="../../classes_time_management_LimitedAccountDuration/LimitedAccountDuration-class.html">LimitedAccountDuration</a></li>
+    <li class="self-crumb">LimitedAccountDuration.new constructor</li>
+  </ol>
+  <div class="self-name">LimitedAccountDuration.new</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="classes_time_management_LimitedAccountDuration&#47;LimitedAccountDuration-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">LimitedAccountDuration</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+      <span class="name ">LimitedAccountDuration</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="param-startingDate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a></span> <span class="parameter-name">startingDate</span>, </span></li>
+<li><span class="parameter" id="param-frequency"><span class="type-annotation"><a href="../../classes_time_management_DurationType/DurationType.html">DurationType</a></span> <span class="parameter-name">frequency</span>, </span></li>
+<li><span class="parameter" id="param-dayOfMonth"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">dayOfMonth</span>, {</span></li>
+<li><span class="parameter" id="param-monthOfYear"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">monthOfYear</span>, </span></li>
+<li><span class="parameter" id="param-includeStart"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeStart</span> = <span class="default-value">false</span>, </span></li>
+<li><span class="parameter" id="param-lastDateActivity"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">lastDateActivity</span>, </span></li>
+<li><span class="parameter" id="param-includeEnd"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeEnd</span> = <span class="default-value">false</span>, </span></li>
+<li><span class="parameter" id="param-endingDate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">endingDate</span>, </span></li>
+<li><span class="parameter" id="param-duration"><span class="type-annotation"><a href="../../classes_time_management_LongDuration/LongDuration-class.html">LongDuration</a>?</span> <span class="parameter-name">duration</span>, </span></li>
+</ol>})
+    </section>
+    
+<section class="desc markdown">
+  <p>Constructor of the Limited account duration
+using the super constructor and adding the required attribute</p>
+<ul>
+<li><code>startingDate</code> day to star the periodic account duration</li>
+<li><a href="../../classes_time_management_PeriodicAccountDuration/PeriodicAccountDuration/timeFrequency.html">timeFrequency</a> frequency to consider for signal the periodic duration</li>
+<li><code>dayOfMonth</code> day of the month to signal</li>
+<li><code>monthOfYear</code> month of the year to signal (if it's annual of more)</li>
+<li><code>includeStart</code> flag to indicate if the start has to be signaled</li>
+<li><code>_endingDate</code> ending date of the total duration</li>
+<li><code>includeEnd</code> flag if include end has to be signaled</li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">LimitedAccountDuration(DateTime startingDate, DurationType frequency, int dayOfMonth,
+  {int? monthOfYear, bool includeStart = false, DateTime? lastDateActivity,
+  this._includeEnd = false, DateTime? endingDate, LongDuration? duration}) :
+  super(startingDate, frequency, dayOfMonth, monthOfYear: monthOfYear, includeStart: includeStart, lastDateActivity: lastDateActivity){
+  &#47;* first control if either the ending date of the duration
+  has been given. It&#39;s not allowed both null values *&#47;
+  if(duration == null &amp;&amp; endingDate == null){
+    throw Exception(&quot;In a limited account duration it&#39;s not allowed to have both duration and ending date null&quot;);
+  }
+
+  &#47;* if the ending date is null,
+  add to the starting date the duration provided *&#47;
+  if(endingDate == null){
+    _endingDate = DateTime(
+      super.startingDate.year + duration!.years,
+      super.startingDate.month + duration.months,
+      super.startingDate.day + duration.days
+    );
+  }else{
+    _endingDate = endingDate;
+  }
+
+  if(!_endingDate.isAfter(super.startingDate)){
+    throw Exception(&quot;The ending date must be after the starting date&quot;);
+  }
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">mira_finance_tracker</a></li>
+    <li><a href="../../classes_time_management_LimitedAccountDuration/">LimitedAccountDuration</a></li>
+    <li><a href="../../classes_time_management_LimitedAccountDuration/LimitedAccountDuration-class.html">LimitedAccountDuration</a></li>
+    <li class="self-crumb">LimitedAccountDuration.new constructor</li>
+</ol>
+
+    <h5>LimitedAccountDuration class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

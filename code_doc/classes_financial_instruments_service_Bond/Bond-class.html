@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the Bond class from the Bond library, for the Dart programming language.">
+  <title>Bond class - Bond library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">mira_finance_tracker</a></li>
+    <li><a href="../classes_financial_instruments_service_Bond/">classes\financial_instruments\service\Bond.dart</a></li>
+    <li class="self-crumb">Bond class</li>
+  </ol>
+  <div class="self-name">Bond</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="classes_financial_instruments_service_Bond&#47;classes_financial_instruments_service_Bond-library-sidebar.html"
+    data-below-sidebar="classes_financial_instruments_service_Bond&#47;Bond-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">Bond</span> class 
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Class of bond used to define this particular
+type of financial instrument, with all the
+methods and information connected to it</p>
+</section>
+
+
+    <section>
+      <dl class="dl-horizontal">
+        
+  <dt>Inheritance</dt>
+  <dd>
+    <ul class="gt-separated dark clazz-relationships">
+      <li><a href="https://api.flutter.dev/flutter/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument-class.html">FinancialInstrument</a></li>
+      <li>Bond</li>
+    </ul>
+  </dd>
+
+        
+  <dt>Implemented types</dt>
+  <dd>
+    <ul class="comma-separated clazz-relationships">
+        <li><a href="../classes_financial_instruments_elements_CadenceCheck/CadenceCheck-class.html">CadenceCheck</a></li>
+        <li><a href="../classes_financial_instruments_elements_InterestList/InterestList-class.html">InterestList</a></li>
+    </ul>
+  </dd>
+        
+
+
+        
+        
+
+
+      </dl>
+    </section>
+
+    
+  <section class="summary offset-anchor" id="constructors">
+    <h2>Constructors</h2>
+    <dl class="constructor-summary-list">
+        <dt id="Bond.new" class="callable">
+          <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/Bond.html">Bond</a></span><span class="signature">(<span class="parameter" id="param-name"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="param-providerType"><span class="type-annotation"><a href="../classes_financial_instruments_model_FinancialInstrumentModel/FinancialInstrumentProvider.html">FinancialInstrumentProvider</a></span> <span class="parameter-name">providerType</span>, </span><span class="parameter" id="param-initialValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="param-taxRate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">taxRate</span>, </span><span class="parameter" id="param-startingDate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a></span> <span class="parameter-name">startingDate</span>, </span><span class="parameter" id="param-frequency"><span class="type-annotation"><a href="../classes_time_management_DurationType/DurationType.html">DurationType</a></span> <span class="parameter-name">frequency</span>, </span><span class="parameter" id="param-dayOfMonth"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">dayOfMonth</span>, </span><span class="parameter" id="param-_purchasePrice"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">_purchasePrice</span>, </span><span class="parameter" id="param-_interestType"><span class="type-annotation"><a href="../classes_financial_instruments_model_BondModel/BondType.html">BondType</a></span> <span class="parameter-name">_interestType</span>, {</span><span class="parameter" id="param-monthOfYear"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">monthOfYear</span>, </span><span class="parameter" id="param-includeStart"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">includeStart</span>, </span><span class="parameter" id="param-lastDateActivity"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">lastDateActivity</span>, </span><span class="parameter" id="param-includeEnd"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">includeEnd</span>, </span><span class="parameter" id="param-endingDate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">endingDate</span>, </span><span class="parameter" id="param-duration"><span class="type-annotation"><a href="../classes_time_management_LongDuration/LongDuration-class.html">LongDuration</a>?</span> <span class="parameter-name">duration</span>, </span><span class="parameter" id="param-id"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">id</span> = <span class="default-value">-1</span>, </span><span class="parameter" id="param-provider"><span class="type-annotation"><a href="../classes_subjects_FinancialInstitute/FinancialInstitute-class.html">FinancialInstitute</a>?</span> <span class="parameter-name">provider</span>, </span><span class="parameter" id="param-currentValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">currentValue</span>, </span><span class="parameter" id="param-status"><span class="type-annotation"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrumentStatus.html">FinancialInstrumentStatus</a>?</span> <span class="parameter-name">status</span>, </span><span class="parameter" id="param-instrumentUsed"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">instrumentUsed</span>, </span><span class="parameter" id="param-minimumDenomination"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">minimumDenomination</span> = <span class="default-value">1000</span>, </span><span class="parameter" id="param-couponSchedule"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_financial_instruments_elements_StepInterest/StepInterest-class.html">StepInterest</a></span>&gt;</span>?</span> <span class="parameter-name">couponSchedule</span></span>})</span>
+        </dt>
+        <dd>
+          Constructor to define a bond with all the necessary parameters
+        </dd>
+        <dt id="Bond.fromMap" class="callable">
+          <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/Bond.fromMap.html">Bond.fromMap</a></span><span class="signature">(<span class="parameter" id="fromMap-param-map"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">map</span>, </span><span class="parameter" id="fromMap-param-provider"><span class="type-annotation"><a href="../classes_subjects_FinancialInstitute/FinancialInstitute-class.html">FinancialInstitute</a>?</span> <span class="parameter-name">provider</span>, </span><span class="parameter" id="fromMap-param-couponSchedule"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_financial_instruments_elements_StepInterest/StepInterest-class.html">StepInterest</a></span>&gt;</span></span> <span class="parameter-name">couponSchedule</span></span>)</span>
+        </dt>
+        <dd>
+          Factory method to transform a map object into an
+instance of a bond
+            <div class="constructor-modifier features">factory</div>
+        </dd>
+        <dt id="Bond.fromModel" class="callable">
+          <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/Bond.fromModel.html">Bond.fromModel</a></span><span class="signature">(<span class="parameter" id="fromModel-param-model"><span class="type-annotation"><a href="../classes_financial_instruments_model_BondModel/BondModel-class.html">BondModel</a></span> <span class="parameter-name">model</span>, </span><span class="parameter" id="fromModel-param-name"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="fromModel-param-initialValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="fromModel-param-purchasePrice"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">purchasePrice</span>, {</span><span class="parameter" id="fromModel-param-startingDate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">startingDate</span>, </span><span class="parameter" id="fromModel-param-id"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">id</span>, </span><span class="parameter" id="fromModel-param-day"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">day</span>, </span><span class="parameter" id="fromModel-param-month"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">month</span>, </span><span class="parameter" id="fromModel-param-includeStart"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeStart</span> = <span class="default-value">false</span>, </span><span class="parameter" id="fromModel-param-includeEnd"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeEnd</span> = <span class="default-value">false</span>, </span><span class="parameter" id="fromModel-param-currentValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">currentValue</span>, </span><span class="parameter" id="fromModel-param-minimumDenomination"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">minimumDenomination</span> = <span class="default-value">1000</span></span>})</span>
+        </dt>
+        <dd>
+          Add a second constructor that create a bond starting from a model,
+so as to copy the information in the instrument used.
+It safer not to have the reference of the model because it could change over time,
+but the conditions for the single bond has to remain the same till the end.
+            <div class="constructor-modifier features">factory</div>
+        </dd>
+        <dt id="Bond.withTimeInfo" class="callable">
+          <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/Bond.withTimeInfo.html">Bond.withTimeInfo</a></span><span class="signature">(<span class="parameter" id="withTimeInfo-param-name"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="withTimeInfo-param-providerType"><span class="type-annotation"><a href="../classes_financial_instruments_model_FinancialInstrumentModel/FinancialInstrumentProvider.html">FinancialInstrumentProvider</a></span> <span class="parameter-name">providerType</span>, </span><span class="parameter" id="withTimeInfo-param-initialValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="withTimeInfo-param-taxRate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">taxRate</span>, </span><span class="parameter" id="withTimeInfo-param-instrumentUsed"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">instrumentUsed</span>, </span><span class="parameter" id="withTimeInfo-param-_purchasePrice"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">_purchasePrice</span>, </span><span class="parameter" id="withTimeInfo-param-_interestType"><span class="type-annotation"><a href="../classes_financial_instruments_model_BondModel/BondType.html">BondType</a></span> <span class="parameter-name">_interestType</span>, </span><span class="parameter" id="withTimeInfo-param-timeInfo"><span class="type-annotation"><a href="../classes_time_management_LimitedAccountDuration/LimitedAccountDuration-class.html">LimitedAccountDuration</a></span> <span class="parameter-name">timeInfo</span>, {</span><span class="parameter" id="withTimeInfo-param-id"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">id</span> = <span class="default-value">-1</span>, </span><span class="parameter" id="withTimeInfo-param-provider"><span class="type-annotation"><a href="../classes_subjects_FinancialInstitute/FinancialInstitute-class.html">FinancialInstitute</a>?</span> <span class="parameter-name">provider</span>, </span><span class="parameter" id="withTimeInfo-param-currentValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">currentValue</span>, </span><span class="parameter" id="withTimeInfo-param-status"><span class="type-annotation"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrumentStatus.html">FinancialInstrumentStatus</a>?</span> <span class="parameter-name">status</span>, </span><span class="parameter" id="withTimeInfo-param-minimumDenomination"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">minimumDenomination</span> = <span class="default-value">1000</span>, </span><span class="parameter" id="withTimeInfo-param-couponSchedule"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_financial_instruments_elements_StepInterest/StepInterest-class.html">StepInterest</a></span>&gt;</span>?</span> <span class="parameter-name">couponSchedule</span></span>})</span>
+        </dt>
+        <dd>
+          Another version of the constructor with the duration expressed instead of the different parameters
+        </dd>
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="couponSchedule" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/couponSchedule.html">couponSchedule</a></span>
+  <span class="signature">&#8596; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_financial_instruments_elements_StepInterest/StepInterest-class.html">StepInterest</a></span>&gt;</span></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">getter/setter pair</span></div>
+
+</dd>
+
+        <dt id="currentValue" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/currentValue.html">currentValue</a></span>
+  <span class="signature">&#8596; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="currentVariableRate" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/currentVariableRate.html">currentVariableRate</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">no setter</span></div>
+
+</dd>
+
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  Getter of the hashcode
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="hasInterests" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/hasInterests.html">hasInterests</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">no setter</span></div>
+
+</dd>
+
+        <dt id="id" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/id.html">id</a></span>
+  <span class="signature">&#8596; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="initialValue" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/initialValue.html">initialValue</a></span>
+  <span class="signature">&#8596; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="instrumentModelName" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/instrumentModelName.html">instrumentModelName</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="interestType" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/interestType.html">interestType</a></span>
+  <span class="signature">&#8596; <a href="../classes_financial_instruments_model_BondModel/BondType.html">BondType</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">getter/setter pair</span></div>
+
+</dd>
+
+        <dt id="isActive" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/isActive.html">isActive</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="minimumDenomination" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/minimumDenomination.html">minimumDenomination</a></span>
+  <span class="signature">&#8596; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">getter/setter pair</span></div>
+
+</dd>
+
+        <dt id="name" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/name.html">name</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="provider" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/provider.html">provider</a></span>
+  <span class="signature">&#8596; <a href="../classes_subjects_FinancialInstitute/FinancialInstitute-class.html">FinancialInstitute</a>?</span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="providerType" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/providerType.html">providerType</a></span>
+  <span class="signature">&#8596; <a href="../classes_financial_instruments_model_FinancialInstrumentModel/FinancialInstrumentProvider.html">FinancialInstrumentProvider</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="purchasePrice" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/purchasePrice.html">purchasePrice</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">no setter</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="status" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/status.html">status</a></span>
+  <span class="signature">&#8594; <a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrumentStatus.html">FinancialInstrumentStatus</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="taxRate" class="property inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/taxRate.html">taxRate</a></span>
+  <span class="signature">&#8596; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="timeInfo" class="property">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/timeInfo.html">timeInfo</a></span>
+  <span class="signature">&#8596; <a href="../classes_time_management_LimitedAccountDuration/LimitedAccountDuration-class.html">LimitedAccountDuration</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">override</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="addInterest" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/addInterest.html">addInterest</a></span><span class="signature">(<wbr><span class="parameter" id="addInterest-param-interest"><span class="type-annotation"><a href="../classes_financial_instruments_elements_StepInterest/StepInterest-class.html">StepInterest</a></span> <span class="parameter-name">interest</span>, {</span><span class="parameter" id="addInterest-param-checkDuration"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">checkDuration</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the method define in the <a href="../classes_financial_instruments_elements_InterestList/InterestList-class.html">InterestList</a> interface
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addVariableInterest" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/addVariableInterest.html">addVariableInterest</a></span><span class="signature">(<wbr><span class="parameter" id="addVariableInterest-param-interestRate"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">interestRate</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to add a variable interest in a bond
+with the possibility to remove the previous one
+  
+
+</dd>
+
+        <dt id="checkAndExecute" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/checkAndExecute.html">checkAndExecute</a></span><span class="signature">(<wbr>{<span class="parameter" id="checkAndExecute-param-notificationRequests"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../backend_service_notification_NotificationData/NotificationData-class.html">NotificationData</a></span>&gt;</span>?</span> <span class="parameter-name">notificationRequests</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the method proposed by the interface <a href="../classes_financial_instruments_elements_CadenceCheck/CadenceCheck-class.html">CadenceCheck</a>
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="checkDurationValidity" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/checkDurationValidity.html">checkDurationValidity</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the method define in the <a href="../classes_financial_instruments_elements_InterestList/InterestList-class.html">InterestList</a> interface
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="clone" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/clone.html">clone</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="../classes_financial_instruments_service_Bond/Bond-class.html">Bond</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Method to generate a deep clone of the instance
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="end" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/end.html">end</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Method to end regularly a bond, override
+of the one provided by the class <a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument-class.html">FinancialInstrument</a>
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="reduce" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/reduce.html">reduce</a></span><span class="signature">(<wbr><span class="parameter" id="reduce-param-amount"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">amount</span>, {</span><span class="parameter" id="reduce-param-datetimeWithdraw"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">datetimeWithdraw</span>, </span><span class="parameter" id="reduce-param-sellingValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">sellingValue</span> = <span class="default-value">100.0</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the method to reduce the amount of the initial value
+provided by the class <a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument-class.html">FinancialInstrument</a>
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="removeInterest" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/removeInterest.html">removeInterest</a></span><span class="signature">(<wbr><span class="parameter" id="removeInterest-param-position"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">position</span>, {</span><span class="parameter" id="removeInterest-param-checkDuration"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">checkDuration</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the method define in the <a href="../classes_financial_instruments_elements_InterestList/InterestList-class.html">InterestList</a> interface
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="replaceInterest" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/replaceInterest.html">replaceInterest</a></span><span class="signature">(<wbr><span class="parameter" id="replaceInterest-param-interest"><span class="type-annotation"><a href="../classes_financial_instruments_elements_StepInterest/StepInterest-class.html">StepInterest</a></span> <span class="parameter-name">interest</span>, {</span><span class="parameter" id="replaceInterest-param-position"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">position</span>, </span><span class="parameter" id="replaceInterest-param-checkDuration"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">checkDuration</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the method define in the <a href="../classes_financial_instruments_elements_InterestList/InterestList-class.html">InterestList</a> interface
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="stop" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/stop.html">stop</a></span><span class="signature">(<wbr>{<span class="parameter" id="stop-param-datetimeStop"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">DateTime</a>?</span> <span class="parameter-name">datetimeStop</span>, </span><span class="parameter" id="stop-param-sellingValue"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">sellingValue</span> = <span class="default-value">100.0</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../classes_transaction_BankTransaction/BankTransaction-class.html">BankTransaction</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override of the stop method provided
+by the class <a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument-class.html">FinancialInstrument</a>
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="toMap" class="callable">
+  <span class="name"><a href="../classes_financial_instruments_service_Bond/Bond/toMap.html">toMap</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Method to convert an object into a map for
+database manipulation
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="../classes_financial_instruments_service_FinancialInstrument/FinancialInstrument/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Equals method comparing the names of two services,
+which has to be unique inside the system
+<code>other</code> object to compare
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">mira_finance_tracker</a></li>
+    <li><a href="../classes_financial_instruments_service_Bond/">Bond</a></li>
+    <li class="self-crumb">Bond class</li>
+</ol>
+
+    <h5>Bond library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

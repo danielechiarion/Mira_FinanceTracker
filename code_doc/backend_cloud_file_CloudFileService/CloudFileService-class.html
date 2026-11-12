@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the CloudFileService class from the CloudFileService library, for the Dart programming language.">
+  <title>CloudFileService class - CloudFileService library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">mira_finance_tracker</a></li>
+    <li><a href="../backend_cloud_file_CloudFileService/">backend\cloud\file\CloudFileService.dart</a></li>
+    <li class="self-crumb">CloudFileService class</li>
+  </ol>
+  <div class="self-name">CloudFileService</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="backend_cloud_file_CloudFileService&#47;backend_cloud_file_CloudFileService-library-sidebar.html"
+    data-below-sidebar="backend_cloud_file_CloudFileService&#47;CloudFileService-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">CloudFileService</span> class 
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Class to handle the operations on files and folder
+for every other instance</p>
+</section>
+
+
+
+    
+  <section class="summary offset-anchor" id="constructors">
+    <h2>Constructors</h2>
+    <dl class="constructor-summary-list">
+        <dt id="CloudFileService.new" class="callable">
+          <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/CloudFileService.html">CloudFileService</a></span><span class="signature">({<span class="parameter" id="param-email"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">email</span>, </span><span class="parameter" id="param-client"><span>required</span> <span class="type-annotation"><a href="../backend_cloud_connection_DriveHttpHandler/DriveHttpHandler-class.html">DriveHttpHandler</a></span> <span class="parameter-name">client</span></span>})</span>
+        </dt>
+        <dd>
+          Cloud file service requiring the <code>email</code> of the user
+and the <code>client</code> to handle the http requests
+        </dd>
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="email" class="property">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/email.html">email</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  
+  <div class="features"><span class="feature">no setter</span></div>
+
+</dd>
+
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="copyFile" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/copyFile.html">copyFile</a></span><span class="signature">(<wbr>{<span class="parameter" id="copyFile-param-fileId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, </span><span class="parameter" id="copyFile-param-newName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">newName</span>, </span><span class="parameter" id="copyFile-param-parentFolderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">parentFolderId</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Copy an existing file, optionally
+renaming and moving it
+  
+
+</dd>
+
+        <dt id="createBytes" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/createBytes.html">createBytes</a></span><span class="signature">(<wbr>{<span class="parameter" id="createBytes-param-fileName"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileName</span>, </span><span class="parameter" id="createBytes-param-bytes"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>&gt;</span></span> <span class="parameter-name">bytes</span>, </span><span class="parameter" id="createBytes-param-mimeType"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">mimeType</span>, </span><span class="parameter" id="createBytes-param-parentFolderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">parentFolderId</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Creating file starting from the <code>fileName</code> and the <code>bytes</code> given
+  
+
+</dd>
+
+        <dt id="createFolder" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/createFolder.html">createFolder</a></span><span class="signature">(<wbr>{<span class="parameter" id="createFolder-param-folderName"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">folderName</span>, </span><span class="parameter" id="createFolder-param-parentFolderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">parentFolderId</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Create folder specifting the <code>folderName</code>
+and optionally the <code>parentFolderId</code>
+  
+
+</dd>
+
+        <dt id="createJson" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/createJson.html">createJson</a></span><span class="signature">(<wbr>{<span class="parameter" id="createJson-param-fileName"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileName</span>, </span><span class="parameter" id="createJson-param-content"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">content</span>, </span><span class="parameter" id="createJson-param-parentFolderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">parentFolderId</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Create a JSON File with <code>fileName</code>, the corresponding map <code>content</code>,
+optionally specifing the <code>parentFolderId</code>
+  
+
+</dd>
+
+        <dt id="createText" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/createText.html">createText</a></span><span class="signature">(<wbr>{<span class="parameter" id="createText-param-fileName"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileName</span>, </span><span class="parameter" id="createText-param-content"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">content</span>, </span><span class="parameter" id="createText-param-parentFolderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">parentFolderId</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Create a text file startin from the <code>fileName</code> and text <code>content</code> given,
+optionally specifying the <code>parentFolderId</code> where to save it
+  
+
+</dd>
+
+        <dt id="delete" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/delete.html">delete</a></span><span class="signature">(<wbr><span class="parameter" id="delete-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Definitely eliminating the file (without trashing it)
+  
+
+</dd>
+
+        <dt id="deleteAppDataFolderContents" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/deleteAppDataFolderContents.html">deleteAppDataFolderContents</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Permanently deletes all files and folders in the app-private Drive space.
+The appDataFolder itself is a virtual Drive root and cannot be deleted.
+  
+
+</dd>
+
+        <dt id="emptyTrash" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/emptyTrash.html">emptyTrash</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Empty trash
+  
+
+</dd>
+
+        <dt id="findByName" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/findByName.html">findByName</a></span><span class="signature">(<wbr><span class="parameter" id="findByName-param-name"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, {</span><span class="parameter" id="findByName-param-folderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">folderId</span>, </span><span class="parameter" id="findByName-param-trashed"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">trashed</span> = <span class="default-value">false</span>, </span><span class="parameter" id="findByName-param-spaces"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">spaces</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Read a file by <code>name</code> and returns the first match found,
+or null if it's not found.
+<code>folderId</code> and <code>trashed</code> are optional and represent respectively
+the folder where the file has been saved in and the trashed state of the file
+  
+
+</dd>
+
+        <dt id="findFolderByName" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/findFolderByName.html">findFolderByName</a></span><span class="signature">(<wbr><span class="parameter" id="findFolderByName-param-folderName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">folderName</span>, {</span><span class="parameter" id="findFolderByName-param-parentFolderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">parentFolderId</span>, </span><span class="parameter" id="findFolderByName-param-spaces"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">spaces</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Function to find a folder by its <code>folderName</code>
+  
+
+</dd>
+
+        <dt id="getMetadata" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/getMetadata.html">getMetadata</a></span><span class="signature">(<wbr><span class="parameter" id="getMetadata-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, {</span><span class="parameter" id="getMetadata-param-fields"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fields</span> = <span class="default-value">&#39;id,name,mimeType,size,modifiedTime,parents&#39;</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Recover the metadata expressed in the <code>fields</code>
+starting from the <code>fileId</code> given
+  
+
+</dd>
+
+        <dt id="listFiles" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/listFiles.html">listFiles</a></span><span class="signature">(<wbr>{<span class="parameter" id="listFiles-param-query"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">query</span>, </span><span class="parameter" id="listFiles-param-folderId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">folderId</span>, </span><span class="parameter" id="listFiles-param-pageSize"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">pageSize</span> = <span class="default-value">100</span>, </span><span class="parameter" id="listFiles-param-pageToken"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">pageToken</span>, </span><span class="parameter" id="listFiles-param-spaces"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">spaces</span>, </span><span class="parameter" id="listFiles-param-fields"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fields</span> = <span class="default-value">&#39;nextPageToken,files(id,name,mimeType,size,modifiedTime,parents)&#39;</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  List file and folders in the drive,
+optionally filtered by a <code>query</code> and/or a <code>folderId</code>
+  
+
+</dd>
+
+        <dt id="moveToFolder" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/moveToFolder.html">moveToFolder</a></span><span class="signature">(<wbr>{<span class="parameter" id="moveToFolder-param-fileId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, </span><span class="parameter" id="moveToFolder-param-newFolderId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">newFolderId</span>, </span><span class="parameter" id="moveToFolder-param-keepPreviousParents"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">keepPreviousParents</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Move files to another folder
+Keeps previous parents only if <code>keepPreviousParents</code> is true.
+  
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="readBytes" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/readBytes.html">readBytes</a></span><span class="signature">(<wbr><span class="parameter" id="readBytes-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-typed_data/Uint8List-class.html">Uint8List</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Downloads the whole file content as bytes in memory
+starting from the <code>fileId</code> given
+  
+
+</dd>
+
+        <dt id="readJson" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/readJson.html">readJson</a></span><span class="signature">(<wbr><span class="parameter" id="readJson-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Read a file a decodes its content as a json object
+starting from the <code>fileId</code> given
+  
+
+</dd>
+
+        <dt id="readText" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/readText.html">readText</a></span><span class="signature">(<wbr><span class="parameter" id="readText-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Read a file and returns its content as a string
+starting from the <code>fileId</code> given
+  
+
+</dd>
+
+        <dt id="rename" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/rename.html">rename</a></span><span class="signature">(<wbr>{<span class="parameter" id="rename-param-fileId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, </span><span class="parameter" id="rename-param-newName"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">newName</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Update metadata file (such as the <code>newName</code>)
+without affecting the content
+  
+
+</dd>
+
+        <dt id="restore" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/restore.html">restore</a></span><span class="signature">(<wbr><span class="parameter" id="restore-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Restore files from trash bin
+  
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="trash" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/trash.html">trash</a></span><span class="signature">(<wbr><span class="parameter" id="trash-param-fileId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Move a file to to trash (restorable)
+  
+
+</dd>
+
+        <dt id="updateBytes" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/updateBytes.html">updateBytes</a></span><span class="signature">(<wbr>{<span class="parameter" id="updateBytes-param-fileId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, </span><span class="parameter" id="updateBytes-param-bytes"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>&gt;</span></span> <span class="parameter-name">bytes</span>, </span><span class="parameter" id="updateBytes-param-mimeType"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">mimeType</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Override the content of an existing file using <code>bytes</code> provided.
+Optionally give a <code>mimeType</code> to express the type of file to replace
+in order to check it.
+  
+
+</dd>
+
+        <dt id="updateJson" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/updateJson.html">updateJson</a></span><span class="signature">(<wbr>{<span class="parameter" id="updateJson-param-fileId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, </span><span class="parameter" id="updateJson-param-content"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">content</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Overrides an existing JSON file with the provided <code>content</code>.
+  
+
+</dd>
+
+        <dt id="updateText" class="callable">
+  <span class="name"><a href="../backend_cloud_file_CloudFileService/CloudFileService/updateText.html">updateText</a></span><span class="signature">(<wbr>{<span class="parameter" id="updateText-param-fileId"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">fileId</span>, </span><span class="parameter" id="updateText-param-content"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">content</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://pub.dev/documentation/googleapis/14.0.0/drive_v3/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Overrides file with a new text <code>content</code>
+  
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+    
+
+  <section class="summary offset-anchor" id="constants">
+    <h2>Constants</h2>
+    <dl class="properties">
+        <dt id="appDataFolderId" class="constant">
+    <span class="name "><a href="../backend_cloud_file_CloudFileService/CloudFileService/appDataFolderId-constant.html">appDataFolderId</a></span>
+  <span class="signature">&#8594; const <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+    </dl>
+  </section>
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">mira_finance_tracker</a></li>
+    <li><a href="../backend_cloud_file_CloudFileService/">CloudFileService</a></li>
+    <li class="self-crumb">CloudFileService class</li>
+</ol>
+
+    <h5>CloudFileService library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    mira_finance_tracker
+      0.1.0+1
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+
