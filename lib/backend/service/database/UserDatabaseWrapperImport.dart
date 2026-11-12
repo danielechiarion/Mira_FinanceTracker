@@ -1,6 +1,31 @@
 part of 'UserDatabaseWrapper.dart';
 
 extension UserDatabaseWrapperImport on UserDatabaseWrapper {
+  Future<void> _importBankAccount(Map<String, dynamic> bankAccount) async {
+    await appDatabase.executeWithMap(
+      sql: '''INSERT INTO BankAccount (id,
+          financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
+          startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
+          VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
+          :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear,
+          :lastDateActivity)
+          ON CONFLICT(id) DO UPDATE SET
+            financialInstitute = excluded.financialInstitute,
+            subscriptionDate = excluded.subscriptionDate,
+            interest = excluded.interest,
+            endingDate = excluded.endingDate,
+            availableBalance = excluded.availableBalance,
+            active = excluded.active,
+            startingDate = excluded.startingDate,
+            includeStart = excluded.includeStart,
+            timeFrequency = excluded.timeFrequency,
+            dayOfMonth = excluded.dayOfMonth,
+            monthOfYear = excluded.monthOfYear,
+            lastDateActivity = excluded.lastDateActivity''',
+      parameters: bankAccount,
+    );
+  }
+
   /// Function writing inside the database the counterparties
   /// given from a specific file [content]
   /// * [close] flag to close the database
@@ -51,15 +76,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     bool close = false,
   }) async {
     for (Map<String, dynamic> bankAccount in content['content']) {
-      await appDatabase.executeWithMap(
-        sql: '''INSERT OR REPLACE INTO BankAccount (id,
-            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
-            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
-            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear,
-            :lastDateActivity)''',
-        parameters: bankAccount,
-      );
+      await _importBankAccount(bankAccount);
       await appDatabase.executeWithMap(
         sql: '''INSERT OR REPLACE INTO CurrentAccount
             (id, name) VALUES (:id, :name)''',
@@ -78,15 +95,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     bool close = false,
   }) async {
     for (Map<String, dynamic> bankAccount in content['content']) {
-      await appDatabase.executeWithMap(
-        sql: '''INSERT OR REPLACE INTO BankAccount (id,
-            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
-            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
-            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear,
-            :lastDateActivity)''',
-        parameters: bankAccount,
-      );
+      await _importBankAccount(bankAccount);
       await appDatabase.executeWithMap(
         sql: '''INSERT OR REPLACE INTO SavingsAccount
             (id, name, ledgerBalance) VALUES (:id, :name, :ledgerBalance)''',
@@ -105,14 +114,7 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     bool close = false,
   }) async {
     for (Map<String, dynamic> bankAccount in content['content']) {
-      await appDatabase.executeWithMap(
-        sql: '''INSERT OR REPLACE INTO BankAccount (id,
-            financialInstitute, subscriptionDate, interest, endingDate, availableBalance, active,
-            startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity)
-            VALUES (:id, :financialInstitute, :subscriptionDate, :interest, :endingDate,
-            :availableBalance, :active, :startingDate, :includeStart, :timeFrequency, :dayOfMonth, :monthOfYear, :lastDateActivity)''',
-        parameters: bankAccount,
-      );
+      await _importBankAccount(bankAccount);
       await appDatabase.executeWithMap(
         sql: '''INSERT OR REPLACE INTO Card
             (id, name, cardType, dayOfMonthCredit, lastDateActivityCredit) 

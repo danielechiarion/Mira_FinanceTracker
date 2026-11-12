@@ -280,8 +280,9 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     return output;
   }
 
-  /// Function to export time deposits related to all savings account
-  /// finished or running within a provided [yearLimit]
+  /// Function to export time deposits related to all savings accounts.
+  /// Active deposits are retained regardless of their ending date; finished
+  /// deposits are retained within the configured backup window.
   /// * [close] flag to close the database
   Future<Map<String, dynamic>> exportTimeDeposits(int yearLimit, {bool close = false}) async {
     DateTime currentDate = DateTime.now();
@@ -290,8 +291,13 @@ extension UserDatabaseWrapperExport on UserDatabaseWrapper {
     List<Map<String, dynamic>> result = await appDatabase.query(sql: '''SELECT TimeDeposit.id, TimeDeposit.name,
       provider, providerType, instrumentUsed, initialValue, currentValue, taxRate, status, interestRate, earlyWithdrawalInterestRate, isCashable,
       startingDate, includeStart, timeFrequency, dayOfMonth, monthOfYear, lastDateActivity, endingDate, includeEnd, bankAccount
-      FROM TimeDeposit WHERE endingDate IS NULL OR endingDate >= ?''', 
-      arguments: [limitDate.toIso8601String()]);
+      FROM TimeDeposit
+      WHERE endingDate IS NULL OR endingDate >= ? OR status IN (?, ?)''',
+      arguments: [
+        limitDate.toIso8601String(),
+        FinancialInstrumentStatus.ongoing.index,
+        FinancialInstrumentStatus.reduced.index,
+      ]);
 
     if(close) await appDatabase.close();
 
