@@ -179,7 +179,7 @@ class UserPreferences{
     inside the database */
     UserDatabaseWrapper database = UserDatabaseWrapper(_user);
     await database.init();
-    await database.saveUserPreferences(userPreferences);
+    await database.saveUserPreferences(userPreferences, close: true);
 
     _userPreferences.clear(); // then clear the set to make the user unable to access to them anymore
   } 
