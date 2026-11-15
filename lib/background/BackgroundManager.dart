@@ -6,6 +6,7 @@ import 'package:workmanager/workmanager.dart';
 
 import 'package:mira_finance_tracker/background/activity/BackgroundControl.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
+import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.dart';
 import 'package:mira_finance_tracker/backend/service/session/CurrentSession.dart';
 
 /* entry point required for 
@@ -20,9 +21,16 @@ void callbackDispatcher() {
     debugPrint('[BackgroundManager] Avvio task "$taskLabel".');
     try {
       if (taskName == "com.example.mira.backgroundControl") {
-        final service = BackgroundControl();
-        await service.init();
-        await service.execute();
+        return await DatabaseAccessLock.runExclusive(() async {
+          final service = BackgroundControl();
+          try {
+            await service.init();
+            await service.execute();
+            return true;
+          } finally {
+            await service.dispose();
+          }
+        });
       } else if (taskName == "mira.importCloud") {
         debugPrint(
           '[BackgroundManager] Import legacy ignorato; verrà eseguito '
@@ -38,18 +46,20 @@ void callbackDispatcher() {
           return false;
         }
 
-        final exporter = CloudFileExport(session);
-        try {
-          await exporter.init();
-          final succeeded = await exporter.execute();
-          debugPrint(
-            '[BackgroundManager] Export cloud '
-            '${succeeded ? "completato" : "non riuscito"}.',
-          );
-          return succeeded;
-        } finally {
-          await exporter.dispose();
-        }
+        return await DatabaseAccessLock.runExclusive(() async {
+          final exporter = CloudFileExport(session);
+          try {
+            await exporter.init();
+            final succeeded = await exporter.execute();
+            debugPrint(
+              '[BackgroundManager] Export cloud '
+              '${succeeded ? "completato" : "non riuscito"}.',
+            );
+            return succeeded;
+          } finally {
+            await exporter.dispose();
+          }
+        });
       }
       debugPrint('[BackgroundManager] Task "$taskLabel" completato.');
       return true;
@@ -134,6 +144,7 @@ class BackgroundManager {
       frequency: const Duration(hours: 24), // default: 24 hours
       constraints: Constraints(networkType: NetworkType.connected),
       initialDelay: Duration(minutes: 15),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
     );
   }
 
@@ -178,10 +189,11 @@ class BackgroundManager {
   Future<void> testOneOff() async {
     await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
     await Workmanager().registerOneOffTask(
-      "test-bg-19",                      // cambialo a ogni prova: test-bg-2, ...
+      "background-control-test",
       "com.example.mira.backgroundControl", // stesso nome del task vero
       initialDelay: const Duration(minutes: 2),
       constraints: Constraints(networkType: NetworkType.connected),
+      existingWorkPolicy: ExistingWorkPolicy.keep,
     );
     print('[BG] one-off registrato');
   }

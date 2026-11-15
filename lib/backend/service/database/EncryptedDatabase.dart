@@ -400,3 +400,26 @@ class _ConvertedSqlResult {
 
   _ConvertedSqlResult(this.sql, this.arguments);
 }
+
+/// Serializes background database tasks across Flutter engines and isolates.
+class DatabaseAccessLock {
+  static const String _lockFileName = 'mira_database_access.lock';
+
+  static Future<T> runExclusive<T>(Future<T> Function() operation) async {
+    final directory = await getApplicationSupportDirectory();
+    await directory.create(recursive: true);
+    final lockFile = File(join(directory.path, _lockFileName));
+    final lockHandle = await lockFile.open(mode: FileMode.append);
+
+    try {
+      await lockHandle.lock(FileLock.blockingExclusive);
+      try {
+        return await operation();
+      } finally {
+        await lockHandle.unlock();
+      }
+    } finally {
+      await lockHandle.close();
+    }
+  }
+}

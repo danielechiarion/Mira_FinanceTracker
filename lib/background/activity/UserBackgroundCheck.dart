@@ -38,15 +38,26 @@ class UserBackgroundCheck {
   /// Function to initialize on the background the
   /// resources used by the class
   Future<void> init() async {
-    await _database.init();
-    await _preference.init(readDatabase: true); // read the preferences from the database every time
-    await _session.init();
+    var initialized = false;
+    try {
+      await _database.init();
+      await _preference.init(readDatabase: true); // read the preferences from the database every time
+      await _session.init();
+      initialized = true;
+    } finally {
+      if (!initialized) {
+        await _database.closeDatabase();
+      }
+    }
   }
 
   /// Function to execute the background
   /// check for the user updating the data
   /// inside the database
-  Future<void> execute() async {
+  Future<void> execute() =>
+      _execute().whenComplete(_database.closeDatabase);
+
+  Future<void> _execute() async {
     /* before the operations that has to be done
     in a normal background check, ensure that the data of the application
     are synchronized with the ones saved in the cloud, if that option has been enabled.  */

@@ -38,9 +38,14 @@ class BackgroundControl {
       await operations.init();
       await operations.execute();
     }
+  }
 
-    /* then dispose all the necessary resources */
-    await _database.closeDatabase();
-    _notificationManager.dispose();
+  /// Releases resources, including after a failed initialization or execution.
+  Future<void> dispose() async {
+    try {
+      await _database.closeDatabase();
+    } finally {
+      _notificationManager.dispose();
+    }
   }
 }
