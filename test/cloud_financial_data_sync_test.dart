@@ -87,6 +87,24 @@ void main() {
           )
         ''');
         await database.execute('''
+            CREATE TABLE StepInterestModel(
+              position INTEGER,
+              bond INTEGER,
+              interestRate REAL NOT NULL,
+              duration TEXT NOT NULL,
+              PRIMARY KEY (position, bond)
+            )
+        ''');
+        await database.execute('''
+            CREATE TABLE StepInterest(
+              position INTEGER,
+              bond INTEGER,
+              interestRate REAL NOT NULL,
+              duration TEXT NOT NULL,
+              PRIMARY KEY (position, bond)
+            )
+        ''');
+        await database.execute('''
           INSERT INTO BankAccount (id, availableBalance) VALUES (1, 200)
         ''');
         await database.execute('''
@@ -151,6 +169,31 @@ void main() {
 
       expect(deposits, hasLength(1));
       expect(account.single['availableBalance'], 250.0);
+    },
+  );
+
+  test(
+    'financial-only import retains bond coupons but skips model coupons',
+    () async {
+      await userDatabase.importStepInterests({
+        'bondModels': [
+          {'position': 0, 'bond': 10, 'interestRate': 2.5, 'duration': '1y'},
+        ],
+        'bonds': [
+          {'position': 0, 'bond': 20, 'interestRate': 3.0, 'duration': '2y'},
+        ],
+      }, notModels: true);
+
+      final modelInterests =
+          await encryptedDatabase.query(sql: 'SELECT * FROM StepInterestModel')
+              as List<Map<String, Object?>>;
+      final bondInterests =
+          await encryptedDatabase.query(sql: 'SELECT * FROM StepInterest')
+              as List<Map<String, Object?>>;
+
+      expect(modelInterests, isEmpty);
+      expect(bondInterests, hasLength(1));
+      expect(bondInterests.single['bond'], 20);
     },
   );
 

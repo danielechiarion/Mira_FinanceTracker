@@ -5,6 +5,7 @@ import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.da
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionForeground.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionBackground.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupWriter.dart';
+import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.dart';
 
 /// Class to handle general file import
 /// involving all connection and file class
@@ -70,7 +71,11 @@ class CloudFileExport{
     /* start at first with writing the data 
     inside the drive */
     try{
-      await _writer.execute();
+      if (_foreground) {
+        await DatabaseAccessLock.runExclusive(_writer.execute);
+      } else {
+        await _writer.execute();
+      }
     }catch(e){
       /* if an error is catched
       show it inside a page, if it is possible */

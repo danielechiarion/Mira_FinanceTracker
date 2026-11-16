@@ -15,6 +15,7 @@ mobile background workmanager */
 void callbackDispatcher() {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
+  debugPrint('[BackgroundManager] Callback dispatcher inizializzato.');
   Workmanager().executeTask((taskName, inputData) async {
     final taskId = inputData?['taskId'];
     final taskLabel = taskId is String ? '$taskName ($taskId)' : taskName;
@@ -138,6 +139,14 @@ class BackgroundManager {
       callbackDispatcher,
       isInDebugMode: kDebugMode,
     );
+
+    /* add periodic task to erase */
+    await Workmanager().cancelByUniqueName('background-control-test');
+    await Workmanager().cancelByUniqueName('background-control-test-2');
+    await Workmanager().cancelByUniqueName('background-control-test-3');
+    await Workmanager().cancelByUniqueName('background-control-test-4');
+    await Workmanager().cancelByUniqueName('background-control-test-5');
+
     await Workmanager().registerPeriodicTask(
       "background-control",
       "com.example.mira.backgroundControl",
@@ -187,14 +196,15 @@ class BackgroundManager {
   /* debug function to test one off operations
   inside the device */
   Future<void> testOneOff() async {
-    await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
+    final taskId = 'debug-${DateTime.now().millisecondsSinceEpoch}';
     await Workmanager().registerOneOffTask(
-      "background-control-test",
+      "background-control-test-1",
       "com.example.mira.backgroundControl", // stesso nome del task vero
-      initialDelay: const Duration(minutes: 2),
+      inputData: {'taskId': taskId},
+      initialDelay: const Duration(minutes: 1),
       constraints: Constraints(networkType: NetworkType.connected),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      existingWorkPolicy: ExistingWorkPolicy.replace,
     );
-    print('[BG] one-off registrato');
+    debugPrint('[BackgroundManager] One-off "$taskId" accodato per tra 1 minuto.');
   }
 }

@@ -5,6 +5,7 @@ import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnection.da
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionForeground.dart';
 import 'package:mira_finance_tracker/backend/cloud/connection/CloudConnectionBackground.dart';
 import 'package:mira_finance_tracker/backend/cloud/file/CloudBackupReader.dart';
+import 'package:mira_finance_tracker/backend/service/database/EncryptedDatabase.dart';
 
 /// Class to handle general file import
 /// involving all connection and file class
@@ -91,12 +92,17 @@ class CloudFileImport{
     );
 
     try{
-      await _reader!.init();
-      if(await _reader!.isDriveEmpty()){
-        return true;
+      Future<void> readBackup() async {
+        await _reader!.init();
+        if(await _reader!.isDriveEmpty()) return;
+        await _reader!.execute();
       }
 
-      await _reader!.execute();
+      if (_foreground) {
+        await DatabaseAccessLock.runExclusive(readBackup);
+      } else {
+        await readBackup();
+      }
     }catch (e){
       if (_isErrorFunctionProvided) {
         await _showErrorFunction!(e.toString());
@@ -104,7 +110,7 @@ class CloudFileImport{
       }
       rethrow;
     }
-    
+
     return true;
   }
 

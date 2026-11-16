@@ -454,27 +454,26 @@ extension UserDatabaseWrapperImport on UserDatabaseWrapper {
     bool notModels = false,
     bool close = false,
   }) async {
-    /* the first interests to save are the one
-    related to bond models */
-    for (Map<String, dynamic> interest in content['bondModels']) {
-      await appDatabase.executeWithMap(
-        sql:
-            '''INSERT OR REPLACE INTO StepInterestModel (position, interestRate, duration, bond)
-        VALUES (:position, :interestRate, :duration, :bond)''',
-        parameters: interest,
-      );
-    }
-
-    /* then do the same for the ones related to bonds */
+    /* import model interests only when requested */
     if (!notModels) {
-      for (Map<String, dynamic> interest in content['bonds']) {
+      for (Map<String, dynamic> interest in content['bondModels']) {
         await appDatabase.executeWithMap(
           sql:
-              '''INSERT OR REPLACE INTO StepInterest (position, interestRate, duration, bond)
-          VALUES (:position, :interestRate, :duration, :bond)''',
+              '''INSERT OR REPLACE INTO StepInterestModel (position, interestRate, duration, bond)
+        VALUES (:position, :interestRate, :duration, :bond)''',
           parameters: interest,
         );
       }
+    }
+
+    /* bond interests are imported in both full and financial-only syncs */
+    for (Map<String, dynamic> interest in content['bonds']) {
+      await appDatabase.executeWithMap(
+        sql:
+            '''INSERT OR REPLACE INTO StepInterest (position, interestRate, duration, bond)
+          VALUES (:position, :interestRate, :duration, :bond)''',
+        parameters: interest,
+      );
     }
 
     if (close) await appDatabase.close();

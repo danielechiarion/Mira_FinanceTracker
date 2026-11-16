@@ -135,7 +135,6 @@ class UserBackgroundCheck {
   at the end of the execution */
   Future<void> _disposeResources() async {
     await _database.closeDatabase();
-    await _preference.disconnect();
     await _session.disconnect();
   }
 
