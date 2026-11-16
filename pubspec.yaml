@@ -58,6 +58,9 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
+dependency_overrides:
+  url_launcher_android: ^6.3.29
+
 flutter:
   uses-material-design: true
   # define assets to upload in the 
