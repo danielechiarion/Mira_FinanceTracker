@@ -12,7 +12,7 @@ import 'package:mira_finance_tracker/backend/service/session/BackgroundSession.d
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileExport.dart';
 import 'package:mira_finance_tracker/backend/cloud/operation/CloudFileImport.dart';
 
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 
 /// Function to check the state 
 /// of each account and resource connected to 
@@ -71,7 +71,7 @@ class UserBackgroundCheck {
     bool backgroundEnabled = _preference.getPreference('enableBackground').currentValue;
     bool notificationEnabled = _preference.getPreference('enableNotifications').currentValue;
 
-    debugPrint('🔵 [UBC] user=${_user.name}, bg=$backgroundEnabled, notif=$notificationEnabled');
+    // debugPrint('🔵 [UBC] user=${_user.name}, bg=$backgroundEnabled, notif=$notificationEnabled');
 
     /* if the background check is 
     not enabled, just end the execution of the class */

@@ -15,11 +15,11 @@ mobile background workmanager */
 void callbackDispatcher() {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-  debugPrint('[BackgroundManager] Callback dispatcher inizializzato.');
+  // debugPrint('[BackgroundManager] Callback dispatcher inizializzato.');
   Workmanager().executeTask((taskName, inputData) async {
-    final taskId = inputData?['taskId'];
-    final taskLabel = taskId is String ? '$taskName ($taskId)' : taskName;
-    debugPrint('[BackgroundManager] Avvio task "$taskLabel".');
+    // final taskId = inputData?['taskId'];
+    // final taskLabel = taskId is String ? '$taskName ($taskId)' : taskName;
+    // debugPrint('[BackgroundManager] Avvio task "$taskLabel".');
     try {
       if (taskName == "com.example.mira.backgroundControl") {
         return await DatabaseAccessLock.runExclusive(() async {
@@ -33,17 +33,17 @@ void callbackDispatcher() {
           }
         });
       } else if (taskName == "mira.importCloud") {
-        debugPrint(
+        /* debugPrint(
           '[BackgroundManager] Import legacy ignorato; verrà eseguito '
           'in foreground.',
-        );
+        ); */
         return true;
       } else if (taskName == "mira.exportCloud") {
         CurrentSession? session = await CurrentSession.getFromMemory();
         if (session == null) {
-          debugPrint(
+          /* debugPrint(
             '[BackgroundManager] Sessione non disponibile per export.',
-          );
+          ); */
           return false;
         }
 
@@ -52,22 +52,22 @@ void callbackDispatcher() {
           try {
             await exporter.init();
             final succeeded = await exporter.execute();
-            debugPrint(
+            /* debugPrint(
               '[BackgroundManager] Export cloud '
               '${succeeded ? "completato" : "non riuscito"}.',
-            );
+            ); */
             return succeeded;
           } finally {
             await exporter.dispose();
           }
         });
       }
-      debugPrint('[BackgroundManager] Task "$taskLabel" completato.');
+      // debugPrint('[BackgroundManager] Task "$taskLabel" completato.');
       return true;
     } catch (error, stackTrace) {
-      debugPrint(
+      /* debugPrint(
         '[BackgroundManager] Task "$taskLabel" fallito: $error\n$stackTrace',
-      );
+      ); */
       return false;
     }
   });
@@ -195,10 +195,10 @@ class BackgroundManager {
 
   /* debug function to test one off operations
   inside the device */
-  Future<void> testOneOff() async {
+  /* Future<void> testOneOff() async {
     final taskId = 'debug-${DateTime.now().millisecondsSinceEpoch}';
     await Workmanager().registerOneOffTask(
-      "background-control-test-1",
+      "background-control-test-2",
       "com.example.mira.backgroundControl", // stesso nome del task vero
       inputData: {'taskId': taskId},
       initialDelay: const Duration(minutes: 1),
@@ -206,5 +206,5 @@ class BackgroundManager {
       existingWorkPolicy: ExistingWorkPolicy.replace,
     );
     debugPrint('[BackgroundManager] One-off "$taskId" accodato per tra 1 minuto.');
-  }
+  } */
 }

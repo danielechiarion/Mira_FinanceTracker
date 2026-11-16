@@ -110,10 +110,10 @@ class CloudBackupReader extends CloudBackup {
       spaces: 'appDataFolder',
     );
     if (directory == null) {
-      print(
+      /* print(
         '[CloudBackupReader] Cartella "${super.DATABASEDIRECTORY}" non '
         'trovata in appDataFolder: nessun file database da importare.',
-      );
+      ); */
       return true;
     }
 
@@ -121,13 +121,13 @@ class CloudBackupReader extends CloudBackup {
       folderId: directory.id,
       spaces: 'appDataFolder',
     );
-    final fileNames = files
+    /* final fileNames = files
         .map((file) => file.name ?? '(senza nome)')
         .join(', ');
     print(
       '[CloudBackupReader] File trovati in "${super.DATABASEDIRECTORY}" '
       '(${files.length}): ${files.isEmpty ? "(nessuno)" : fileNames}.',
-    );
+    ); */
     return files.isEmpty;
   }
 
