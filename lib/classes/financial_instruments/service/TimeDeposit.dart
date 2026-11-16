@@ -197,7 +197,7 @@ class TimeDeposit extends FinancialInstrument implements CadenceCheck{
       );
       if(taxes > 0){
         transactions.add(
-          Outgoing(OutgoingCategory.financial_tax, "Tasse applicate dagli intreressi generate dal deposito: ${super.name}", taxes, DateTime.now())
+          Outgoing(OutgoingCategory.financial_tax, "Tasse applicate dagli interessi generate dal deposito: ${super.name}", taxes, DateTime.now())
         );
       }
 
