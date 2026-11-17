@@ -8,7 +8,7 @@ workflows:
     scripts:
       - name: Dipendenze
         script: flutter pub get
-      - name: Build APK
-        script: flutter build apk --release -t lib/main.dart
+      - name: Build Linux executable
+        script: flutter build linux --release -t lib/main.dart
     artifacts:
-      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*
