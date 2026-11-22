@@ -51,3 +51,6 @@ app.*.map.json
 # log data
 log.txt
 jobscheduler.txt
+
+# remove linux app image release
+dist/**
