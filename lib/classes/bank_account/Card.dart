@@ -28,7 +28,7 @@ enum CardType{
 class Card extends BankAccount{
   /* attributes definition */
   CardType _cardType;
-  late PeriodicAccountDuration? _creditTime;
+  PeriodicAccountDuration? _creditTime;
 
   /// Constructor method to build a card account
   /// with all its necessary data
